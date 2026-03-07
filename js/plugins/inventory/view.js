@@ -215,11 +215,7 @@ ViewCallbacks.inventory = {
     },
     
     use(worldId, characterId, itemId) {
-        const plugin = PluginSystem.get('inventory');
-        const result = plugin?.useItem(worldId, characterId, itemId);
-        if (result) {
-            showCharInventory(characterId);
-        }
+        ViewCallbacks.inventory.showUseItemTargetPicker(worldId, characterId, itemId);
     },
     
     showLibrary() {
@@ -304,6 +300,141 @@ ViewCallbacks.inventory = {
             plugin?.addItem(world.id, characterId, item);
             showCharInventory(characterId);
             document.getElementById('modal').classList.remove('active');
+        }
+    },
+    
+    useItemFromCharPanel(worldId, characterId, itemId) {
+         const plugin = PluginSystem.get('inventory');
+         const result = plugin?.useItem(worldId, characterId, itemId);
+         if (result) {
+             document.getElementById('charTabContent').innerHTML = View.render('characterRead.inventory', worldId, characterId);
+         }
+    },
+    
+    showAddFromCharPanel(worldId, characterId) {
+        const html = View.render('inventory.addFromCharPanel', worldId, characterId);
+        document.getElementById('charTabContent').innerHTML = html;
+    },
+    
+    showAddFormFromCharPanel(characterId) {
+        const world = Data.getCurrentWorld();
+        document.getElementById('addItemFormCharPanel').innerHTML = View.render('inventory.add', characterId);
+    },
+    
+    addFromCharPanel(characterId) {
+        const world = Data.getCurrentWorld();
+        const name = document.getElementById('itemName')?.value;
+        if (!name) return;
+        
+        let effects = {};
+        try {
+            effects = JSON.parse(document.getElementById('itemEffects')?.value || '{}');
+        } catch {}
+        
+        const plugin = PluginSystem.get('inventory');
+        plugin?.addItem(world.id, characterId, {
+            name,
+            type: document.getElementById('itemType')?.value || 'misc',
+            effects
+        });
+        
+        document.getElementById('charTabContent').innerHTML = View.render('characterRead.inventory', world.id, characterId);
+    },
+    
+    showLibraryPickerFromCharPanel(characterId) {
+        document.getElementById('addItemFormCharPanel').innerHTML = View.render('inventory.libraryPicker', characterId);
+    },
+    
+    addFromLibraryFromCharPanel(characterId, itemId) {
+        const world = Data.getCurrentWorld();
+        const plugin = PluginSystem.get('inventory');
+        const library = plugin?.getItemLibrary() || [];
+        const item = library.find(i => i.id === itemId);
+        
+        if (item) {
+            plugin?.addItem(world.id, characterId, item);
+            document.getElementById('charTabContent').innerHTML = View.render('characterRead.inventory', world.id, characterId);
+        }
+    },
+    
+    showUseItemTargetPicker(worldId, itemOwnerCharId, itemId) {
+        const world = Data.getCurrentWorld();
+        const allChars = Data.getCharacters(worldId) || [];
+        const plugin = PluginSystem.get('inventory');
+        const items = plugin?.getItems(worldId, itemOwnerCharId) || [];
+        const item = items.find(i => i.id === itemId);
+        
+        if (!item) return;
+        
+        const charOptions = allChars.map(c => 
+            `<option value="${c.id}">${c.name}</option>`
+        ).join('');
+        
+        document.getElementById('modalTitle').textContent = `使用 ${item.name}`;
+        document.getElementById('modalBody').innerHTML = `
+            <div style="padding: 16px;">
+                <p style="margin-bottom: 16px;">选择物品使用对象：</p>
+                <div style="margin-bottom: 16px;">
+                    <label style="display: block; margin-bottom: 8px; font-weight: bold;">目标角色</label>
+                    <select id="itemTargetChar" style="width: 100%; padding: 8px; border-radius: 6px; border: 1px solid var(--border); background: var(--bg); color: var(--text);">
+                        ${charOptions}
+                    </select>
+                </div>
+                ${item.effects ? `
+                    <div style="margin-bottom: 16px; padding: 12px; background: var(--border); border-radius: 6px;">
+                        <div style="font-weight: bold; margin-bottom: 8px;">物品效果：</div>
+                        <div style="font-size: 0.85rem; color: var(--accent);">${JSON.stringify(item.effects)}</div>
+                    </div>
+                ` : ''}
+                <div style="display: flex; gap: 8px;">
+                    <button class="btn" onclick="ViewCallbacks.inventory.useItemOnTarget('${worldId}', '${itemOwnerCharId}', '${item.id}')">在剧情中使用</button>
+                    <button class="btn btn-secondary" onclick="ViewCallbacks.inventory.useItemDirect('${worldId}', '${itemOwnerCharId}', '${item.id}')">直接使用</button>
+                </div>
+            </div>
+        `;
+        document.getElementById('modal').classList.add('active');
+    },
+    
+    useItemOnTarget(worldId, itemOwnerCharId, itemId) {
+        const targetCharId = document.getElementById('itemTargetChar')?.value;
+        if (!targetCharId) {
+            alert('请选择目标角色');
+            return;
+        }
+        
+        const isCharPanel = document.getElementById('charTabContent') !== null;
+        
+        const plugin = PluginSystem.get('inventory');
+        const result = plugin?.useItem(worldId, itemOwnerCharId, itemId, { targetCharId, generateStory: true });
+        
+        document.getElementById('modal').classList.remove('active');
+        
+        if (result && !result.generating) {
+            if (isCharPanel) {
+                document.getElementById('charTabContent').innerHTML = View.render('characterRead.inventory', worldId, itemOwnerCharId);
+            } else {
+                showCharInventory(itemOwnerCharId);
+            }
+        } else if (result && result.generating) {
+            setTimeout(() => {
+                window.showPage('story');
+            }, 500);
+        }
+    },
+    
+    useItemDirect(worldId, itemOwnerCharId, itemId) {
+        const isCharPanel = document.getElementById('charTabContent') !== null;
+        
+        const plugin = PluginSystem.get('inventory');
+        const result = plugin?.useItem(worldId, itemOwnerCharId, itemId);
+        
+        document.getElementById('modal').classList.remove('active');
+        if (result) {
+            if (isCharPanel) {
+                document.getElementById('charTabContent').innerHTML = View.render('characterRead.inventory', worldId, itemOwnerCharId);
+            } else {
+                showCharInventory(itemOwnerCharId);
+            }
         }
     }
 };

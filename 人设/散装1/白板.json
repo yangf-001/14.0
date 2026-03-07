@@ -1,0 +1,57 @@
+{
+  "version": "1.0.0",
+  "exportDate": "2026-02-25T12:00:00.000Z",
+  "characters": [
+    {
+      "id": "character-18",
+      "name": "白板",
+      "isMain": false,
+      "profile": {
+        "description": "[姓名:白板][年龄:未知][性别:未知][职业:未知][身份:白板][标注:未知][外貌:未知][性格:未知][喜好:未知][称呼:白板][讨厌:未知][情绪:未知][对话:未知]",
+        "personality": "白板是一个空白的角色，等待用户进行个性化设定。",
+        "background": "白板是一个空白的角色，等待用户进行个性化设定。",
+        "relationships": [],
+        "sceneExamples": "[场景示例]白板：（未知）",
+        "notes": "白板角色，等待用户进行个性化设定。",
+        "tags": [
+          "白板",
+          "未设定"
+        ]
+      },
+      "stats": [
+        {
+          "id": "stat-1",
+          "name": "好感度",
+          "value": 0
+        },
+        {
+          "id": "stat-2",
+          "name": "信任度",
+          "value": 0
+        },
+        {
+          "id": "stat-3",
+          "name": "性欲值",
+          "value": 0
+        },
+        {
+          "id": "stat-4",
+          "name": "淫欲值",
+          "value": 0
+        },
+        {
+          "id": "stat-5",
+          "name": "亲密值",
+          "value": 0
+        }
+      ],
+      "diaries": [],
+      "items": [],
+      "events": {
+        "pending": [],
+        "completed": []
+      },
+      "erotic_points": []
+    }
+  ]
+}

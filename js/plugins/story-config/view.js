@@ -1,0 +1,533 @@
+View.register('story-config.main', function() {
+    const plugin = PluginSystem.get('story-config');
+    const world = Data.getCurrentWorld();
+    let aiSettings = world
+        ? (plugin?.getWorldAISettings(world.id) || plugin?.getAISettings())
+        : (plugin?.getAISettings());
+    
+    if (!aiSettings) {
+        aiSettings = ViewCallbacks.storyConfig._getDefaultAISettings();
+    }
+
+    return `
+        <div style="max-width: 900px; margin: 0 auto;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                <h2>🤖 AI设置</h2>
+                <div style="display: flex; gap: 8px;">
+                    <button class="btn btn-secondary" onclick="ViewCallbacks.storyConfig.exportPrompts()">📤 导出</button>
+                    <button class="btn btn-secondary" onclick="document.getElementById('importPromptsInput').click()">📥 导入</button>
+                    <input type="file" id="importPromptsInput" accept=".json,.txt" style="display: none;" onchange="ViewCallbacks.storyConfig.importFromFile(event)">
+                </div>
+            </div>
+
+            ${world ? `
+                <div class="card" style="margin-bottom: 16px; padding: 12px; background: var(--accent); color: white;">
+                    <div style="display: flex; justify-content: space-between; align-items: center;">
+                        <span>当前世界：${world.name}</span>
+                        <label style="display: flex; align-items: center; gap: 8px; cursor: pointer;">
+                            <input type="checkbox" id="useWorldConfig" ${localStorage.getItem(`story_ai_settings_${world.id}`) ? 'checked' : ''} onchange="ViewCallbacks.storyConfig.toggleWorldConfig('${world.id}', this.checked)">
+                            使用世界级配置
+                        </label>
+                    </div>
+                </div>
+            ` : '<div class="card" style="margin-bottom: 16px;">请先选择一个世界以使用世界级配置</div>'}
+
+            <div style="margin-bottom: 20px;">
+                <button class="btn btn-secondary" onclick="showPage('story-config-presets')" style="margin-right: 8px;">📋 预设模板</button>
+                <button class="btn" onclick="ViewCallbacks.storyConfig.savePrompts()" style="margin-right: 8px;">💾 保存</button>
+                <button class="btn btn-secondary" onclick="ViewCallbacks.storyConfig.resetToDefault()">🔄 恢复默认</button>
+            </div>
+
+            <div style="display: grid; gap: 16px;">
+                ${ViewCallbacks.storyConfig._renderAISettingSection(aiSettings)}
+            </div>
+        </div>
+    `;
+});
+
+View.register('story-config.presets', function() {
+    const presets = [
+        {
+            name: '默认风格',
+            systemRole: '你是一个故事生成AI。请用故事的方式呈现内容。',
+            outputRules: '只输出故事正文内容，不要包含任何选项、后续发展、剧情走向、选择提示等信息。',
+            customRules: ''
+        },
+        {
+            name: '详细描写',
+            systemRole: '你是一个故事生成AI。擅长详细的环境描写和情感刻画。',
+            outputRules: '输出详细的故事情节，包括环境描写、人物心理活动、对话等。不要省略细节描写。',
+            customRules: '使用丰富的形容词和动词，让场景更加生动。'
+        },
+        {
+            name: '简洁风格',
+            systemRole: '你是一个故事生成AI。擅长简洁有力的叙事。',
+            outputRules: '用简洁的语言讲述故事，避免冗长的描写，保持节奏明快。',
+            customRules: '每段话不超过50字，突出重点。'
+        },
+        {
+            name: '言情风格',
+            systemRole: '你是一个言情小说作家。擅长描写浪漫的情感故事。',
+            outputRules: '重点描写角色之间的情感互动、心理变化，要有恋爱氛围感。',
+            customRules: '增加心动、脸红、甜蜜的细节描写。'
+        },
+        {
+            name: '剧情向',
+            systemRole: '你是一个剧情向故事作家。擅长复杂的情节设计。',
+            outputRules: '注重故事剧情的发展，制造冲突和悬念，推动情节前进。',
+            customRules: '每个情节点要有关联性，埋下伏笔。'
+        }
+    ];
+
+    return `
+        <div style="max-width: 900px; margin: 0 auto;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                <h2>📋 预设模板</h2>
+                <button class="btn btn-secondary" onclick="showPage('story-config')">← 返回</button>
+            </div>
+            <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 12px;">
+                ${presets.map((preset, idx) => `
+                    <div class="card" style="cursor: pointer; transition: transform 0.2s;" onclick="ViewCallbacks.storyConfig.applyPreset(${idx})">
+                        <div style="font-weight: bold; margin-bottom: 8px;">${preset.name}</div>
+                        <div style="font-size: 0.8rem; color: var(--text-dim);">${preset.customRules || preset.outputRules.substring(0, 30)}...</div>
+                    </div>
+                `).join('')}
+            </div>
+        </div>
+    `;
+});
+
+window.ViewCallbacks = window.ViewCallbacks || {};
+ViewCallbacks.storyConfig = ViewCallbacks.storyConfig || {};
+
+ViewCallbacks.storyConfig._getDefaultAISettings = function() {
+    return {
+        dataSources: {
+            title: '数据源设置',
+            enabled: true,
+            charFields: ['name', 'gender', 'age', 'appearance', 'personality', 'backstory', 'fetish', 'turnOns'],
+            storyContentLength: 800,
+            historyScenes: 3,
+            charDescriptionLength: 'medium',
+            includeAdultProfile: true
+        },
+        storyStart: {
+            title: '故事开头生成',
+            enabled: true,
+            template: `[系统提示词]\n\n生成一个故事开头：\n角色信息：[角色JSON]\n场景设定：[场景]\n风格要求：[风格设置]\n\n请生成200-500字的故事开头，并自然地引出后续剧情发展的可能性。`,
+            customPrompt: ''
+        },
+        storyContinue: {
+            title: '继续故事',
+            enabled: true,
+            template: `[系统提示词]\n\n基于以下设定继续故事：\n角色：[角色描述]\n背景：[世界名]\n设定：[风格设置]\n[之前的故事剧情]\n[当前故事最新剧情]\n\n请生成下一段故事内容（100-300字），通过故事情节自然呈现。\n注意：\n1. 响应用户上一次的选择\n2. 根据角色设定发展故事\n3. 适当埋下后续剧情的伏笔`,
+            customPrompt: ''
+        },
+        itemStory: {
+            title: '物品使用剧情',
+            enabled: true,
+            template: `[系统提示词]\n\n根据以下情节继续故事：\n[上下文]\n\n【新的情节】\n[角色]使用了[物品名]\n物品效果：[物品效果]\n[物品描述]\n\n请生成100-200字的故事内容。`,
+            customPrompt: ''
+        },
+        intimateContinue: {
+            title: '亲密互动继续',
+            enabled: true,
+            template: `[系统提示词]\n\n根据用户选择的亲密互动继续故事：\n[亲密互动内容]\n\n上下文：\n[上下文]\n\n角色：[角色列表]\n\n请生成100-200字的故事内容。`,
+            customPrompt: ''
+        },
+        generateChoices: {
+            title: '生成剧情选项',
+            enabled: true,
+            template: `[系统提示词]\n\n基于以下故事内容，生成3个让用户选择的剧情分支选项：\n\n故事内容：\n[内容摘要]\n\n角色：[角色列表]\n\n请生成3个符合故事发展、让用户决定剧情走向的选择项。每个选项用一句话描述，格式如下（只需要选项，不要其他内容）：\n1. [选项1描述]\n2. [选项2描述]\n3. [选项3描述]`,
+            temperature: 0.8,
+            customPrompt: ''
+        },
+        updateStats: {
+            title: '更新角色属性',
+            enabled: true,
+            template: `根据以下故事内容，分析角色在剧情中的数值属性变化。\n\n故事内容：\n[内容]\n\n角色：[角色列表]\n\n可用属性：\n- health (生命 0-200)\n- energy (体力 0-200)\n- charm (魅力 0-200)\n- intelligence (智力 0-200)\n- strength (力量 0-200)\n- agility (敏捷 0-200)\n- sexArousal (欲望 0-200)\n- sexLibido (性欲 0-200)\n- sexSensitivity (敏感 0-200)\n- affection (好感 0-200)\n- trust (信任 0-200)\n- intimacy (亲密 0-200)\n\n请分析故事情节，判断每个角色的数值属性应该有什么变化。返回JSON格式：\n{\n  "角色名": {\n    "属性名": 变化值\n  }\n}\n\n注意：\n1. 根据剧情合理设置变化值，一般单次变化在-20到+20之间\n2. 如果某个属性没有变化，不要在JSON中列出\n3. 如果所有属性都没变化，返回空对象 {}`,
+            temperature: 0.3,
+            customPrompt: ''
+        },
+        extractItems: {
+            title: '提取物品信息',
+            enabled: true,
+            template: `根据以下故事内容，分析是否有出现以下物品（从物品库中匹配），并识别哪个角色获得了物品：\n\n物品库：[物品列表]\n\n角色：[角色列表]\n\n故事内容：\n[内容]\n\n请分析故事中物品的获得和使用情况，返回JSON格式：\n{\n  "获得": [\n    {"物品": "物品名", "角色": "角色名"}\n  ],\n  "使用": [\n    {"物品": "物品名", "角色": "角色名"}\n  ]\n}\n\n注意：\n1. "获得"指角色获得/拥有的物品\n2. "使用"指角色使用/消耗的物品\n3. 如果物品没有明确指定给哪个角色，默认给第一个角色\n4. 只返回与物品库中物品名称匹配的内容\n5. 如果没有匹配，返回空数组`,
+            temperature: 0.3,
+            customPrompt: ''
+        },
+        level2Summary: {
+            title: '二级故事摘要（每次总结10幕）',
+            enabled: true,
+            template: `请用约1000字总结以下10幕故事内容，要求保留关键剧情、人物和转折点：\n\n[10幕剧情内容]`,
+            maxTokens: 2000,
+            customPrompt: ''
+        },
+        level3Summary: {
+            title: '三级综合摘要（每次总结10个二级）',
+            enabled: true,
+            template: `请用约2000字总结以下10个二级故事摘要，要求保留每个故事的核心剧情和人物关系：\n\n[10个二级摘要]`,
+            maxTokens: 3000,
+            customPrompt: ''
+        }
+    };
+};
+
+ViewCallbacks.storyConfig._renderDataSourceSection = function(setting) {
+    const ds = setting || {};
+    const charFields = ds.charFields || ['name', 'gender', 'age', 'appearance', 'personality', 'backstory', 'fetish', 'turnOns'];
+    const allFields = [
+        { key: 'name', label: '名字' },
+        { key: 'gender', label: '性别' },
+        { key: 'age', label: '年龄' },
+        { key: 'appearance', label: '外貌' },
+        { key: 'personality', label: '性格' },
+        { key: 'backstory', label: '背景故事' },
+        { key: 'fetish', label: '性癖' },
+        { key: 'turnOns', label: '性偏好' },
+        { key: 'stats', label: '属性数值' },
+        { key: 'inventory', label: '持有物品' }
+    ];
+
+    return `
+        <div class="card" style="border-left: 4px solid var(--accent);">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+                <div style="display: flex; align-items: center; gap: 8px;">
+                    <input type="checkbox" id="enable_dataSources" ${ds.enabled !== false ? 'checked' : ''} onchange="ViewCallbacks.storyConfig.toggleSection('dataSources', this.checked)">
+                    <h4 style="margin: 0;">${setting?.title || '数据源设置'}</h4>
+                </div>
+                <button class="btn btn-secondary" onclick="ViewCallbacks.storyConfig.toggleSectionDetail('dataSources')" style="font-size: 0.8rem; padding: 4px 8px;">
+                    ${ds._expanded ? '▼ 收起' : '▶ 展开'}
+                </button>
+            </div>
+            <div id="section_dataSources" style="display: ${ds._expanded ? 'block' : 'none'};">
+                <div style="margin-bottom: 16px;">
+                    <label style="display: block; margin-bottom: 8px; font-weight: 500;">角色信息字段（勾选要包含的字段）：</label>
+                    <div style="display: flex; flex-wrap: wrap; gap: 8px;">
+                        ${allFields.map(f => `
+                            <label style="display: flex; align-items: center; gap: 4px; padding: 6px 10px; background: var(--card); border-radius: 4px; cursor: pointer;">
+                                <input type="checkbox" class="charFieldCheck" value="${f.key}" ${charFields.includes(f.key) ? 'checked' : ''}>
+                                ${f.label}
+                            </label>
+                        `).join('')}
+                    </div>
+                </div>
+                <div style="margin-bottom: 16px;">
+                    <label style="display: block; margin-bottom: 8px; font-weight: 500;">剧情内容截取长度：</label>
+                    <select id="storyContentLength" style="padding: 8px; border-radius: 4px; border: 1px solid var(--border); background: var(--bg); color: var(--text);">
+                        <option value="300" ${ds.storyContentLength === 300 ? 'selected' : ''}>300字（简短）</option>
+                        <option value="500" ${ds.storyContentLength === 500 ? 'selected' : ''}>500字（中等）</option>
+                        <option value="800" ${ds.storyContentLength === 800 || !ds.storyContentLength ? 'selected' : ''}>800字（标准）</option>
+                        <option value="1200" ${ds.storyContentLength === 1200 ? 'selected' : ''}>1200字（详细）</option>
+                        <option value="2000" ${ds.storyContentLength === 2000 ? 'selected' : ''}>2000字（完整）</option>
+                    </select>
+                </div>
+                <div style="margin-bottom: 16px;">
+                    <label style="display: block; margin-bottom: 8px; font-weight: 500;">历史剧情取最近几幕：</label>
+                    <select id="historyScenes" style="padding: 8px; border-radius: 4px; border: 1px solid var(--border); background: var(--bg); color: var(--text);">
+                        <option value="1" ${ds.historyScenes === 1 ? 'selected' : ''}>1幕</option>
+                        <option value="3" ${ds.historyScenes === 3 || !ds.historyScenes ? 'selected' : ''}>3幕</option>
+                        <option value="5" ${ds.historyScenes === 5 ? 'selected' : ''}>5幕</option>
+                        <option value="10" ${ds.historyScenes === 10 ? 'selected' : ''}>10幕</option>
+                        <option value="0" ${ds.historyScenes === 0 ? 'selected' : ''}>不包含历史</option>
+                    </select>
+                </div>
+                <div style="margin-bottom: 16px;">
+                    <label style="display: block; margin-bottom: 8px; font-weight: 500;">角色描述详细程度：</label>
+                    <select id="charDescriptionLength" style="padding: 8px; border-radius: 4px; border: 1px solid var(--border); background: var(--bg); color: var(--text);">
+                        <option value="short" ${ds.charDescriptionLength === 'short' ? 'selected' : ''}>简短（名字+性格）</option>
+                        <option value="medium" ${ds.charDescriptionLength === 'medium' || !ds.charDescriptionLength ? 'selected' : ''}>中等（+外貌+背景）</option>
+                        <option value="long" ${ds.charDescriptionLength === 'long' ? 'selected' : ''}>详细（全部字段）</option>
+                    </select>
+                </div>
+                <div style="margin-bottom: 16px;">
+                    <label style="display: flex; align-items: center; gap: 8px; cursor: pointer;">
+                        <input type="checkbox" id="includeAdultProfile" ${ds.includeAdultProfile !== false ? 'checked' : ''}>
+                        包含成人配置（性癖、敏感度等）
+                    </label>
+                </div>
+                <div style="padding: 12px; background: var(--accent); color: white; border-radius: 6px; font-size: 0.85rem;">
+                    💡 数据源设置将影响所有向API输入的内容。修改后会影响角色信息完整性、剧情摘要长度等。
+                </div>
+            </div>
+        </div>
+    `;
+};
+
+ViewCallbacks.storyConfig._renderAISettingSection = function(aiSettings) {
+    const sections = [];
+    const defaultSettings = this._getDefaultAISettings();
+
+    sections.push(this._renderDataSourceSection(aiSettings?.dataSources || defaultSettings.dataSources));
+
+    const sectionKeys = ['storyStart', 'storyContinue', 'itemStory', 'intimateContinue', 'generateChoices', 'updateStats', 'extractItems', 'level2Summary', 'level3Summary'];
+
+    for (const key of sectionKeys) {
+        const defaultSetting = defaultSettings[key] || {};
+        const setting = (aiSettings && aiSettings[key]) ? { ...defaultSetting, ...aiSettings[key] } : defaultSetting;
+        sections.push(`
+            <div class="card">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+                    <div style="display: flex; align-items: center; gap: 8px;">
+                        <input type="checkbox" id="enable_${key}" ${setting.enabled !== false ? 'checked' : ''} onchange="ViewCallbacks.storyConfig.toggleSection('${key}', this.checked)">
+                        <h4 style="margin: 0;">${setting.title || key}</h4>
+                    </div>
+                    <button class="btn btn-secondary" onclick="ViewCallbacks.storyConfig.toggleSectionDetail('${key}')" style="font-size: 0.8rem; padding: 4px 8px;">
+                        ${setting._expanded ? '▼ 收起' : '▶ 展开'}
+                    </button>
+                </div>
+                <div id="section_${key}" style="display: ${setting._expanded ? 'block' : 'none'};">
+                    <div style="margin-bottom: 12px;">
+                        <label style="display: block; margin-bottom: 6px; font-weight: 500;">Prompt模板：</label>
+                        <textarea id="template_${key}" rows="8" style="width: 100%; padding: 12px; border-radius: 6px; border: 1px solid var(--border); background: var(--bg); color: var(--text); font-family: monospace; font-size: 0.85rem;" placeholder="输入Prompt模板...">${setting.template || ''}</textarea>
+                    </div>
+                    <div style="margin-bottom: 12px;">
+                        <label style="display: block; margin-bottom: 6px; font-weight: 500;">自定义补充（追加到模板后面）：</label>
+                        <textarea id="custom_${key}" rows="3" style="width: 100%; padding: 12px; border-radius: 6px; border: 1px solid var(--border); background: var(--bg); color: var(--text); font-family: inherit;" placeholder="输入自定义内容...">${setting.customPrompt || ''}</textarea>
+                    </div>
+                    ${setting.temperature !== undefined ? `
+                        <div style="margin-bottom: 12px;">
+                            <label id="temp_label_${key}" style="display: block; margin-bottom: 6px; font-weight: 500;">Temperature: ${setting.temperature}</label>
+                            <input type="range" id="temp_${key}" min="0" max="1" step="0.1" value="${setting.temperature}" style="width: 100%;" onchange="document.getElementById('temp_label_${key}').textContent = 'Temperature: ' + this.value">
+                        </div>
+                    ` : ''}
+                    ${setting.maxTokens !== undefined ? `
+                        <div style="margin-bottom: 12px;">
+                            <label id="tokens_label_${key}" style="display: block; margin-bottom: 6px; font-weight: 500;">Max Tokens: ${setting.maxTokens}</label>
+                            <input type="range" id="tokens_${key}" min="50" max="4000" step="50" value="${setting.maxTokens}" style="width: 100%;" onchange="document.getElementById('tokens_label_${key}').textContent = 'Max Tokens: ' + this.value">
+                        </div>
+                    ` : ''}
+                    <div style="padding: 12px; background: var(--border); border-radius: 6px; font-size: 0.8rem;">
+                        <div style="font-weight: 500; margin-bottom: 6px;">可用变量：</div>
+                        <div style="color: var(--text-dim);">[系统提示词] - 从系统配置中获取</div>
+                        <div style="color: var(--text-dim);">[角色信息/角色JSON] - 角色详细数据</div>
+                        <div style="color: var(--text-dim);">[场景] - 用户选择的场景</div>
+                        <div style="color: var(--text-dim);">[风格设置] - 故事风格配置</div>
+                        <div style="color: var(--text-dim);">[上下文/之前的故事剧情] - 历史剧情</div>
+                        <div style="color: var(--text-dim);">[内容摘要] - 当前剧情摘要</div>
+                        <div style="color: var(--text-dim);">[物品名/物品效果] - 物品数据</div>
+                    </div>
+                </div>
+            </div>
+        `);
+    }
+
+    return sections.join('');
+};
+
+ViewCallbacks.storyConfig.toggleSection = function(key, enabled) {
+    const plugin = PluginSystem.get('story-config');
+    const world = Data.getCurrentWorld();
+    let currentSettings = world
+        ? (plugin?.getWorldAISettings(world.id) || plugin?.getAISettings())
+        : (plugin?.getAISettings());
+    
+    if (!currentSettings) {
+        currentSettings = this._getDefaultAISettings();
+    }
+
+    if (currentSettings[key]) {
+        currentSettings[key].enabled = enabled;
+        if (world) {
+            plugin?.saveWorldAISettings(world.id, currentSettings);
+        } else {
+            plugin?.saveAISettings(currentSettings);
+        }
+    }
+};
+
+ViewCallbacks.storyConfig.toggleSectionDetail = function(key) {
+    const plugin = PluginSystem.get('story-config');
+    const world = Data.getCurrentWorld();
+    let currentSettings = world
+        ? (plugin?.getWorldAISettings(world.id) || plugin?.getAISettings())
+        : (plugin?.getAISettings());
+
+    if (!currentSettings) {
+        currentSettings = this._getDefaultAISettings();
+    }
+
+    if (currentSettings[key]) {
+        currentSettings[key]._expanded = !currentSettings[key]._expanded;
+        if (world) {
+            plugin?.saveWorldAISettings(world.id, currentSettings);
+        } else {
+            plugin?.saveAISettings(currentSettings);
+        }
+    }
+    showPage('story-config');
+};
+
+ViewCallbacks.storyConfig.savePrompts = function() {
+    const world = Data.getCurrentWorld();
+    const plugin = PluginSystem.get('story-config');
+
+    const charFieldCheckboxes = document.querySelectorAll('.charFieldCheck:checked');
+    const charFields = Array.from(charFieldCheckboxes).map(cb => cb.value);
+
+    const dataSources = {
+        title: '数据源设置',
+        enabled: document.getElementById('enable_dataSources')?.checked !== false,
+        charFields: charFields.length > 0 ? charFields : ['name', 'gender', 'age', 'appearance', 'personality', 'backstory', 'fetish', 'turnOns'],
+        storyContentLength: parseInt(document.getElementById('storyContentLength')?.value || 800),
+        historyScenes: parseInt(document.getElementById('historyScenes')?.value || 3),
+        charDescriptionLength: document.getElementById('charDescriptionLength')?.value || 'medium',
+        includeAdultProfile: document.getElementById('includeAdultProfile')?.checked !== false
+    };
+
+    const sectionKeys = ['storyStart', 'storyContinue', 'itemStory', 'intimateContinue', 'generateChoices', 'updateStats', 'extractItems', 'level2Summary', 'level3Summary'];
+    const aiSettings = { dataSources: dataSources };
+
+    for (const key of sectionKeys) {
+        const templateEl = document.getElementById(`template_${key}`);
+        const customEl = document.getElementById(`custom_${key}`);
+        const enableEl = document.getElementById(`enable_${key}`);
+
+        aiSettings[key] = {
+            title: this._getDefaultAISettings()[key]?.title || key,
+            enabled: enableEl ? enableEl.checked : true,
+            template: templateEl ? templateEl.value : '',
+            customPrompt: customEl ? customEl.value : ''
+        };
+
+        const tempEl = document.getElementById(`temp_${key}`);
+        if (tempEl) {
+            aiSettings[key].temperature = parseFloat(tempEl.value);
+        }
+
+        const tokensEl = document.getElementById(`tokens_${key}`);
+        if (tokensEl) {
+            aiSettings[key].maxTokens = parseInt(tokensEl.value);
+        }
+    }
+
+    if (world && localStorage.getItem(`story_ai_settings_${world.id}`)) {
+        plugin?.saveWorldAISettings(world.id, aiSettings);
+    } else {
+        plugin?.saveAISettings(aiSettings);
+    }
+
+    const saved = localStorage.getItem('story_ai_settings');
+    console.log('Saved settings:', saved ? JSON.parse(saved).intimateContinue : 'not found');
+    
+    alert('配置已保存！');
+    showPage('story-config');
+};
+
+ViewCallbacks.storyConfig.updatePreview = function() {
+    alert('请在对应的配置项中修改Prompt模板');
+};
+
+ViewCallbacks.storyConfig.resetToDefault = function() {
+    if (!confirm('确定要恢复默认配置吗？')) return;
+
+    const world = Data.getCurrentWorld();
+    const plugin = PluginSystem.get('story-config');
+
+    if (world) {
+        localStorage.removeItem(`story_ai_settings_${world.id}`);
+    }
+    plugin?.saveAISettings(this._getDefaultAISettings());
+
+    showPage('story-config');
+    alert('已恢复默认配置');
+};
+
+ViewCallbacks.storyConfig.toggleWorldConfig = function(worldId, enabled) {
+    if (enabled) {
+        const currentAISettings = PluginSystem.get('story-config')?.getAISettings() || {};
+        PluginSystem.get('story-config')?.saveWorldAISettings(worldId, currentAISettings);
+    } else {
+        localStorage.removeItem(`story_ai_settings_${worldId}`);
+    }
+    showPage('story-config');
+};
+
+ViewCallbacks.storyConfig.applyPreset = function(idx) {
+    const presets = [
+        {
+            name: '默认风格',
+            template: `[系统提示词]\n\n生成一个故事开头：\n角色信息：[角色JSON]\n场景设定：[场景]\n风格要求：[风格设置]\n\n请生成200-500字的故事开头，并自然地引出后续剧情发展的可能性。`,
+            customPrompt: ''
+        },
+        {
+            name: '详细描写',
+            template: `[系统提示词]\n\n生成一个故事开头：\n角色信息：[角色JSON]\n场景设定：[场景]\n风格要求：[风格设置]\n\n请生成详细的故事开头，注重环境描写和情感刻画，不少于500字。`,
+            customPrompt: '增加丰富的形容词和动词，让场景更加生动。'
+        },
+        {
+            name: '简洁风格',
+            template: `[系统提示词]\n\n生成一个故事开头：\n角色信息：[角色JSON]\n场景设定：[场景]\n风格要求：[风格设置]\n\n请用简洁的语言生成故事开头，不超过300字。`,
+            customPrompt: '每段话不超过50字，突出重点。'
+        },
+        {
+            name: '言情风格',
+            template: `[系统提示词]\n\n生成一个言情故事开头：\n角色信息：[角色JSON]\n场景设定：[场景]\n风格要求：[风格设置]\n\n请生成浪漫的故事开头，注重情感描写。`,
+            customPrompt: '增加心动、脸红、甜蜜的细节描写，营造恋爱氛围。'
+        },
+        {
+            name: '剧情向',
+            template: `[系统提示词]\n\n生成一个剧情向故事开头：\n角色信息：[角色JSON]\n场景设定：[场景]\n风格要求：[风格设置]\n\n请生成注重情节发展的故事开头，制造冲突和悬念。`,
+            customPrompt: '埋下后续剧情的伏笔。'
+        }
+    ];
+
+    const preset = presets[idx];
+    if (preset) {
+        const templateEl = document.getElementById('template_storyStart');
+        const customEl = document.getElementById('custom_storyStart');
+        if (templateEl) templateEl.value = preset.template;
+        if (customEl) customEl.value = preset.customPrompt;
+        alert(`已应用"${preset.name}"预设`);
+    }
+};
+
+ViewCallbacks.storyConfig.exportPrompts = function() {
+    const plugin = PluginSystem.get('story-config');
+    const world = Data.getCurrentWorld();
+    const aiSettings = world
+        ? (plugin?.getWorldAISettings(world.id) || plugin?.getAISettings())
+        : (plugin?.getAISettings() || this._getDefaultAISettings());
+
+    const exportData = {
+        aiSettings: aiSettings,
+        exportTime: Date.now()
+    };
+
+    const blob = new Blob([JSON.stringify(exportData, null, 2)], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'story-ai-settings.json';
+    a.click();
+    URL.revokeObjectURL(url);
+};
+
+ViewCallbacks.storyConfig.importFromFile = function(event) {
+    const file = event.target.files[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onload = (e) => {
+        const content = e.target.result;
+        const plugin = PluginSystem.get('story-config');
+        const world = Data.getCurrentWorld();
+
+        try {
+            const data = JSON.parse(content);
+            if (data.aiSettings) {
+                if (world) {
+                    plugin?.saveWorldAISettings(world.id, data.aiSettings);
+                } else {
+                    plugin?.saveAISettings(data.aiSettings);
+                }
+            }
+            showPage('story-config');
+            alert('导入成功！');
+        } catch (err) {
+            alert('导入失败：无效的JSON格式');
+        }
+    };
+    reader.readAsText(file);
+    event.target.value = '';
+};

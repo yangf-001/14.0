@@ -2,7 +2,14 @@ const Story = {
     current: null,
     history: [],
     
+    async _ensurePluginsInitialized() {
+        if (PluginSystem && !PluginSystem.loaded) {
+            await PluginSystem.init();
+        }
+    },
+    
     async start(config) {
+        await this._ensurePluginsInitialized();
         const world = Data.getCurrentWorld();
         if (!world) throw new Error('请先选择一个世界');
         
@@ -28,14 +35,33 @@ const Story = {
             }
         }
         
-        const prompt = this._buildStartPrompt(selectedChars, config.scene, settings, playerCharInfo);
+        let protagonistAge = 18;
+        if (config.timeConfig) {
+            const timePlugin = window.WorldTimePlugin;
+            if (timePlugin) {
+                const timeData = timePlugin.setStoryStartTime(
+                    world.id, 
+                    config.timeConfig.protagonistAge, 
+                    config.timeConfig.startYear
+                );
+                protagonistAge = config.timeConfig.protagonistAge;
+                
+                if (config.timeConfig.ageRelations) {
+                    Object.entries(config.timeConfig.ageRelations).forEach(([charId, relation]) => {
+                        timePlugin.setCharacterRelation(world.id, charId, relation);
+                    });
+                }
+            }
+        }
+        
+        const prompt = StoryConfigPlugin.getStoryGenerator().buildStartPrompt(selectedChars, config.scene, settings, playerCharInfo);
         
         this._showLoading('正在生成故事开头...');
         
         try {
             const content = await ai.generateStory(prompt, settings);
             
-            const cleanContent = this._cleanStoryContent(content);
+            const cleanContent = StoryConfigPlugin.getStoryGenerator().cleanStoryContent(content);
             
             this.current = {
                 id: Data._genId(),
@@ -55,22 +81,57 @@ const Story = {
                     content: cleanContent, 
                     choice: null,
                     choices: [],
-                    timestamp: Date.now() 
+                    timestamp: Date.now(),
+                    summary: ''
                 }],
                 status: 'ongoing',
                 round: 1
             };
             
-            const choices = await this._generateChoices(content, selectedChars, settings);
+            const firstSummary = await this._generateSceneSummary(cleanContent, null);
+            this.current.scenes[0].summary = firstSummary;
+            
+            const choices = await StoryConfigPlugin.getStoryGenerator().generateChoices(content, selectedChars, settings);
             this.current.scenes[0].choices = choices;
             
-            await this._updateCharacterProfiles(cleanContent, world.id);
+            const oldStatsStart = {};
+            for (const char of selectedChars) {
+                const dbChar = Data.getCharacter(world.id, char.id);
+                oldStatsStart[char.id] = { ...(dbChar?.stats || char.stats || {}) };
+            }
             
-            await this._extractItemsFromStory(cleanContent, world.id);
+            await StoryConfigPlugin.getStoryGenerator().updateCharacterProfiles(cleanContent, selectedChars, world.id);
+            
+            const statChangesStart = {};
+            for (const char of selectedChars) {
+                const dbChar = Data.getCharacter(world.id, char.id);
+                const newStats = dbChar?.stats || {};
+                const oldCharStats = oldStatsStart[char.id] || {};
+                const changes = {};
+                
+                for (const [key, value] of Object.entries(newStats)) {
+                    const oldValue = oldCharStats[key] || 0;
+                    const diff = value - oldValue;
+                    if (diff !== 0) {
+                        changes[key] = diff;
+                    }
+                }
+                
+                if (Object.keys(changes).length > 0) {
+                    statChangesStart[char.name] = changes;
+                }
+            }
+            
+            this.current.scenes[0].statChanges = statChangesStart;
+            
+            await StoryConfigPlugin.getStoryGenerator().extractItemsFromStory(cleanContent, selectedChars, world.id);
             
             PluginSystem.triggerPluginEvent('storyStarted', {
+                worldId: world.id,
                 characters: selectedChars.map(c => c.name),
-                scene: config.scene
+                scene: config.scene,
+                protagonistAge: protagonistAge,
+                timeConfig: config.timeConfig
             });
             
             PluginSystem.triggerPluginEvent('sceneGenerated', {
@@ -88,43 +149,157 @@ const Story = {
         }
     },
 
-    async continue(choice = null) {
+    async continue(choice = null, options = {}) {
+        await this._ensurePluginsInitialized();
         const world = Data.getCurrentWorld();
         if (!world || !this.current) throw new Error('没有进行中的故事');
         if (this.current.status !== 'ongoing') throw new Error('故事已结束，请开始新故事');
         
         const settings = Settings.get(world.id);
-        const characters = Data.getCharacters(world.id);
+        let characters = Data.getCharacters(world.id);
         
-        const context = this._buildContext(characters, settings);
-        const prompt = choice 
-            ? `根据用户的选择继续故事：${choice}\n\n`
-            : '继续故事，生成下一段内容：';
+        if (options.characters && options.characters.length > 0) {
+            const selectedChars = characters.filter(c => options.characters.includes(c.id));
+            this.current.characters = selectedChars.map(c => ({
+                id: c.id,
+                name: c.name,
+                profile: c.profile || {},
+                adultProfile: c.adultProfile || {},
+                stats: c.stats || {}
+            }));
+        }
         
-        this._showLoading('正在生成故事...');
+        const isItemUse = options.isItemUse === true;
+        const isIntimate = !isItemUse && choice && (
+            choice.includes('姿势') || 
+            choice.includes('部位') || 
+            choice.includes('动作') || 
+            choice.includes('对话') || 
+            choice.includes('风格')
+        );
+        
+        let prompt = '';
+        let systemPrompt = '';
+        
+        if (choice) {
+            if (isItemUse) {
+                const aiSetting = StoryConfigPlugin.getAISetting('itemStory', world.id);
+                const context = StoryConfigPlugin.getStoryGenerator().buildContext(this.current, characters, settings);
+                const charNames = characters.map(c => c.name).join('、');
+                const targetChar = options.targetChar;
+                const userChar = options.userChar;
+                const item = options.item;
+                
+                let template = aiSetting.template || '';
+                template = template.replace('[上下文]', context);
+                template = template.replace('[角色]', userChar ? `${userChar.name}对${targetChar.name}` : targetChar.name);
+                template = template.replace('[物品名]', item.name);
+                template = template.replace('[物品效果]', JSON.stringify(item.effects || {}));
+                template = template.replace('[物品描述]', item.description || '');
+                
+                systemPrompt = StoryConfigPlugin.getWorldSystemPrompt(world.id);
+                
+                if (aiSetting.customPrompt) {
+                    template += '\n\n' + aiSetting.customPrompt;
+                }
+                
+                prompt = template;
+            } else if (isIntimate) {
+                const aiSetting = StoryConfigPlugin.getAISetting('intimateContinue', world.id);
+                const context = StoryConfigPlugin.getStoryGenerator().buildContext(this.current, characters, settings);
+                const charNames = characters.map(c => c.name).join('、');
+                
+                let template = aiSetting.template || '';
+                template = template.replace('[亲密互动内容]', choice);
+                template = template.replace('[上下文]', context);
+                template = template.replace('[角色列表]', charNames);
+                
+                systemPrompt = StoryConfigPlugin.getWorldSystemPrompt(world.id);
+                
+                if (aiSetting.customPrompt) {
+                    template += '\n\n' + aiSetting.customPrompt;
+                }
+                
+                prompt = template;
+            } else {
+                const context = StoryConfigPlugin.getStoryGenerator().buildContext(this.current, characters, settings);
+                prompt = `根据用户的选择继续故事：${choice}\n\n`;
+                systemPrompt = context;
+            }
+        } else {
+            const context = StoryConfigPlugin.getStoryGenerator().buildContext(this.current, characters, settings);
+            prompt = '继续故事，生成下一段内容：';
+            
+            if (options.charChangeNote) {
+                prompt += options.charChangeNote;
+            }
+            
+            systemPrompt = context;
+        }
+        
+        this._showLoading(isItemUse ? '正在生成物品使用剧情...' : '正在生成故事...');
         
         try {
-            const content = await ai.call(prompt, { system: context });
-            const cleanContent = this._cleanStoryContent(content);
+            const content = await ai.call(prompt, { system: systemPrompt });
+            const cleanContent = StoryConfigPlugin.getStoryGenerator().cleanStoryContent(content);
             
-            this.current.scenes.push({
+            const newScene = {
                 content: cleanContent,
                 choice: choice,
                 choices: [],
                 timestamp: Date.now()
-            });
+            };
             
-            const choices = await this._generateChoices(content, this.current.characters, settings);
+            const summary = await this._generateSceneSummary(cleanContent, choice);
+            newScene.summary = summary;
+            
+            this.current.scenes.push(newScene);
+            
+            const choices = await StoryConfigPlugin.getStoryGenerator().generateChoices(content, this.current.characters, settings);
             this.current.scenes[this.current.scenes.length - 1].choices = choices;
             
             this.current.round = this.current.scenes.length;
             
-            await this._updateCharacterProfiles(cleanContent, world.id);
+            const oldStats = {};
+            for (const char of this.current.characters) {
+                const dbChar = Data.getCharacter(world.id, char.id);
+                oldStats[char.id] = { ...(dbChar?.stats || char.stats || {}) };
+            }
             
-            await this._extractItemsFromStory(cleanContent, world.id);
+            await StoryConfigPlugin.getStoryGenerator().updateCharacterProfiles(cleanContent, this.current.characters, world.id);
+            
+            const statChanges = {};
+            for (const char of this.current.characters) {
+                const dbChar = Data.getCharacter(world.id, char.id);
+                const newStats = dbChar?.stats || {};
+                const oldCharStats = oldStats[char.id] || {};
+                const changes = {};
+                
+                for (const [key, value] of Object.entries(newStats)) {
+                    const oldValue = oldCharStats[key] || 0;
+                    const diff = value - oldValue;
+                    if (diff !== 0) {
+                        changes[key] = diff;
+                    }
+                }
+                
+                if (Object.keys(changes).length > 0) {
+                    statChanges[char.name] = changes;
+                }
+            }
+            
+            newScene.statChanges = statChanges;
+            
+            await StoryConfigPlugin.getStoryGenerator().extractItemsFromStory(cleanContent, this.current.characters, world.id);
+            
+            const timePlugin = window.WorldTimePlugin;
+            if (timePlugin) {
+                timePlugin.advanceTime(world.id, Math.floor(Math.random() * 3) + 1);
+            }
             
             Data.saveStory(world.id, this.current);
             this._updateArchiveInPlace(world.id);
+            this._checkArchiveForSummaries(world.id);
             this._hideLoading();
             return this.current;
         } catch (err) {
@@ -132,7 +307,75 @@ const Story = {
             throw err;
         }
     },
-    
+
+    async useItemInStory(item, targetCharId, userCharId = null) {
+        const world = Data.getCurrentWorld();
+        const targetChar = Data.getCharacters(world.id).find(c => c.id === targetCharId);
+        const userChar = userCharId ? Data.getCharacters(world.id).find(c => c.id === userCharId) : null;
+        
+        const choiceText = userChar 
+            ? `${userChar.name}对${targetChar.name}使用了物品：${item.name}，物品效果：${JSON.stringify(item.effects || {})}`
+            : `${targetChar.name}使用了物品：${item.name}，物品效果：${JSON.stringify(item.effects || {})}`;
+        
+        await this.continue(choiceText, { isItemUse: true, item: item, targetChar: targetChar, userChar: userChar });
+    },
+
+    async refreshChoices(currentStory, options = {}) {
+        await this._ensurePluginsInitialized();
+        const world = Data.getCurrentWorld();
+        if (!world || !currentStory) throw new Error('没有进行中的故事');
+        
+        const settings = Settings.get(world.id);
+        const characters = Data.getCharacters(world.id);
+        
+        if (options.characters && options.characters.length > 0) {
+            currentStory.characters = characters.filter(c => options.characters.includes(c.id)).map(c => ({
+                id: c.id,
+                name: c.name,
+                profile: c.profile || {},
+                adultProfile: c.adultProfile || {},
+                stats: c.stats || {}
+            }));
+        }
+        
+        const charNames = currentStory.characters.map(c => c.name).join('、');
+        const lastContent = currentStory.scenes[currentStory.scenes.length - 1]?.content || '';
+        
+        let contextNote = '';
+        if (options.charChangeNote) {
+            contextNote = options.charChangeNote;
+        }
+        
+        const prompt = `根据以下故事内容和角色变化，重新生成3-5个适合的后续剧情选项。
+
+【当前故事内容】
+${lastContent}
+
+【参与角色】${charNames}
+${contextNote}
+
+请生成新的剧情选项，每个选项应该：
+1. 适合当前参与的角色
+2. 推动剧情发展
+3. 有多种可能性
+
+只输出选项，用换行分隔，不需要编号。`;
+        
+        const aiSetting = StoryConfigPlugin.getAISetting('storyContinue', world.id);
+        const systemPrompt = StoryConfigPlugin.getWorldSystemPrompt(world.id) || '';
+        
+        const result = await ai.call(prompt, { 
+            system: systemPrompt,
+            temperature: 0.7
+        });
+        
+        const choices = result.split('\n')
+            .map(line => line.replace(/^\d+[.、]\s*/, '').trim())
+            .filter(line => line.length > 0 && line.length < 100);
+        
+        return choices.slice(0, 5);
+    },
+
     _updateArchiveInPlace(worldId) {
         const archives = this.getArchives(worldId);
         const idx = archives.findIndex(a => a.id === this.current.id);
@@ -141,7 +384,99 @@ const Story = {
             archives[idx].sceneCount = this.current.scenes.length;
             archives[idx].scenes = this.current.scenes;
             localStorage.setItem(`story_archives_${worldId}`, JSON.stringify(archives));
-            this._checkArchive(worldId, archives);
+        }
+    },
+    
+    async _generateSceneSummary(content, choice) {
+        try {
+            const prompt = `请用一句话简洁概括以下故事情节的核心内容（30字以内）：
+
+${content.substring(0, 500)}
+
+${choice ? `[用户选择了：${choice}]` : ''}
+
+只需要返回一个简洁的总结，不需要其他内容。`;
+            
+            const result = await ai.call(prompt, { 
+                system: '你是一个故事总结助手，用简洁的语言概括情节。',
+                temperature: 0.3,
+                maxTokens: 50
+            });
+            
+            return result.trim().substring(0, 50);
+        } catch (e) {
+            return content.substring(0, 30) + '...';
+        }
+    },
+    
+    _checkArchiveForSummaries(worldId) {
+        const archives = this.getArchives(worldId);
+        let changed = false;
+        
+        for (let i = 0; i < archives.length; i++) {
+            const archive = archives[i];
+            if (!archive.scenes || archive.scenes.length < 10) continue;
+            if (archive.status === 'ongoing') continue;
+            
+            const totalScenesProcessed = (archive.groupSummary ? archive.groupSummary.length * 10 : 0) + (archive.scenes ? archive.scenes.length : 0);
+            
+            if (totalScenesProcessed >= 10 && totalScenesProcessed % 10 === 0) {
+                const groupIndex = (archive.groupSummary ? archive.groupSummary.length : 0);
+                
+                if (archive.groupSummary && archive.groupSummary[groupIndex]) continue;
+                
+                const scenesToSummarize = archive.scenes.slice(0, 10);
+                
+                archive.groupSummary = archive.groupSummary || [];
+                archive.groupSummary[groupIndex] = {
+                    scenes: scenesToSummarize.map(s => ({
+                        content: s.content,
+                        choice: s.choice,
+                        summary: s.summary
+                    })),
+                    summary: '[待生成总结]',
+                    createdAt: Date.now()
+                };
+                
+                const remainingScenes = archive.scenes.slice(10);
+                archive.scenes = remainingScenes;
+                archive.sceneCount = remainingScenes.length;
+                
+                changed = true;
+                
+                this._generateGroupSummaryAsync(worldId, archive.id, groupIndex, scenesToSummarize);
+            }
+        }
+        
+        if (changed) {
+            localStorage.setItem(`story_archives_${worldId}`, JSON.stringify(archives));
+        }
+    },
+    
+    async _generateGroupSummaryAsync(worldId, archiveId, groupIndex, scenes) {
+        try {
+            const aiSetting = StoryConfigPlugin.getAISetting('level2Summary', worldId);
+            if (!aiSetting || !aiSetting.enabled) return;
+            
+            const content = scenes.map(s => s.summary).join('； ');
+            
+            let template = aiSetting.template || '';
+            template = template.replace('[所有场景内容]', content);
+            
+            if (aiSetting.customPrompt) {
+                template += '\n\n' + aiSetting.customPrompt;
+            }
+            
+            const summary = await ai.call(template, { maxTokens: aiSetting.maxTokens || 2000 });
+            
+            const archives = this.getArchives(worldId);
+            const archive = archives.find(a => a.id === archiveId);
+            if (archive && archive.groupSummary && archive.groupSummary[groupIndex]) {
+                archive.groupSummary[groupIndex].summary = summary;
+                localStorage.setItem(`story_archives_${worldId}`, JSON.stringify(archives));
+            }
+        } catch (e) {
+            console.error('生成十幕总结失败:', e);
         }
     },
 
@@ -205,13 +540,17 @@ ${storyContent.substring(0, 800)}
             const jsonMatch = result.match(/\{[\s\S]*\}/);
             if (!jsonMatch) return;
             
-            const updates = JSON.parse(jsonMatch[0]);
+            let jsonStr = jsonMatch[0];
+            jsonStr = jsonStr.replace(/"(\w+)":\s*\+(\d+)/g, '"$1": $2');
+            
+            const updates = JSON.parse(jsonStr);
             
             for (const char of characters) {
                 const charUpdates = updates[char.name];
                 if (!charUpdates || Object.keys(charUpdates).length === 0) continue;
                 
-                const currentStats = char.stats || {};
+                const dbChar = Data.getCharacter(worldId, char.id);
+                const currentStats = dbChar?.stats || char.stats || {};
                 const newStats = { ...currentStats };
                 
                 for (const [stat, change] of Object.entries(charUpdates)) {
@@ -226,6 +565,8 @@ ${storyContent.substring(0, 800)}
                 Data.updateCharacter(worldId, char.id, { stats: newStats });
             }
             
+            Data.saveStory(worldId, this.current);
+            
             PluginSystem.triggerPluginEvent('characterStatsUpdated', {
                 characters: characters.map(c => ({ id: c.id, name: c.name, stats: c.stats }))
             });
@@ -237,6 +578,16 @@ ${storyContent.substring(0, 800)}
 
     async _generateChoices(content, characters, settings) {
         const charNames = characters.map(c => c.name).join('、');
+        const world = Data.getCurrentWorld();
+        const worldId = world?.id;
+        
+        let systemPrompt = '你是一个故事助手，生成的选择要符合剧情发展。';
+        if (typeof StoryConfigPlugin !== 'undefined') {
+            const pluginPrompt = StoryConfigPlugin.getWorldSystemPrompt(worldId);
+            if (pluginPrompt) {
+                systemPrompt = pluginPrompt;
+            }
+        }
         
         const prompt = `基于以下故事内容，生成3个让用户选择的剧情分支选项：
 
@@ -252,7 +603,7 @@ ${content.substring(0, 500)}
 
         try {
             const result = await ai.call(prompt, { 
-                system: '你是一个故事助手，生成的选择要符合剧情发展。',
+                system: systemPrompt,
                 temperature: 0.8 
             });
             
@@ -329,7 +680,10 @@ ${storyContent.substring(0, 1200)}
             const jsonMatch = result.match(/\{[\s\S]*\}/);
             if (!jsonMatch) return;
             
-            const itemData = JSON.parse(jsonMatch[0]);
+            let jsonStr = jsonMatch[0];
+            jsonStr = jsonStr.replace(/"(\w+)":\s*\+(\d+)/g, '"$1": $2');
+            
+            const itemData = JSON.parse(jsonStr);
             
             const gainedItems = itemData['获得'] || [];
             const usedItems = itemData['使用'] || [];
@@ -405,15 +759,11 @@ ${storyContent.substring(0, 1200)}
     async end(summary = '') {
         const world = Data.getCurrentWorld();
         if (!world || !this.current) throw new Error('没有进行中的故事');
-        
-        const summaryPrompt = `用一句话总结这个故事的核心内容（20字以内）：\n\n${this.current.scenes.map(s => s.content).join('\n')}`;
-        
+
         let storySummary = summary;
-        try {
-            storySummary = await ai.call(summaryPrompt, { maxTokens: 50 });
-            storySummary = storySummary.replace(/[""]/g, '').substring(0, 30);
-        } catch (e) {
-            storySummary = summary || '精彩的故事';
+        
+        if (!storySummary) {
+            storySummary = await this._generateStoryTitle();
         }
         
         const archives = this.getArchives(world.id);
@@ -438,7 +788,7 @@ ${storyContent.substring(0, 1200)}
             archives[existingIdx] = archive;
         } else {
             archives.unshift(archive);
-            this._checkArchive(world.id, archives);
+            this._checkArchiveForSummaries(world.id);
         }
         
         localStorage.setItem(`story_archives_${world.id}`, JSON.stringify(archives));
@@ -450,6 +800,49 @@ ${storyContent.substring(0, 1200)}
         this.current = null;
         
         return archive;
+    },
+    
+    async _generateStoryTitle() {
+        try {
+            const scenes = this.current.scenes;
+            if (!scenes || scenes.length === 0) {
+                return '精彩的故事';
+            }
+            
+            const firstScene = scenes[0]?.content || '';
+            const lastScene = scenes[scenes.length - 1]?.content || '';
+            
+            const charNames = this.current.characters?.map(c => c.name).join('、') || '角色';
+            
+            const prompt = `请根据以下故事内容生成一个简短的故事标题（5-15个字）：
+
+【故事开头】：
+${firstScene.substring(0, 300)}
+
+【故事结尾】：
+${lastScene.substring(0, 300)}
+
+【出场角色】：${charNames}
+
+要求：
+1. 标题要能概括故事的核心内容或主题
+2. 字数控制在5-15个字之间
+3. 不要包含引号或其他符号
+4. 直接返回标题，不要其他内容`;
+
+            const result = await ai.call(prompt, { 
+                system: '你是一个故事标题生成助手，根据故事内容生成简洁有力的标题。',
+                temperature: 0.5,
+                maxTokens: 50
+            });
+            
+            const title = result.trim().replace(/^["'""''「」【】\s]+|["'""''「」【】\s]+$/g, '');
+            
+            return title || '精彩的故事';
+        } catch (e) {
+            console.error('生成故事标题失败:', e);
+            return '精彩的故事';
+        }
     },
 
     getArchives(worldId) {
@@ -529,10 +922,13 @@ ${storyContent.substring(0, 1200)}
     },
     
     _checkArchive(worldId, archives) {
+        let changed = false;
+        
         for (let i = 0; i < archives.length; i++) {
             const story = archives[i];
             while (story.scenes && story.scenes.length > 10 && !story.level2Summary) {
                 this._createLevel2SummarySync(worldId, story, archives);
+                changed = true;
                 break;
             }
         }
@@ -541,7 +937,10 @@ ${storyContent.substring(0, 1200)}
         
         while (level2Archives.length > 10) {
             this._createLevel3SummarySync(worldId, level2Archives);
+            changed = true;
         }
+        
+        return changed;
     },
     
     getLevel2Archives(worldId) {
@@ -582,8 +981,6 @@ ${storyContent.substring(0, 1200)}
             archives[idx].sceneCount = remainingScenes.length;
         }
         
-        if (level2Archives.length > 20) level2Archives.length = 20;
-        
         localStorage.setItem(`story_level2_${worldId}`, JSON.stringify(level2Archives));
         localStorage.setItem(`story_archives_${worldId}`, JSON.stringify(archives));
         
@@ -591,14 +988,25 @@ ${storyContent.substring(0, 1200)}
     },
     
     async _generateLevel2SummaryAsync(worldId, entryId, scenes, storyTitle) {
-        const content = scenes.map(s => s.content).join('\n\n');
-        
-        const prompt = `请用约1000字总结以下故事内容，要求保留关键剧情、人物和转折点：
+        const aiSetting = StoryConfigPlugin.getAISetting('level2Summary', worldId);
+        const ds = StoryConfigPlugin.getDataSources(worldId);
 
-${content}`;
+        if (!aiSetting.enabled) {
+            return;
+        }
+
+        const contentLength = ds.storyContentLength || 800;
+        const content = scenes.map(s => s.content).join('\n\n').substring(0, contentLength * 3);
+
+        let template = aiSetting.template || '';
+        template = template.replace('[所有场景内容]', content);
+
+        if (aiSetting.customPrompt) {
+            template += '\n\n' + aiSetting.customPrompt;
+        }
 
         try {
-            const summary = await ai.call(prompt, { maxTokens: 2000 });
+            const summary = await ai.call(template, { maxTokens: aiSetting.maxTokens || 2000 });
             
             const level2 = this.getLevel2Archives(worldId);
             const idx = level2.findIndex(e => e.id === entryId);
@@ -639,8 +1047,6 @@ ${content}`;
             level2Archives.shift();
         }
         
-        if (level3Archives.length > 20) level3Archives.length = 20;
-        
         localStorage.setItem(`story_level3_${worldId}`, JSON.stringify(level3Archives));
         localStorage.setItem(`story_level2_${worldId}`, JSON.stringify(level2Archives));
         
@@ -648,14 +1054,25 @@ ${content}`;
     },
     
     async _generateLevel3SummaryAsync(worldId, entryId, stories) {
-        const content = stories.map(s => s.summary).join('\n\n---\n\n');
-        
-        const prompt = `请用约2000字总结以下10个故事，要求保留每个故事的核心剧情和人物关系：
+        const aiSetting = StoryConfigPlugin.getAISetting('level3Summary', worldId);
+        const ds = StoryConfigPlugin.getDataSources(worldId);
 
-${content}`;
+        if (!aiSetting.enabled) {
+            return;
+        }
+
+        const contentLength = ds.storyContentLength || 800;
+        const content = stories.map(s => s.summary).join('\n\n---\n\n').substring(0, contentLength * 5);
+
+        let template = aiSetting.template || '';
+        template = template.replace('[10个故事的摘要]', content);
+
+        if (aiSetting.customPrompt) {
+            template += '\n\n' + aiSetting.customPrompt;
+        }
 
         try {
-            const summary = await ai.call(prompt, { maxTokens: 3000 });
+            const summary = await ai.call(template, { maxTokens: aiSetting.maxTokens || 3000 });
             
             const level3 = this.getLevel3Archives(worldId);
             const idx = level3.findIndex(e => e.id === entryId);
@@ -669,16 +1086,27 @@ ${content}`;
     },
     
     async _createLevel3Summary(worldId, level2Archives, level3Archives) {
-        const toSummarize = level2Archives.slice(0, 10);
-        const content = toSummarize.map(s => s.summary).join('\n\n---\n\n');
-        
-        const prompt = `请用约2000字总结以下10个故事，要求保留每个故事的核心剧情和人物关系：
+        const aiSetting = StoryConfigPlugin.getAISetting('level3Summary', worldId);
+        const ds = StoryConfigPlugin.getDataSources(worldId);
 
-${content}`;
+        if (!aiSetting.enabled) {
+            return;
+        }
+
+        const contentLength = ds.storyContentLength || 800;
+        const toSummarize = level2Archives.slice(0, 10);
+        const content = toSummarize.map(s => s.summary).join('\n\n---\n\n').substring(0, contentLength * 5);
+
+        let template = aiSetting.template || '';
+        template = template.replace('[10个故事的摘要]', content);
+
+        if (aiSetting.customPrompt) {
+            template += '\n\n' + aiSetting.customPrompt;
+        }
 
         let summary = '';
         try {
-            summary = await ai.call(prompt, { maxTokens: 3000 });
+            summary = await ai.call(template, { maxTokens: aiSetting.maxTokens || 3000 });
         } catch (e) {
             summary = '多个故事的综合摘要';
         }
@@ -702,8 +1130,6 @@ ${content}`;
                 level2Archives.splice(idx, 1);
             }
         }
-        
-        if (level3Archives.length > 20) level3Archives.length = 20;
         
         localStorage.setItem(`story_level3_${worldId}`, JSON.stringify(level3Archives));
         localStorage.setItem(`story_level2_${worldId}`, JSON.stringify(level2Archives));
@@ -784,9 +1210,18 @@ ${content}`;
         
         const ctx = Settings.buildPromptContext(settings);
         const world = Data.getCurrentWorld();
-        const pluginContext = this._getPluginContext(world?.id);
+        const worldId = world?.id;
+        const pluginContext = this._getPluginContext(worldId);
         
-        return `生成一个故事开头：
+        let systemPrompt = '';
+        if (typeof StoryConfigPlugin !== 'undefined') {
+            const pluginPrompt = StoryConfigPlugin.getWorldSystemPrompt(worldId);
+            if (pluginPrompt) {
+                systemPrompt = pluginPrompt + '\n\n';
+            }
+        }
+        
+        return systemPrompt + `生成一个故事开头：
 角色信息：${JSON.stringify(charList)}${playerInfo}
 场景设定：${scene || '任意'}
 风格要求：${ctx}${pluginContext}
@@ -796,11 +1231,21 @@ ${content}`;
 
     _buildContext(characters, settings) {
         const world = Data.getCurrentWorld();
-        const charList = this.current.characters;
+        const worldId = world?.id;
+        
+        let systemPrompt = '';
+        if (typeof StoryConfigPlugin !== 'undefined') {
+            const pluginPrompt = StoryConfigPlugin.getWorldSystemPrompt(worldId);
+            if (pluginPrompt) {
+                systemPrompt = pluginPrompt + '\n\n';
+            }
+        }
         
         const allHistory = this._getAllHistory(world.id);
         
-        const recentScenes = this.current.scenes.slice(-3);
+        const ds = StoryConfigPlugin?.getDataSources ? StoryConfigPlugin.getDataSources(worldId) : null;
+        const historyCount = ds?.historyScenes || 3;
+        const recentScenes = historyCount > 0 ? this.current.scenes.slice(-historyCount) : [];
         const currentHistory = recentScenes.map((s, i) => {
             let text = s.content;
             if (s.choice) {
@@ -810,26 +1255,49 @@ ${content}`;
         }).join('\n\n---\n\n');
         
         let historySection = '';
-        if (allHistory.length > 0) {
+        if (allHistory.length > 0 && historyCount > 0) {
             historySection = `\n\n【之前的故事剧情】\n${allHistory.join('\n\n---\n\n')}`;
         }
-        
+
         if (currentHistory) {
             historySection += `\n\n【当前故事最新剧情】\n${currentHistory}`;
         }
         
-        const charDesc = charList.map(c => 
-            `${c.name}：${c.profile?.personality || '暂无设定'}，${c.profile?.appearance || '暂无描述'}`
-        ).join('；');
+        const charList = this.current.characters;
+        let charDesc = '';
+        
+        if (ds?.charDescriptionLength === 'short') {
+            charDesc = charList.map(c => 
+                `${c.name}：${c.profile?.personality || '暂无设定'}`
+            ).join('；');
+        } else if (ds?.charDescriptionLength === 'long') {
+            charDesc = charList.map(c => {
+                const profile = c.profile || {};
+                const stats = c.stats ? `，属性:${JSON.stringify(c.stats)}` : '';
+                return `${c.name}：${profile.personality || '暂无设定'}，${profile.appearance || '暂无描述'}，${profile.backstory || '暂无背景'}${stats}`;
+            }).join('；');
+        } else {
+            charDesc = charList.map(c => {
+                const profile = c.profile || {};
+                return `${c.name}：${profile.personality || '暂无设定'}，${profile.appearance || '暂无描述'}`;
+            }).join('；');
+        }
         
         const ctx = Settings.buildPromptContext(settings);
         
-        return `你是故事作家。基于以下设定继续故事：
+        const contentLength = ds?.storyContentLength || 800;
+        const maxHistoryLength = contentLength * 3;
+        let finalHistorySection = historySection;
+        if (historySection.length > maxHistoryLength) {
+            finalHistorySection = historySection.substring(0, maxHistoryLength) + '\n\n[...]';
+        }
+        
+        return systemPrompt + `基于以下设定继续故事：
 
 角色：${charDesc}
 背景：${world?.name || '自定义世界'}
 设定：${ctx}
-${historySection}
+${finalHistorySection}
 
 请生成下一段故事内容（100-300字），通过故事情节自然呈现，并根据内容提供后续发展的可能性。注意：
 1. 响应用户上一次的选择
@@ -842,25 +1310,33 @@ ${historySection}
         
         const archives = this.getArchives(worldId);
         for (const archive of archives) {
+            const title = `[${archive.title}]`;
+            
+            if (archive.groupSummary && archive.groupSummary.length > 0) {
+                for (let i = 0; i < archive.groupSummary.length; i++) {
+                    const group = archive.groupSummary[i];
+                    if (group.summary && group.summary !== '[待生成总结]') {
+                        allScenes.push(`[${archive.title} - 第${i + 1}至${i + 10}幕总结]\n${group.summary}`);
+                    } else if (group.scenes && group.scenes.length > 0) {
+                        for (const scene of group.scenes) {
+                            let text = scene.summary || scene.content;
+                            if (scene.choice) {
+                                text += `\n[用户选择了：${scene.choice}]`;
+                            }
+                            allScenes.push(`${title}${text}`);
+                        }
+                    }
+                }
+            }
+            
             if (archive.scenes && archive.scenes.length > 0) {
-                const title = `[${archive.title}]`;
                 for (const scene of archive.scenes) {
-                    let text = scene.content;
+                    let text = scene.summary || scene.content;
                     if (scene.choice) {
                         text += `\n[用户选择了：${scene.choice}]`;
                     }
-                    allScenes.push(`${title}\n${text}`);
+                    allScenes.push(`${title}${text}`);
                 }
-            }
-            if (archive.level2Summary && archive.level2Summary !== '[待生成摘要]') {
-                allScenes.push(`[${archive.title} - 前10幕摘要]\n${archive.level2Summary}`);
-            }
-        }
-        
-        const level2 = this.getLevel2Archives(worldId);
-        for (const story of level2) {
-            if (story.summary && story.summary !== '[待生成摘要]') {
-                allScenes.push(`[${story.originalTitle || story.title}]\n${story.summary}`);
             }
         }
         
@@ -955,7 +1431,7 @@ ${historySection}
             
             const archives = this.getArchives(world.id);
             archives.unshift(archive);
-            this._checkArchive(world.id, archives);
+            this._checkArchiveForSummaries(world.id);
             
             return archive;
         } catch (e) {

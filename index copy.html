@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>AI设置</title>
+</head>
+<body>
+    <script>
+        if (typeof PluginSystem !== 'undefined') {
+            PluginSystem.register('story-config', {
+                description: 'AI设置系统 - 自定义AI输出风格和系统限制',
+                features: ['自定义系统提示词', '输出风格设置', '输出格式设置', '世界级配置'],
+                
+                init() {
+                    console.log('Story-config plugin loaded');
+                    this._initDefaultPrompts();
+                },
+                
+                _initDefaultPrompts() {
+                    const defaultPrompts = {
+                        systemRole: '你是一个故事生成AI。请用故事的方式呈现内容。',
+                        outputRules: '只输出故事正文内容，不要包含任何选项、后续发展、剧情走向、选择提示等信息。',
+                        customRules: ''
+                    };
+                    
+                    if (!localStorage.getItem('story_system_prompts')) {
+                        localStorage.setItem('story_system_prompts', JSON.stringify(defaultPrompts));
+                    }
+                },
+                
+                getSystemPrompts() {
+                    const stored = localStorage.getItem('story_system_prompts');
+                    if (stored) {
+                        try {
+                            return JSON.parse(stored);
+                        } catch (e) {}
+                    }
+                    return {
+                        systemRole: '你是一个故事生成AI。请用故事的方式呈现内容。',
+                        outputRules: '只输出故事正文内容，不要包含任何选项、后续发展、剧情走向、选择提示等信息。',
+                        customRules: ''
+                    };
+                },
+                
+                saveSystemPrompts(prompts) {
+                    localStorage.setItem('story_system_prompts', JSON.stringify(prompts));
+                },
+                
+                getSystemPrompt() {
+                    const prompts = this.getSystemPrompts();
+                    let systemPrompt = prompts.systemRole || '';
+                    
+                    if (prompts.outputRules) {
+                        systemPrompt += '\n' + prompts.outputRules;
+                    }
+                    
+                    if (prompts.customRules) {
+                        systemPrompt += '\n' + prompts.customRules;
+                    }
+                    
+                    return systemPrompt;
+                },
+                
+                getWorldPrompts(worldId) {
+                    if (!worldId) return this.getSystemPrompts();
+                    const stored = localStorage.getItem(`story_world_prompts_${worldId}`);
+                    if (stored) {
+                        try {
+                            return JSON.parse(stored);
+                        } catch (e) {}
+                    }
+                    return this.getSystemPrompts();
+                },
+                
+                saveWorldPrompts(worldId, prompts) {
+                    localStorage.setItem(`story_world_prompts_${worldId}`, JSON.stringify(prompts));
+                },
+                
+                getWorldSystemPrompt(worldId) {
+                    const prompts = this.getWorldPrompts(worldId);
+                    let systemPrompt = prompts.systemRole || '';
+                    
+                    if (prompts.outputRules) {
+                        systemPrompt += '\n' + prompts.outputRules;
+                    }
+                    
+                    if (prompts.customRules) {
+                        systemPrompt += '\n' + prompts.customRules;
+                    }
+                    
+                    return systemPrompt;
+                },
+                
+                exportPrompts() {
+                    return JSON.stringify(this.getSystemPrompts(), null, 2);
+                },
+                
+                importPrompts(jsonStr) {
+                    try {
+                        const prompts = JSON.parse(jsonStr);
+                        this.saveSystemPrompts(prompts);
+                        return true;
+                    } catch (e) {
+                        console.error('Import failed:', e);
+                        return false;
+                    }
+                },
+                
+                loadFromFile(path) {
+                    return fetch(path)
+                        .then(response => response.text())
+                        .then(text => {
+                            const lines = text.split('\n');
+                            const prompts = {
+                                systemRole: '',
+                                outputRules: '',
+                                customRules: ''
+                            };
+                            
+                            let currentSection = '';
+                            for (const line of lines) {
+                                if (line.startsWith('# 系统人设')) {
+                                    currentSection = 'systemRole';
+                                } else if (line.startsWith('# 输出规则')) {
+                                    currentSection = 'outputRules';
+                                } else if (line.startsWith('# 自定义规则')) {
+                                    currentSection = 'customRules';
+                                } else if (line.trim() && !line.startsWith('#')) {
+                                    prompts[currentSection] += (prompts[currentSection] ? '\n' : '') + line;
+                                }
+                            }
+                            
+                            this.saveSystemPrompts(prompts);
+                            return prompts;
+                        });
+                }
+            });
+            
+            window.StoryConfigPlugin = PluginSystem.get('story-config');
+        }
+    </script>
+</body>
+</html>

@@ -149,11 +149,13 @@ View.register('character.basic', function(worldId, characterId) {
                 </div>
                 <div class="form-group">
                     <label>性别</label>
-                    <select onchange="ViewCallbacks.character.updateField('${characterId}', 'gender', this.value)">
-                        <option value="女" ${(char?.gender || '女') === '女' ? 'selected' : ''}>女</option>
-                        <option value="男" ${char?.gender === '男' ? 'selected' : ''}>男</option>
-                        <option value="扶她" ${char?.gender === '扶她' ? 'selected' : ''}>扶她</option>
-                    </select>
+                    <div style="display:flex;gap:4px;">
+                        <select onchange="ViewCallbacks.character.updateField('${characterId}', 'gender', this.value)">
+                            <option value="女" ${(char?.gender || '女') === '女' ? 'selected' : ''}>女</option>
+                            <option value="男" ${char?.gender === '男' ? 'selected' : ''}>男</option>
+                            <option value="扶她" ${char?.gender === '扶她' ? 'selected' : ''}>扶她</option>
+                        </select>
+                    </div>
                 </div>
                 <div class="form-group">
                     <label>年龄</label>
@@ -161,28 +163,47 @@ View.register('character.basic', function(worldId, characterId) {
                 </div>
                 <div class="form-group">
                     <label>角色定位</label>
-                    <select onchange="ViewCallbacks.character.updateField('${characterId}', 'role', this.value)">
-                        <option value="主角" ${char?.role === '主角' ? 'selected' : ''}>主角</option>
-                        <option value="女主" ${char?.role === '女主' ? 'selected' : ''}>女主</option>
-                        <option value="配角" ${(char?.role || '配角') === '配角' ? 'selected' : ''}>配角</option>
-                    </select>
+                    <div style="display:flex;gap:4px;">
+                        <input type="text" value="${char?.role || '配角'}" onchange="ViewCallbacks.character.updateField('${characterId}', 'role', this.value)" placeholder="主角/女主/配角等" list="editRoleOptions">
+                        <datalist id="editRoleOptions">
+                            <option value="主角">
+                            <option value="女主">
+                            <option value="配角">
+                            <option value="反派">
+                            <option value="导师">
+                            <option value="对手">
+                        </datalist>
+                    </div>
                 </div>
                 <div class="form-group">
                     <label>种族</label>
-                    <input type="text" value="${p.race || ''}" onchange="ViewCallbacks.character.updateProfile('${characterId}', 'race', this.value)">
+                    <div style="display:flex;gap:4px;">
+                        <input type="text" value="${p.race || ''}" onchange="ViewCallbacks.character.updateProfile('${characterId}', 'race', this.value)" placeholder="例如：人类" id="editCharRace">
+                        <button type="button" class="btn btn-secondary" onclick="CharacterPresets.showPresetPicker('editCharRace')" style="padding:4px 8px;">📋</button>
+                    </div>
                 </div>
                 <div class="form-group">
                     <label>职业</label>
-                    <input type="text" value="${p.occupation || ''}" onchange="ViewCallbacks.character.updateProfile('${characterId}', 'occupation', this.value)">
+                    <div style="display:flex;gap:4px;">
+                        <input type="text" value="${p.occupation || ''}" onchange="ViewCallbacks.character.updateProfile('${characterId}', 'occupation', this.value)" placeholder="例如：学生" id="editCharOccupation">
+                        <button type="button" class="btn btn-secondary" onclick="CharacterPresets.showPresetPicker('editCharOccupation')" style="padding:4px 8px;">📋</button>
+                    </div>
                 </div>
                 <div class="form-group">
                     <label>身高</label>
-                    <input type="text" value="${p.height || ''}" onchange="ViewCallbacks.character.updateProfile('${characterId}', 'height', this.value)">
+                    <div style="display:flex;gap:4px;">
+                        <input type="text" value="${p.height || ''}" onchange="ViewCallbacks.character.updateProfile('${characterId}', 'height', this.value)" placeholder="例如：165cm" id="editCharHeight">
+                        <button type="button" class="btn btn-secondary" onclick="CharacterPresets.showPresetPicker('editCharHeight')" style="padding:4px 8px;">📋</button>
+                    </div>
                 </div>
             </div>
             <div class="form-group">
                 <label>外貌描述</label>
-                <textarea rows="4" onchange="ViewCallbacks.character.updateProfile('${characterId}', 'appearance', this.value)">${p.appearance || ''}</textarea>
+                <div style="display:flex;gap:4px;">
+                    <textarea rows="4" onchange="ViewCallbacks.character.updateProfile('${characterId}', 'appearance', this.value)" placeholder="描述外貌特征">${p.appearance || ''}</textarea>
+                    <button type="button" class="btn btn-secondary" onclick="CharacterPresets.showPresetPicker('editCharAppearance', true)" style="padding:4px 8px;height:fit-content;">📋</button>
+                </div>
+                <input type="text" id="editCharAppearance" value="${p.appearance || ''}" style="display:none;">
             </div>
         </div>
     `;
@@ -196,20 +217,32 @@ View.register('character.personality', function(worldId, characterId) {
             <h4>🎭 性格与爱好</h4>
             <div class="form-group">
                 <label>性格类型</label>
-                <input type="text" value="${p.personality || ''}" onchange="ViewCallbacks.character.updateProfile('${characterId}', 'personality', this.value)" placeholder="如：温柔内向、活泼开朗...">
+                <div style="display:flex;gap:4px;">
+                    <input type="text" value="${p.personality || ''}" onchange="ViewCallbacks.character.updateProfile('${characterId}', 'personality', this.value)" placeholder="如：温柔内向、活泼开朗..." id="editCharPersonality">
+                    <button type="button" class="btn btn-secondary" onclick="CharacterPresets.showPresetPicker('editCharPersonality')" style="padding:4px 8px;">📋</button>
+                </div>
             </div>
             <div class="form-grid">
                 <div class="form-group">
                     <label>兴趣爱好</label>
-                    <textarea rows="2" onchange="ViewCallbacks.character.updateProfile('${characterId}', 'hobby', this.value)">${p.hobby || ''}</textarea>
+                    <div style="display:flex;gap:4px;">
+                        <input type="text" value="${p.hobby || ''}" onchange="ViewCallbacks.character.updateProfile('${characterId}', 'hobby', this.value)" placeholder="例如：看书、跑步" id="editCharHobby" style="flex:1;">
+                        <button type="button" class="btn btn-secondary" onclick="CharacterPresets.showPresetPicker('editCharHobby')" style="padding:4px 8px;">📋</button>
+                    </div>
                 </div>
                 <div class="form-group">
                     <label>喜欢的事物</label>
-                    <textarea rows="2" onchange="ViewCallbacks.character.updateProfile('${characterId}', 'favorite', this.value)">${p.favorite || ''}</textarea>
+                    <div style="display:flex;gap:4px;">
+                        <input type="text" value="${p.favorite || ''}" onchange="ViewCallbacks.character.updateProfile('${characterId}', 'favorite', this.value)" placeholder="例如：甜点、音乐" id="editCharFavorite" style="flex:1;">
+                        <button type="button" class="btn btn-secondary" onclick="CharacterPresets.showPresetPicker('editCharFavorite')" style="padding:4px 8px;">📋</button>
+                    </div>
                 </div>
                 <div class="form-group">
                     <label>讨厌的事物</label>
-                    <textarea rows="2" onchange="ViewCallbacks.character.updateProfile('${characterId}', 'dislike', this.value)">${p.dislike || ''}</textarea>
+                    <div style="display:flex;gap:4px;">
+                        <input type="text" value="${p.dislike || ''}" onchange="ViewCallbacks.character.updateProfile('${characterId}', 'dislike', this.value)" placeholder="例如：昆虫、孤单" id="editCharDislike" style="flex:1;">
+                        <button type="button" class="btn btn-secondary" onclick="CharacterPresets.showPresetPicker('editCharDislike')" style="padding:4px 8px;">📋</button>
+                    </div>
                 </div>
             </div>
         </div>
@@ -226,7 +259,11 @@ View.register('character.background', function(worldId, characterId) {
             <h4>📖 背景故事</h4>
             <div class="form-group">
                 <label>出身背景</label>
-                <textarea rows="3" onchange="ViewCallbacks.character.updateProfile('${characterId}', 'backstory', this.value)">${p.backstory || ''}</textarea>
+                <div style="display:flex;gap:4px;">
+                    <textarea rows="3" onchange="ViewCallbacks.character.updateProfile('${characterId}', 'backstory', this.value)" placeholder="例如：富二代、孤儿">${p.backstory || ''}</textarea>
+                    <button type="button" class="btn btn-secondary" onclick="CharacterPresets.showPresetPicker('editCharBackstory')" style="padding:4px 8px;height:fit-content;">📋</button>
+                </div>
+                <input type="text" id="editCharBackstory" value="${p.backstory || ''}" style="display:none;">
             </div>
             <div class="form-group">
                 <label>口头禅</label>
@@ -306,19 +343,31 @@ View.register('character.adult', function(worldId, characterId) {
             </div>
             <div class="form-group">
                 <label>敏感部位</label>
-                <textarea rows="2" onchange="ViewCallbacks.character.updateAdult('${characterId}', 'sensitiveParts', this.value)">${a.sensitiveParts || ''}</textarea>
+                <div style="display:flex;gap:4px;">
+                    <textarea rows="2" id="editCharSensitive" onchange="ViewCallbacks.character.updateAdult('${characterId}', 'sensitiveParts', this.value)" placeholder="例如：耳朵、颈部、多选请用顿号分隔">${a.sensitiveParts || ''}</textarea>
+                    <button type="button" class="btn btn-secondary" onclick="CharacterPresets.showPresetPicker('editCharSensitive', true)" style="padding:4px 8px;height:fit-content;">📋</button>
+                </div>
             </div>
             <div class="form-group">
                 <label>性癖好</label>
-                <textarea rows="2" onchange="ViewCallbacks.character.updateAdult('${characterId}', 'fetish', this.value)">${a.fetish || ''}</textarea>
+                <div style="display:flex;gap:4px;">
+                    <textarea rows="2" id="editCharFetish" onchange="ViewCallbacks.character.updateAdult('${characterId}', 'fetish', this.value)" placeholder="例如：制服、玩具、多选请用顿号分隔">${a.fetish || ''}</textarea>
+                    <button type="button" class="btn btn-secondary" onclick="CharacterPresets.showPresetPicker('editCharFetish', true)" style="padding:4px 8px;height:fit-content;">📋</button>
+                </div>
             </div>
             <div class="form-group">
                 <label>底线/雷区</label>
-                <textarea rows="2" onchange="ViewCallbacks.character.updateAdult('${characterId}', 'limits', this.value)">${a.limits || ''}</textarea>
+                <div style="display:flex;gap:4px;">
+                    <textarea rows="2" id="editCharLimits" onchange="ViewCallbacks.character.updateAdult('${characterId}', 'limits', this.value)" placeholder="例如：不愿意、底线、多选请用顿号分隔">${a.limits || ''}</textarea>
+                    <button type="button" class="btn btn-secondary" onclick="CharacterPresets.showPresetPicker('editCharLimits', true)" style="padding:4px 8px;height:fit-content;">📋</button>
+                </div>
             </div>
             <div class="form-group">
                 <label>性幻想</label>
-                <textarea rows="2" onchange="ViewCallbacks.character.updateAdult('${characterId}', 'fantasies', this.value)">${a.fantasies || ''}</textarea>
+                <div style="display:flex;gap:4px;">
+                    <textarea rows="2" id="editCharFantasy" onchange="ViewCallbacks.character.updateAdult('${characterId}', 'fantasies', this.value)" placeholder="例如：海边度假、浪漫温情、多选请用顿号分隔">${a.fantasies || ''}</textarea>
+                    <button type="button" class="btn btn-secondary" onclick="CharacterPresets.showPresetPicker('editCharFantasy', true)" style="padding:4px 8px;height:fit-content;">📋</button>
+                </div>
             </div>
         </div>
     `;
@@ -327,33 +376,38 @@ View.register('character.adult', function(worldId, characterId) {
 ViewCallbacks.character = {
     updateField(charId, field, value) {
         const world = Data.getCurrentWorld();
-        Data.updateCharacter(world.id, charId, { [field]: value });
+        if (world) {
+            Data.updateCharacter(world.id, charId, { [field]: value });
+        }
     },
     
     updateProfile(charId, field, value) {
         const world = Data.getCurrentWorld();
-        const char = Data.getCharacter(world.id, charId);
-        if (char) {
-            char.profile = char.profile || {};
-            char.profile[field] = value;
-            Data.updateCharacter(world.id, charId, { profile: char.profile });
+        if (world) {
+            const char = Data.getCharacter(world.id, charId);
+            if (char) {
+                char.profile = char.profile || {};
+                char.profile[field] = value;
+                Data.updateCharacter(world.id, charId, { profile: char.profile });
+            }
         }
     },
     
     updateAdult(charId, field, value) {
         const world = Data.getCurrentWorld();
-        const char = Data.getCharacter(world.id, charId);
-        if (char) {
-            char.adultProfile = char.adultProfile || {};
-            char.adultProfile[field] = value;
-            Data.updateCharacter(world.id, charId, { adultProfile: char.adultProfile });
+        if (world) {
+            const char = Data.getCharacter(world.id, charId);
+            if (char) {
+                char.adultProfile = char.adultProfile || {};
+                char.adultProfile[field] = value;
+                Data.updateCharacter(world.id, charId, { adultProfile: char.adultProfile });
+            }
         }
     },
     
     updateStat(charId, stat, value) {
         const world = Data.getCurrentWorld();
-        const char = Data.getCharacter(world.id, charId);
-        if (char) {
+        if (world) {
             char.stats = char.stats || {};
             char.stats[stat] = Math.max(0, Math.min(200, value));
             Data.updateCharacter(world.id, charId, { stats: char.stats });
@@ -429,11 +483,7 @@ ViewCallbacks.inventory = {
     },
     
     useItemFromCharPanel(worldId, characterId, itemId) {
-        const plugin = PluginSystem.get('inventory');
-        const result = plugin?.useItem(worldId, characterId, itemId);
-        if (result) {
-            document.getElementById('charTabContent').innerHTML = View.render('characterRead.inventory', worldId, characterId);
-        }
+        this.showUseItemTargetPicker(worldId, characterId, itemId);
     }
 };
 
@@ -556,6 +606,9 @@ View.register('characterRead.inventory', function(worldId, characterId) {
     const plugin = PluginSystem.get('inventory');
     const items = plugin?.getItems(worldId, characterId) || [];
     const char = Data.getCharacter(worldId, characterId);
+    const allChars = Data.getCharacters(worldId) || [];
+    
+    const hasStory = Story.isOngoing();
     
     return `
         <div class="card">
@@ -571,7 +624,7 @@ View.register('characterRead.inventory', function(worldId, characterId) {
                         <div class="item-desc">${item.description || item.type}</div>
                         ${item.effects ? `<div class="item-effects" style="font-size: 0.7rem; color: var(--accent);">${JSON.stringify(item.effects)}</div>` : ''}
                     </div>
-                    <button class="btn btn-secondary btn-sm" onclick="ViewCallbacks.inventory.useItemFromCharPanel('${worldId}', '${characterId}', '${item.id}')">使用</button>
+                    <button class="btn btn-secondary btn-sm" onclick="ViewCallbacks.inventory.showUseItemTargetPicker('${worldId}', '${characterId}', '${item.id}')">使用</button>
                 </div>
             `).join('')}
         </div>
@@ -645,3 +698,109 @@ View.register('inventory.libraryPicker', function(characterId) {
 
 window.ViewCallbacks = window.ViewCallbacks || {};
 Object.assign(window.ViewCallbacks, ViewCallbacks);
+
+if (!window.ViewCallbacks.inventory.useItemFromCharPanel) {
+    window.ViewCallbacks.inventory = window.ViewCallbacks.inventory || {};
+    window.ViewCallbacks.inventory.useItemFromCharPanel = function(worldId, characterId, itemId) {
+        const plugin = PluginSystem.get('inventory');
+        const result = plugin?.useItem(worldId, characterId, itemId);
+        if (result) {
+            document.getElementById('charTabContent').innerHTML = View.render('characterRead.inventory', worldId, characterId);
+        }
+    };
+    window.ViewCallbacks.inventory.showAddFromCharPanel = function(worldId, characterId) {
+        const html = View.render('inventory.addFromCharPanel', worldId, characterId);
+        document.getElementById('charTabContent').innerHTML = html;
+    };
+    window.ViewCallbacks.inventory.showAddFormFromCharPanel = function(characterId) {
+        const world = Data.getCurrentWorld();
+        document.getElementById('addItemFormCharPanel').innerHTML = View.render('inventory.add', characterId);
+    };
+    window.ViewCallbacks.inventory.addFromCharPanel = function(characterId) {
+        const world = Data.getCurrentWorld();
+        const name = document.getElementById('itemName')?.value;
+        if (!name) return;
+        let effects = {};
+        try {
+            effects = JSON.parse(document.getElementById('itemEffects')?.value || '{}');
+        } catch {}
+        const plugin = PluginSystem.get('inventory');
+        plugin?.addItem(world.id, characterId, {
+            name,
+            type: document.getElementById('itemType')?.value || 'misc',
+            effects
+        });
+        document.getElementById('charTabContent').innerHTML = View.render('characterRead.inventory', world.id, characterId);
+    };
+    window.ViewCallbacks.inventory.showLibraryPickerFromCharPanel = function(characterId) {
+        document.getElementById('addItemFormCharPanel').innerHTML = View.render('inventory.libraryPicker', characterId);
+    };
+    window.ViewCallbacks.inventory.addFromLibraryFromCharPanel = function(characterId, itemId) {
+        const world = Data.getCurrentWorld();
+        const plugin = PluginSystem.get('inventory');
+        const library = plugin?.getItemLibrary() || [];
+        const item = library.find(i => i.id === itemId);
+        if (item) {
+            plugin?.addItem(world.id, characterId, item);
+            document.getElementById('charTabContent').innerHTML = View.render('characterRead.inventory', world.id, characterId);
+        }
+    };
+    
+    window.ViewCallbacks.inventory.showUseItemTargetPicker = function(worldId, itemOwnerCharId, itemId) {
+        const world = Data.getCurrentWorld();
+        const allChars = Data.getCharacters(worldId) || [];
+        const plugin = PluginSystem.get('inventory');
+        const items = plugin?.getItems(worldId, itemOwnerCharId) || [];
+        const item = items.find(i => i.id === itemId);
+        
+        if (!item) return;
+        
+        const charOptions = allChars.map(c => 
+            `<option value="${c.id}">${c.name}</option>`
+        ).join('');
+        
+        document.getElementById('modalTitle').textContent = `使用 ${item.name}`;
+        document.getElementById('modalBody').innerHTML = `
+            <div style="padding: 16px;">
+                <p style="margin-bottom: 16px;">选择物品使用对象：</p>
+                <div style="margin-bottom: 16px;">
+                    <label style="display: block; margin-bottom: 8px; font-weight: bold;">目标角色</label>
+                    <select id="itemTargetChar" style="width: 100%; padding: 8px; border-radius: 6px; border: 1px solid var(--border); background: var(--bg); color: var(--text);">
+                        ${charOptions}
+                    </select>
+                </div>
+                ${item.effects ? `
+                    <div style="margin-bottom: 16px; padding: 12px; background: var(--border); border-radius: 6px;">
+                        <div style="font-weight: bold; margin-bottom: 8px;">物品效果：</div>
+                        <div style="font-size: 0.85rem; color: var(--accent);">${JSON.stringify(item.effects)}</div>
+                    </div>
+                ` : ''}
+                <div style="display: flex; gap: 8px;">
+                    <button class="btn" onclick="ViewCallbacks.inventory.useItemOnTarget('${worldId}', '${itemOwnerCharId}', '${item.id}')">在剧情中使用</button>
+                    <button class="btn btn-secondary" onclick="ViewCallbacks.inventory.useItemDirect('${worldId}', '${itemOwnerCharId}', '${item.id}')">直接使用</button>
+                    <button class="btn btn-secondary" onclick="closeModal()">取消</button>
+                </div>
+            </div>
+        `;
+        document.getElementById('modal').classList.add('active');
+    };
+    
+    window.ViewCallbacks.inventory.useItemOnTarget = function(worldId, itemOwnerCharId, itemId) {
+        const targetCharId = document.getElementById('itemTargetChar')?.value;
+        if (!targetCharId) {
+            alert('请选择目标角色');
+            return;
+        }
+        
+        closeModal();
+        
+        const plugin = PluginSystem.get('inventory');
+        plugin?.useItem(worldId, itemOwnerCharId, itemId, { 
+            targetCharId: targetCharId,
+            userCharId: itemOwnerCharId,
+            generateStory: true
+        });
+        
+        document.getElementById('charTabContent').innerHTML = View.render('characterRead.inventory', worldId, itemOwnerCharId);
+    };
+}

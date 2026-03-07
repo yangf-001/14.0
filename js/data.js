@@ -1,6 +1,10 @@
 const Data = {
     _worlds: null,
     _currentWorld: null,
+    _autoSaveTimer: null,
+    _lastSaveTime: null,
+    _autoSaveInterval: 30000,
+    _onSaveCallback: null,
 
     init() {
         this._worlds = JSON.parse(localStorage.getItem('worlds') || '[]');
@@ -8,6 +12,62 @@ const Data = {
         if (currentId) {
             this._currentWorld = this._worlds.find(w => w.id === currentId) || null;
         }
+        const savedInterval = localStorage.getItem('autoSaveInterval');
+        if (savedInterval) {
+            this._autoSaveInterval = parseInt(savedInterval, 10);
+        }
+        this._startAutoSave();
+    },
+
+    _startAutoSave() {
+        if (this._autoSaveTimer) {
+            clearInterval(this._autoSaveTimer);
+        }
+        this._autoSaveTimer = setInterval(() => {
+            this._doAutoSave();
+        }, this._autoSaveInterval);
+    },
+
+    _doAutoSave() {
+        if (this._currentWorld) {
+            try {
+                const worldData = localStorage.getItem('world_' + this._currentWorld.id);
+                if (worldData) {
+                    this._lastSaveTime = Date.now();
+                    console.log(`[自动保存] ${new Date().toLocaleTimeString()} - ${this._currentWorld.name}`);
+                    if (this._onSaveCallback) {
+                        this._onSaveCallback(this._lastSaveTime);
+                    }
+                }
+            } catch (e) {
+                console.warn('自动保存失败:', e);
+            }
+        }
+    },
+
+    setAutoSaveInterval(ms) {
+        this._autoSaveInterval = ms;
+        localStorage.setItem('autoSaveInterval', ms.toString());
+        this._startAutoSave();
+    },
+
+    getAutoSaveInterval() {
+        return this._autoSaveInterval;
+    },
+
+    onSave(callback) {
+        this._onSaveCallback = callback;
+    },
+
+    stopAutoSave() {
+        if (this._autoSaveTimer) {
+            clearInterval(this._autoSaveTimer);
+            this._autoSaveTimer = null;
+        }
+    },
+
+    getLastSaveTime() {
+        return this._lastSaveTime;
     },
 
     getWorlds() { return this._worlds; },
@@ -67,7 +127,8 @@ const Data = {
             age: config.age || 18,
             profile: config.profile || {},
             adultProfile: config.adultProfile || {},
-            relationship: {}
+            stats: config.stats || {},
+            relationship: config.relationship || ''
         };
         data.characters = data.characters || [];
         data.characters.push(char);

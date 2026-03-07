@@ -1,0 +1,139 @@
+.shop-header {
+    margin-bottom: 20px;
+}
+
+.shop-money {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 1.2rem;
+    padding: 15px;
+    background: var(--surface);
+    border-radius: 8px;
+}
+
+.money-icon {
+    font-size: 1.5rem;
+}
+
+.money-amount {
+    color: var(--accent);
+    font-weight: bold;
+    font-size: 1.3rem;
+}
+
+.shop-categories {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+    margin-bottom: 20px;
+}
+
+.shop-cat-btn {
+    padding: 8px 16px;
+    border: 1px solid var(--border);
+    background: var(--surface);
+    border-radius: 20px;
+    cursor: pointer;
+    transition: all 0.2s;
+    font-size: 0.9rem;
+}
+
+.shop-cat-btn.active,
+.shop-cat-btn:hover {
+    background: var(--accent);
+    color: white;
+    border-color: var(--accent);
+}
+
+.shop-items {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+    gap: 12px;
+}
+
+.shop-item-card {
+    display: flex;
+    flex-direction: column;
+    padding: 15px;
+    background: var(--surface);
+    border-radius: 8px;
+    border: 1px solid var(--border);
+    transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.shop-item-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.shop-item-icon {
+    font-size: 2.5rem;
+    text-align: center;
+    margin-bottom: 10px;
+}
+
+.shop-item-info {
+    flex: 1;
+    text-align: center;
+    margin-bottom: 10px;
+}
+
+.shop-item-name {
+    font-weight: bold;
+    margin-bottom: 4px;
+    font-size: 1rem;
+}
+
+.shop-item-desc {
+    font-size: 0.75rem;
+    color: var(--text-secondary);
+    margin-bottom: 8px;
+    line-height: 1.4;
+}
+
+.shop-item-price {
+    color: var(--accent);
+    font-weight: bold;
+    font-size: 1.1rem;
+}
+
+.shop-npc-header {
+    margin-bottom: 20px;
+    padding: 15px;
+    background: var(--surface);
+    border-radius: 8px;
+}
+
+.shop-npc-header h3 {
+    margin: 0 0 10px 0;
+}
+
+.shop-npc-header p {
+    margin: 0;
+    color: var(--text-secondary);
+}
+
+.result-message {
+    padding: 15px;
+    margin-top: 15px;
+    background: var(--surface);
+    border-radius: 8px;
+    border-left: 4px solid var(--accent);
+}
+
+.purchased-list {
+    margin-top: 15px;
+}
+
+.purchased-list h4 {
+    margin: 10px 0;
+}
+
+.purchased-item {
+    padding: 8px 12px;
+    margin: 5px 0;
+    background: var(--surface);
+    border-radius: 4px;
+    font-size: 0.9rem;
+}

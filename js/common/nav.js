@@ -12,7 +12,7 @@ const NavSystem = {
                     <button class="nav-btn ${activePage === 'characters' ? 'active' : ''}" onclick="NavSystem.navigate('characters')">👤 角色</button>
                     <button class="nav-btn ${activePage === 'character-editor' ? 'active' : ''}" onclick="NavSystem.navigate('character-editor')">🧩 角色插件</button>
                     <button class="nav-btn ${activePage === 'inventory' ? 'active' : ''}" onclick="NavSystem.navigate('inventory')">🎒 物品</button>
-                    <button class="nav-btn ${activePage === 'task' ? 'active' : ''}" onclick="NavSystem.navigate('task')">📋 任务</button>
+                    <button class="nav-btn ${activePage === 'achievement' ? 'active' : ''}" onclick="NavSystem.navigate('achievement')">🏆 成就</button>
                     <button class="nav-btn ${activePage === 'intimate' ? 'active' : ''}" onclick="NavSystem.navigate('intimate')">💕 亲密互动</button>
                     <button class="nav-btn ${activePage === 'story' ? 'active' : ''}" onclick="NavSystem.navigate('story')">📖 故事</button>
                     <button class="nav-btn ${activePage === 'settings' ? 'active' : ''}" onclick="NavSystem.navigate('settings')">⚙️ 设置</button>
@@ -40,8 +40,8 @@ const NavSystem = {
             case 'inventory':
                 window.location.href = 'inventory/index.html';
                 break;
-            case 'task':
-                window.location.href = 'task/index.html';
+            case 'achievement':
+                window.location.href = 'achievement/index.html';
                 break;
             case 'intimate':
                 window.location.href = 'intimate/index.html';
@@ -62,7 +62,7 @@ const NavSystem = {
     generateFooter() {
         return `
             <div class="footer">
-                <p>AI故事 - 2.0 | 版权所有 © 2026</p>
+                <p>AI故事 - 5.0 | 版权所有 © 2026</p>
             </div>
         `;
     }

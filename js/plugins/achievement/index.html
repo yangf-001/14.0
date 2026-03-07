@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>任务管理 - AI故事</title>
+    <title>成就管理 - AI故事</title>
     <link rel="stylesheet" href="../../../css/main.css">
     <link rel="stylesheet" href="style.css">
 </head>
@@ -58,13 +58,13 @@
                 { page: 'plugins', icon: '🔌', label: '插件', url: '../../../index.html?page=plugins' },
                 { page: 'home', icon: '🏠', label: '首页', url: '../../../index.html' },
                 { page: 'inventory', icon: '🎒', label: '物品', url: '../inventory/index.html' },
-                { page: 'task', icon: '📋', label: '任务', url: '' },
+                { page: 'achievement', icon: '🏆', label: '成就', url: '' },
                 { page: 'settings', icon: '⚙️', label: '设置', url: '../../../index.html?page=settings' }
             ];
             
             function init() {
                 setupMobileNav();
-                renderTaskPage();
+                renderAchievementPage();
             }
 
             function setupMobileNav() {
@@ -88,56 +88,35 @@
                 });
             }
 
-            function renderTaskPage() {
+            function renderAchievementPage() {
                 const world = Data.getCurrentWorld();
                 const main = document.getElementById('mainContent');
                 
                 if (!world) {
-                    main.innerHTML = `<h2>任务管理</h2><p class="desc">请先选择一个世界</p><div class="empty">请先在"世界"页面选择一个世界</div>`;
+                    main.innerHTML = `<h2>成就管理</h2><p class="desc">请先选择一个世界</p><div class="empty">请先在"世界"页面选择一个世界</div>`;
                     return;
                 }
                 
-                const tasksHtml = View.render('task.main', world.id);
+                const achievementsHtml = View.render('achievement.main', world.id);
                 
                 main.innerHTML = `
-                    <h2>任务管理</h2>
+                    <h2>成就管理</h2>
                     <p class="desc">当前世界：${world.name}</p>
                     
-                    <div id="taskContent">
-                        ${tasksHtml}
+                    <div id="achievementContent">
+                        ${achievementsHtml}
                     </div>
                 `;
             }
 
             window.closeModal = function() {
                 document.getElementById('modal').classList.remove('active');
-                // 重新渲染页面以更新任务列表
-                renderTaskPage();
+                renderAchievementPage();
             };
 
-            // 暴露必要的函数给ViewCallbacks
-            window.ViewCallbacks = window.ViewCallbacks || {};
-            window.ViewCallbacks.task = {
-                showAdd() {
-                    document.getElementById('modalTitle').textContent = '添加任务';
-                    document.getElementById('modalBody').innerHTML = View.render('task.add');
-                    document.getElementById('modal').classList.add('active');
-                },
-                
-                add() {
-                    const world = Data.getCurrentWorld();
-                    const title = document.getElementById('taskTitle').value;
-                    if (!title) return;
-                    
-                    const plugin = PluginSystem.get('task');
-                    plugin?.addTask(world.id, {
-                        title,
-                        description: document.getElementById('taskDesc').value,
-                        maxProgress: parseInt(document.getElementById('taskMax').value) || 1
-                    });
-                    
-                    closeModal();
-                }
+            window.showCharAchievements = function() {
+                renderAchievementPage();
+                document.getElementById('modal').classList.remove('active');
             };
 
             init();

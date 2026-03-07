@@ -61,6 +61,7 @@
             appearance: null,
             sensitive: null,
             fetish: null,
+            fantasy: null,
             limits: null,
             gender: null,
             age: null,
@@ -79,6 +80,7 @@
                 this.appearance = await this.loadFile(basePath + 'appearance.txt');
                 this.sensitive = await this.loadFile(basePath + 'sensitive.txt');
                 this.fetish = await this.loadFile(basePath + 'fetish.txt');
+                this.fantasy = await this.loadFile(basePath + 'fantasy.txt');
                 this.limits = await this.loadFile(basePath + 'limits.txt');
                 this.gender = await this.loadFile(basePath + 'gender.txt');
                 this.age = await this.loadFile(basePath + 'age.txt');
@@ -132,8 +134,16 @@
             },
             
             showPresetPicker(fieldId, isMulti = false) {
+                if (!this.role) {
+                    this.load();
+                }
+                
                 let presetData;
-                switch(fieldId) {
+                let actualFieldId = fieldId;
+                if (fieldId.startsWith('editChar')) {
+                    actualFieldId = 'char' + fieldId.substring(8);
+                }
+                switch(actualFieldId) {
                     case 'charRole': presetData = this.role; break;
                     case 'charPersonality': presetData = this.personality; break;
                     case 'charHobby': presetData = this.hobby; break;
@@ -142,6 +152,7 @@
                     case 'charAppearance': presetData = this.appearance; break;
                     case 'charSensitive': presetData = this.sensitive; break;
                     case 'charFetish': presetData = this.fetish; break;
+                    case 'charFantasy': presetData = this.fantasy; break;
                     case 'charLimits': presetData = this.limits; break;
                     case 'charGender': presetData = this.gender; break;
                     case 'charAge': presetData = this.age; break;
@@ -152,21 +163,24 @@
                     default: return;
                 }
                 
+                if (!presetData || Object.keys(presetData).length === 0) {
+                    return;
+                }
+                
                 const field = document.getElementById(fieldId);
                 let currentValues = [];
                 
                 if (field) {
-                    if (field.tagName === 'INPUT') {
-                        isMulti = true;
-                        if (field.value) {
+                    if (field.tagName === 'INPUT' || field.tagName === 'TEXTAREA') {
+                        if (isMulti && field.value) {
                             currentValues = field.value.split('、').filter(v => v.trim());
+                        } else if (field.value) {
+                            currentValues.push(field.value);
                         }
                     } else if (isMulti && field.tagName === 'DIV') {
                         field.querySelectorAll('.selected-tag').forEach(tag => {
                             currentValues.push(tag.dataset.value);
                         });
-                    } else if (field.value) {
-                        currentValues.push(field.value);
                     }
                 }
                 
@@ -205,23 +219,26 @@
                 const field = document.getElementById(fieldId);
                 if (!field) return;
                 
-                if (isMulti || field.tagName === 'INPUT') {
+                if (isMulti || field.tagName === 'INPUT' || field.tagName === 'TEXTAREA') {
                     const currentValue = field.value || '';
                     const values = currentValue ? currentValue.split('、').filter(v => v.trim()) : [];
                     
-                    if (!values.includes(name)) {
-                        values.push(name);
-                        field.value = values.join('、');
+                    const existingIdx = values.indexOf(name);
+                    if (existingIdx >= 0) {
+                        values.splice(existingIdx, 1);
                     } else {
-                        const idx = values.indexOf(name);
-                        values.splice(idx, 1);
-                        field.value = values.join('、');
+                        values.push(name);
                     }
+                    field.value = values.join('、');
                     
-                    document.getElementById('presetModal').classList.remove('active');
+                    field.dispatchEvent(new Event('change', { bubbles: true }));
+                    
+                    this.updateSelectedDisplay(fieldId);
+                    this.refreshPickerButtons(fieldId);
                 } else {
                     if (field) {
                         field.value = name;
+                        field.dispatchEvent(new Event('change', { bubbles: true }));
                     }
                     document.getElementById('presetModal').classList.remove('active');
                 }
@@ -232,24 +249,50 @@
                 const display = document.getElementById('selectedPresets');
                 if (!field || !display) return;
                 
-                const selected = [];
-                field.querySelectorAll('.selected-tag').forEach(tag => {
-                    selected.push(tag.dataset.value);
-                });
-                display.innerHTML = selected.map(s => `<span style="padding:4px 8px;background:var(--accent);color:var(--bg);border-radius:4px;font-size:0.75rem;">${s}</span>`).join('');
+                let selected = [];
+                if (field.tagName === 'INPUT') {
+                    const val = field.value || '';
+                    selected = val ? val.split('、').filter(v => v.trim()) : [];
+                } else {
+                    field.querySelectorAll('.selected-tag').forEach(tag => {
+                        selected.push(tag.dataset.value);
+                    });
+                }
+                display.innerHTML = selected.map(s => `<span style="padding:4px 8px;background:var(--accent);color:var(--bg);border-radius:4px;font-size:0.75rem;margin:2px;cursor:pointer;" onclick="CharacterPresets.removeSelected('${fieldId}', '${s}')" title="点击移除">${s} ×</span>`).join('');
+            },
+            
+            removeSelected(fieldId, value) {
+                const field = document.getElementById(fieldId);
+                if (!field || field.tagName !== 'INPUT') return;
+                
+                const currentValue = field.value || '';
+                const values = currentValue ? currentValue.split('、').filter(v => v.trim()) : [];
+                const idx = values.indexOf(value);
+                if (idx >= 0) {
+                    values.splice(idx, 1);
+                    field.value = values.join('、');
+                }
+                
+                this.updateSelectedDisplay(fieldId);
+                this.refreshPickerButtons(fieldId);
             },
             
             refreshPickerButtons(fieldId) {
                 const field = document.getElementById(fieldId);
                 if (!field) return;
                 
-                const selected = [];
-                field.querySelectorAll('.selected-tag').forEach(tag => {
-                    selected.push(tag.dataset.value);
-                });
+                let selected = [];
+                if (field.tagName === 'INPUT') {
+                    const val = field.value || '';
+                    selected = val ? val.split('、').filter(v => v.trim()) : [];
+                } else {
+                    field.querySelectorAll('.selected-tag').forEach(tag => {
+                        selected.push(tag.dataset.value);
+                    });
+                }
                 
                 document.querySelectorAll('#presetModalBody .btn-secondary').forEach(btn => {
-                    const name = btn.textContent.replace(' ✓', '').replace(' ×', '');
+                    const name = btn.textContent.replace(' ✓', '').replace(' ×', '').trim();
                     const isSelected = selected.includes(name);
                     if (isSelected) {
                         btn.classList.add('active');
@@ -322,6 +365,8 @@
         };
         
         CharacterPresets.load();
+        
+        window.CharacterPresets = CharacterPresets;
         
         (function() {
             const mobileNavItems = [
@@ -446,7 +491,15 @@
                             <div class="form-group">
                                 <label>角色定位</label>
                                 <div style="display:flex;gap:4px;">
-                                    <select id="charRole"><option value="主角">主角</option><option value="女主">女主</option><option value="配角">配角</option></select>
+                                    <input type="text" id="charRole" placeholder="主角/女主/配角/反派等" list="roleOptions">
+                                    <datalist id="roleOptions">
+                                        <option value="主角">
+                                        <option value="女主">
+                                        <option value="配角">
+                                        <option value="反派">
+                                        <option value="导师">
+                                        <option value="对手">
+                                    </datalist>
                                     <button type="button" class="btn btn-secondary" onclick="CharacterPresets.showPresetPicker('charRole')" title="选择预设" style="padding:4px 8px;">📋</button>
                                 </div>
                             </div>
@@ -481,7 +534,10 @@
                         </div>
                         <div class="form-group">
                             <label>外貌描述</label>
-                            <div id="charAppearance" style="display:flex;flex-wrap:wrap;gap:4px;min-height:60px;padding:8px;border:1px solid var(--border);border-radius:4px;"></div>
+                            <div style="display:flex;gap:4px;">
+                                <input type="text" id="charAppearance" placeholder="选择预设或输入自定义" style="flex:1;">
+                                <button type="button" class="btn btn-secondary" onclick="CharacterPresets.showPresetPicker('charAppearance', true)" title="选择预设" style="padding:4px 8px;">📋</button>
+                            </div>
                             <button type="button" class="btn btn-secondary" onclick="CharacterPresets.showPresetPicker('charAppearance', true)" title="选择预设" style="margin-top:4px;">📋 选择预设</button>（多选）
                         </div>
                     </div>
@@ -509,7 +565,7 @@
                             html += '<div class="form-group"><label>角色名 *</label><input type="text" id="charName" placeholder="例如：小美"></div>';
                             html += '<div class="form-grid">';
                             html += '<div class="form-group"><label>性别</label><div style="display:flex;gap:4px;"><select id="charGender"><option value="女">女</option><option value="男">男</option><option value="扶她">扶她</option></select><button type="button" class="btn btn-secondary" onclick="CharacterPresets.showPresetPicker(\'charGender\')" title="选择预设" style="padding:4px 8px;">📋</button></div></div>';
-                            html += '<div class="form-group"><label>角色定位</label><div style="display:flex;gap:4px;"><select id="charRole"><option value="主角">主角</option><option value="女主">女主</option><option value="配角">配角</option></select><button type="button" class="btn btn-secondary" onclick="CharacterPresets.showPresetPicker(\'charRole\')" title="选择预设" style="padding:4px 8px;">📋</button></div></div>';
+                            html += '<div class="form-group"><label>角色定位</label><div style="display:flex;gap:4px;"><input type="text" id="charRole" placeholder="主角/女主/配角/反派等" list="roleOptions"><datalist id="roleOptions"><option value="主角"><option value="女主"><option value="配角"><option value="反派"><option value="导师"><option value="对手"></datalist><button type="button" class="btn btn-secondary" onclick="CharacterPresets.showPresetPicker(\'charRole\')" title="选择预设" style="padding:4px 8px;">📋</button></div></div>';
                             html += '<div class="form-group"><label>年龄</label><div style="display:flex;gap:4px;"><input type="number" id="charAge" value="18"><button type="button" class="btn btn-secondary" onclick="CharacterPresets.showPresetPicker(\'charAge\')" title="选择预设" style="padding:4px 8px;">📋</button></div></div>';
                             html += '<div class="form-group"><label>种族</label><div style="display:flex;gap:4px;"><input type="text" id="charRace" placeholder="例如：人类"><button type="button" class="btn btn-secondary" onclick="CharacterPresets.showPresetPicker(\'charRace\')" title="选择预设" style="padding:4px 8px;">📋</button></div></div>';
                             html += '<div class="form-group"><label>职业</label><div style="display:flex;gap:4px;"><input type="text" id="charOccupation" placeholder="例如：学生"><button type="button" class="btn btn-secondary" onclick="CharacterPresets.showPresetPicker(\'charOccupation\')" title="选择预设" style="padding:4px 8px;">📋</button></div></div>';
@@ -529,8 +585,8 @@
                             html += '<div class="form-group"><label>性取向</label><select id="charSexuality"><option value="异性恋">异性恋</option><option value="同性恋">同性恋</option><option value="双性恋">双性恋</option></select></div>';
                             html += '<div class="form-group"><label>敏感部位</label><div style="display:flex;gap:4px;"><input type="text" id="charSensitive" placeholder="例如：耳朵、颈部"><button type="button" class="btn btn-secondary" onclick="CharacterPresets.showPresetPicker(\'charSensitive\')" title="选择预设" style="padding:4px 8px;">📋</button></div></div>';
                             html += '<div class="form-group"><label>性癖好</label><div style="display:flex;gap:4px;"><input type="text" id="charFetish" placeholder="例如：制服、玩具"><button type="button" class="btn btn-secondary" onclick="CharacterPresets.showPresetPicker(\'charFetish\')" title="选择预设" style="padding:4px 8px;">📋</button></div></div>';
+                            html += '<div class="form-group"><label>性幻想</label><div style="display:flex;gap:4px;"><input type="text" id="charFantasy" placeholder="例如：海边度假、浪漫温情"><button type="button" class="btn btn-secondary" onclick="CharacterPresets.showPresetPicker(\'charFantasy\')" title="选择预设" style="padding:4px 8px;">📋</button></div></div>';
                             html += '<div class="form-group"><label>底线/雷区</label><div style="display:flex;gap:4px;"><input type="text" id="charLimits" placeholder="例如：不愿意、底线"><button type="button" class="btn btn-secondary" onclick="CharacterPresets.showPresetPicker(\'charLimits\')" title="选择预设" style="padding:4px 8px;">📋</button></div></div>';
-                            html += '<div class="form-group"><label>性幻想</label><textarea id="charFantasies" rows="2" placeholder="描述角色的性幻想..."></textarea></div>';
                         }
                         content.innerHTML = html;
                         restoreTabData(tab);
@@ -541,7 +597,6 @@
             const characterFormData = {};
             
             function saveCurrentTabData(tab) {
-                if (characterFormData[tab]) return;
                 characterFormData[tab] = {};
                 if (tab === 'basic') {
                     const ids = ['charName', 'charGender', 'charRole', 'charAge', 'charRace', 'charOccupation', 'charHeight'];
@@ -576,11 +631,19 @@
                     if (sensitiveEl) characterFormData[tab].charSensitive = sensitiveEl.value;
                     const fetishEl = document.getElementById('charFetish');
                     if (fetishEl) characterFormData[tab].charFetish = fetishEl.value;
+                    const fantasyEl = document.getElementById('charFantasy');
+                    if (fantasyEl) characterFormData[tab].charFantasy = fantasyEl.value;
                     const limitsEl = document.getElementById('charLimits');
                     if (limitsEl) characterFormData[tab].charLimits = limitsEl.value;
                     const fantasiesEl = document.getElementById('charFantasies');
                     if (fantasiesEl) characterFormData[tab].charFantasies = fantasiesEl.value;
                 }
+            }
+
+            function saveAllTabsData() {
+                ['basic', 'personality', 'background', 'adult'].forEach(tab => {
+                    saveCurrentTabData(tab);
+                });
             }
             
             function restoreTabData(tab) {
@@ -607,8 +670,8 @@
                     if (characterFormData[tab].charSexuality) document.getElementById('charSexuality').value = characterFormData[tab].charSexuality;
                     if (characterFormData[tab].charSensitive) document.getElementById('charSensitive').value = characterFormData[tab].charSensitive;
                     if (characterFormData[tab].charFetish) document.getElementById('charFetish').value = characterFormData[tab].charFetish;
+                    if (characterFormData[tab].charFantasy) document.getElementById('charFantasy').value = characterFormData[tab].charFantasy;
                     if (characterFormData[tab].charLimits) document.getElementById('charLimits').value = characterFormData[tab].charLimits;
-                    if (characterFormData[tab].charFantasies) document.getElementById('charFantasies').value = characterFormData[tab].charFantasies;
                 }
             }
             
@@ -637,9 +700,7 @@
                 }
                 const name = nameInput.value;
                 
-                ['basic', 'personality', 'background', 'adult'].forEach(tab => {
-                     saveCurrentTabData(tab);
-                 });
+                saveAllTabsData();
                 
                 const profile = {
                     race: characterFormData.basic?.charRace || document.getElementById('charRace')?.value || '',
@@ -655,21 +716,29 @@
                 };
                 
                 const adultProfile = {};
+                const hasAdultData = characterFormData.adult && (
+                    characterFormData.adult.charSexuality || 
+                    characterFormData.adult.charSensitive || 
+                    characterFormData.adult.charFetish ||
+                    characterFormData.adult.charFantasy ||
+                    characterFormData.adult.charLimits
+                );
                 const sexualityEl = document.getElementById('charSexuality');
-                if (sexualityEl || characterFormData.adult) {
+                const sensitiveEl = document.getElementById('charSensitive');
+                
+                if (sexualityEl || sensitiveEl || hasAdultData) {
                     adultProfile.sexuality = characterFormData.adult?.charSexuality || sexualityEl?.value || '异性恋';
-                    
-                    adultProfile.sensitiveParts = characterFormData.adult?.charSensitive || document.getElementById('charSensitive')?.value || '';
+                    adultProfile.sensitiveParts = characterFormData.adult?.charSensitive || sensitiveEl?.value || '';
                     adultProfile.fetish = characterFormData.adult?.charFetish || document.getElementById('charFetish')?.value || '';
+                    adultProfile.fantasies = characterFormData.adult?.charFantasies || document.getElementById('charFantasy')?.value || '';
                     adultProfile.limits = characterFormData.adult?.charLimits || document.getElementById('charLimits')?.value || '';
-                    adultProfile.fantasies = characterFormData.adult?.charFantasies || document.getElementById('charFantasies')?.value || '';
                 }
                 
                 Data.createCharacter(world.id, {
                     name,
-                    gender: document.getElementById('charGender')?.value || characterFormData.basic?.charGender || '女',
-                    role: document.getElementById('charRole')?.value || characterFormData.basic?.charRole || '配角',
-                    age: parseInt(document.getElementById('charAge')?.value) || characterFormData.basic?.charAge || 18,
+                    gender: characterFormData.basic?.charGender || document.getElementById('charGender')?.value || '女',
+                    role: characterFormData.basic?.charRole || document.getElementById('charRole')?.value || '配角',
+                    age: parseInt(characterFormData.basic?.charAge) || parseInt(document.getElementById('charAge')?.value) || 18,
                     profile,
                     adultProfile,
                     relationship: characterFormData.background?.charRelationship || document.getElementById('charRelationship')?.value || ''
@@ -729,8 +798,9 @@
                         <textarea id="charJson" rows="10" placeholder="粘贴角色JSON数据"></textarea>
                     </div>
                     <div class="form-group">
-                        <label>或选择文件导入</label>
-                        <input type="file" id="charJsonFile" accept=".json" onchange="importCharacterFromFile()">
+                        <label>或选择多个文件导入（支持批量导入）</label>
+                        <input type="file" id="charJsonFile" accept=".json" multiple onchange="importCharacterFromFile()">
+                        <div id="selectedFiles" style="margin-top: 8px; color: var(--text-secondary);"></div>
                     </div>
                     <button class="btn" onclick="importCharacter()">导入</button>
                 `;
@@ -739,19 +809,63 @@
 
             window.importCharacterFromFile = function() {
                 const fileInput = document.getElementById('charJsonFile');
-                const file = fileInput.files[0];
-                if (!file) return;
+                const files = fileInput.files;
+                const selectedFilesDiv = document.getElementById('selectedFiles');
                 
-                const reader = new FileReader();
-                reader.onload = function(e) {
-                    document.getElementById('charJson').value = e.target.result;
-                };
-                reader.readAsText(file);
+                if (files.length === 0) return;
+                
+                if (files.length === 1) {
+                    const file = files[0];
+                    const reader = new FileReader();
+                    reader.onload = function(e) {
+                        document.getElementById('charJson').value = e.target.result;
+                    };
+                    reader.readAsText(file);
+                    selectedFilesDiv.textContent = `已选择: ${file.name}`;
+                } else {
+                    selectedFilesDiv.textContent = `已选择 ${files.length} 个文件`;
+                }
             };
 
             window.importCharacter = function() {
                 const world = Data.getCurrentWorld();
                 if (!world) return;
+                const fileInput = document.getElementById('charJsonFile');
+                const files = fileInput.files;
+                
+                if (files.length > 1) {
+                    let loadedCount = 0;
+                    let successCount = 0;
+                    let errorCount = 0;
+                    
+                    Array.from(files).forEach(file => {
+                        const reader = new FileReader();
+                        reader.onload = function(e) {
+                            try {
+                                const charData = JSON.parse(e.target.result);
+                                if (charData.relationship && typeof charData.relationship === 'object') {
+                                    const relStr = JSON.stringify(charData.relationship);
+                                    charData.relationship = relStr === '{}' ? '' : relStr;
+                                }
+                                Data.createCharacter(world.id, charData);
+                                successCount++;
+                            } catch (err) {
+                                errorCount++;
+                                console.error(`导入 ${file.name} 失败:`, err);
+                            }
+                            
+                            loadedCount++;
+                            if (loadedCount === files.length) {
+                                alert(`导入完成：成功 ${successCount} 个，失败 ${errorCount} 个`);
+                                closeModal();
+                                renderCharacterEditorPage();
+                            }
+                        };
+                        reader.readAsText(file);
+                    });
+                    return;
+                }
+                
                 const jsonStr = document.getElementById('charJson').value;
                 if (!jsonStr) {
                     alert('请输入角色JSON数据');
@@ -759,6 +873,10 @@
                 }
                 try {
                     const charData = JSON.parse(jsonStr);
+                    if (charData.relationship && typeof charData.relationship === 'object') {
+                        const relStr = JSON.stringify(charData.relationship);
+                        charData.relationship = relStr === '{}' ? '' : relStr;
+                    }
                     Data.createCharacter(world.id, charData);
                     alert('角色导入成功');
                     closeModal();
@@ -831,6 +949,7 @@
 
             window.closeModal = function() {
                 document.getElementById('modal').classList.remove('active');
+                for (let key in characterFormData) delete characterFormData[key];
                 renderCharacterEditorPage();
             };
 

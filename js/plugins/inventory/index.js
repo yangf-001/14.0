@@ -12,7 +12,7 @@ PluginSystem.register('inventory', {
         if (library.length > 0 && !force) return Promise.resolve();
         
         try {
-            const response = await fetch('user-content/items.txt');
+            const response = await fetch('./user-content/items.txt');
             const text = await response.text();
             const items = this._parseItemsText(text);
             if (items.length > 0) {
@@ -172,25 +172,53 @@ PluginSystem.register('inventory', {
         localStorage.setItem(key, JSON.stringify(inventory));
     },
     
-    useItem(worldId, characterId, itemId) {
+    useItem(worldId, characterId, itemId, options = {}) {
         const items = this.getItems(worldId, characterId);
         const item = items.find(i => i.id === itemId);
         
         if (!item) return false;
         
-        return this._applyItemEffects(worldId, characterId, item);
+        const targetCharId = options.targetCharId || characterId;
+        const userCharId = options.userCharId || null;
+        const generateStory = options.generateStory !== false;
+        
+        if (generateStory && Story.isOngoing()) {
+            Story.useItemInStory(item, targetCharId, userCharId).then(() => {
+                this._applyItemEffectsOnly(worldId, targetCharId, item);
+            }).catch(err => {
+                console.error('生成物品使用剧情失败:', err);
+                this._applyItemEffectsOnly(worldId, targetCharId, item);
+            });
+            return { generating: true, item };
+        }
+        
+        return this._applyItemEffectsOnly(worldId, targetCharId, item);
     },
     
-    useItemByName(worldId, characterId, itemName) {
+    useItemByName(worldId, characterId, itemName, options = {}) {
         const items = this.getItems(worldId, characterId);
         const item = items.find(i => i.name === itemName);
         
         if (!item) return false;
         
-        return this._applyItemEffects(worldId, characterId, item);
+        const targetCharId = options.targetCharId || characterId;
+        const userCharId = options.userCharId || null;
+        const generateStory = options.generateStory !== false;
+        
+        if (generateStory && Story.isOngoing()) {
+            Story.useItemInStory(item, targetCharId, userCharId).then(() => {
+                this._applyItemEffectsOnly(worldId, targetCharId, item);
+            }).catch(err => {
+                console.error('生成物品使用剧情失败:', err);
+                this._applyItemEffectsOnly(worldId, targetCharId, item);
+            });
+            return { generating: true, item };
+        }
+        
+        return this._applyItemEffectsOnly(worldId, targetCharId, item);
     },
     
-    _applyItemEffects(worldId, characterId, item) {
+    _applyItemEffectsOnly(worldId, characterId, item) {
         const char = Data.getCharacter(worldId, characterId);
         if (!char) return false;
         
@@ -214,5 +242,9 @@ PluginSystem.register('inventory', {
         this.removeItem(worldId, characterId, item.id);
         
         return true;
+    },
+    
+    _applyItemEffects(worldId, characterId, item) {
+        return this._applyItemEffectsOnly(worldId, characterId, item);
     }
 });

@@ -75,6 +75,30 @@ class AI {
     }
 
     buildSystemPrompt(settings) {
+        const world = Data.getCurrentWorld();
+        const worldId = world?.id;
+        
+        if (typeof StoryConfigPlugin !== 'undefined') {
+            const pluginPrompt = StoryConfigPlugin.getWorldSystemPrompt(worldId);
+            if (pluginPrompt) {
+                const s = settings.content || {};
+                let additionalPrompt = '';
+                
+                if (s.tone) additionalPrompt += `\n风格基调：${s.tone}`;
+                if (s.detailLevel) additionalPrompt += `\n描写详细程度：${s.detailLevel}`;
+                if (s.intimacy && s.intimacy > 0) {
+                    const levels = ['纯爱', '暧昧', '亲密', '热烈', '激情'];
+                    additionalPrompt += `\n亲密程度：${levels[Math.min(4, Math.floor(s.intimacy / 25))] || '纯爱'}`;
+                }
+                
+                if (s.forbidden && s.forbidden.length > 0) {
+                    additionalPrompt += `\n禁止内容：${s.forbidden.join('、')}`;
+                }
+                
+                return pluginPrompt + additionalPrompt;
+            }
+        }
+        
         const s = settings.content || {};
         let prompt = '你是一个故事生成AI。';
         

@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>商店 - AI故事</title>
+    <link rel="stylesheet" href="../../../css/main.css">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="app">
+        <div class="sidebar">
+            <h1>✨ AI故事</h1>
+            <nav>
+                <button class="nav-btn" onclick="window.location.href='../../../index.html?page=plugins'">⬅️ 返回</button>
+                <button class="nav-btn" onclick="window.location.href='../../../index.html'">🏠 首页</button>
+                <button class="nav-btn" onclick="window.location.href='../../../index.html?page=worlds'">🌍 世界</button>
+                <button class="nav-btn" onclick="window.location.href='../../../index.html?page=characters'">👤 角色</button>
+                <button class="nav-btn" onclick="window.location.href='../character-editor/index.html'">🧩 角色插件</button>
+                <button class="nav-btn" onclick="window.location.href='../../../index.html?page=story'">📖 故事</button>
+                <button class="nav-btn" onclick="window.location.href='../../../index.html?page=settings'">⚙️ 设置</button>
+                <button class="nav-btn" onclick="window.location.href='../../../index.html?page=plugins'">🔌 插件</button>
+            </nav>
+        </div>
+        
+        <div class="main" id="mainContent">
+            <h2>商店</h2>
+            <p class="desc">购买物品的地方</p>
+        </div>
+        
+        <div class="right">
+            <div id="rightPanel"></div>
+        </div>
+    </div>
+    
+    <div class="modal" id="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 id="modalTitle">标题</h3>
+                <button class="modal-close" onclick="closeModal()">×</button>
+            </div>
+            <div id="modalBody"></div>
+        </div>
+    </div>
+
+    <div class="mobile-nav" id="mobileNav"></div>
+
+    <script src="../../plugin.js"></script>
+    <script src="../../view.js"></script>
+    <script src="../../ai.js"></script>
+    <script src="../../data.js"></script>
+    <script src="../../settings.js"></script>
+    <script src="../../story.js"></script>
+    
+    <script src="../inventory/index.js"></script>
+    
+    <script src="index.js"></script>
+    <script src="view.js"></script>
+    
+    <script>
+        const mobileNavItems = [
+            { page: 'plugins', icon: '🔌', label: '插件', url: '../../../index.html?page=plugins' },
+            { page: 'home', icon: '🏠', label: '首页', url: '../../../index.html' },
+            { page: 'shop', icon: '🏪', label: '商店', url: '' },
+            { page: 'inventory', icon: '🎒', label: '物品', url: '../inventory/index.html' },
+            { page: 'achievement', icon: '🏆', label: '成就', url: '../achievement/index.html' },
+            { page: 'settings', icon: '⚙️', label: '设置', url: '../../../index.html?page=settings' }
+        ];
+        
+        function init() {
+            setupMobileNav();
+            renderShopPage();
+        }
+
+        function setupMobileNav() {
+            const mobileNav = document.getElementById('mobileNav');
+            if (!mobileNav) return;
+            
+            mobileNav.innerHTML = mobileNavItems.map(item => `
+                <button class="mobile-nav-btn ${item.url === '' ? 'active' : ''}" data-url="${item.url}">
+                    <span class="icon">${item.icon}</span>
+                    <span class="label">${item.label}</span>
+                </button>
+            `).join('');
+            
+            mobileNav.querySelectorAll('.mobile-nav-btn').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    const url = btn.dataset.url;
+                    if (url) {
+                        window.location.href = url;
+                    }
+                });
+            });
+        }
+
+        function renderShopPage() {
+            const world = Data.getCurrentWorld();
+            const main = document.getElementById('mainContent');
+            
+            if (!world) {
+                main.innerHTML = `<h2>商店</h2><p class="desc">购买物品的地方</p><div class="empty">请先选择一个世界</div>`;
+                return;
+            }
+            
+            const chars = Data.getCharacters(world.id);
+            const mainChar = chars.find(c => c.role === '主角');
+            
+            if (!mainChar) {
+                main.innerHTML = `<h2>商店</h2><p class="desc">购买物品的地方</p><div class="empty">当前世界没有主角，请先创建主角</div>`;
+                return;
+            }
+            
+            const plugin = PluginSystem.get('shop');
+            if (!plugin) {
+                main.innerHTML = `<h2>商店</h2><p class="desc">购买物品的地方</p><div class="empty">商店插件未加载</div>`;
+                return;
+            }
+            
+            const goods = plugin.getGoodsLibrary();
+            if (goods.length === 0) {
+                main.innerHTML = `<h2>商店</h2><p class="desc">购买物品的地方</p><div class="empty">正在加载商品...</div>`;
+                setTimeout(() => renderShopPage(), 500);
+                return;
+            }
+            
+            main.innerHTML = View.render('shop.main', world.id, mainChar.id);
+            
+            setTimeout(() => {
+                const shopCallbacks = window.ViewCallbacks?.shop;
+                if (shopCallbacks?.initShopFilters) {
+                    shopCallbacks.initShopFilters();
+                }
+            }, 100);
+        }
+
+        function closeModal() {
+            document.getElementById('modal').classList.remove('active');
+        }
+
+        document.addEventListener('DOMContentLoaded', function() {
+            Data.init();
+            PluginSystem.init().then(() => {
+                init();
+            });
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,203 @@
+# 商品库预设模板
+# 格式：名称|类型|描述|效果|价格
+# 类型：misc(杂物) food(食物) potion(药水) weapon(武器) tool(工具) adult(成人物品)
+# 效果：health(生命) energy(体力) charm(魅力) intelligence(智力) strength(力量) affection(好感) sexArousal(性欲望) sexLibido(性欲) sexSensitivity(敏感度) agility(敏捷)
+
+[药水-恢复]
+治疗药水|potion|恢复生命值的疗伤药|{"health": 30}|50
+大治疗药水|potion|大量恢复生命值的疗伤药|{"health": 60}|100
+超级治疗药水|potion|瞬间恢复大量生命的圣药|{"health": 100}|200
+魔法药水|potion|恢复体力的神奇药水|{"energy": 30}|50
+大魔法药水|potion|大量恢复体力的神奇药水|{"energy": 60}|100
+超级魔法药水|potion|恢复大量体力的神奇药水|{"energy": 100}|200
+恢复药水|potion|全面恢复状态的药水|{"health": 25, "energy": 25}|80
+完全恢复药水|potion|完全恢复所有状态的药水|{"health": 50, "energy": 50}|150
+解毒药水|potion|解除中毒状态的药水|{"health": 10}|30
+清醒药水|potion|解除混乱状态的药水|{"intelligence": 10}|40
+圣水|potion|神圣的清水|{"health": 50}|120
+神圣圣水|potion|高度神圣的水|{"health": 80}|180
+月光露水|potion|月光凝聚的露水|{"health": 40, "energy": 20}|100
+太阳圣水|potion|蕴含太阳能量的圣水|{"health": 60, "charm": 10}|150
+生命之泉|potion|传说中的生命泉水|{"health": 100, "energy": 100}|300
+冰心泉水|potion|冰凉的山泉水|{"health": 35, "energy": 15}|80
+温泉水|potion|天然的温泉水|{"health": 45, "energy": 30}|120
+灵泉|potion|蕴含灵气的泉水|{"health": 50, "intelligence": 10}|130
+治愈之露|potion|治愈伤口的露水|{"health": 55}|110
+
+[药水-增益]
+魅力药水|potion|提升个人魅力的魔药|{"charm": 20}|80
+大魅力药水|potion|大幅提升个人魅力的魔药|{"charm": 40}|160
+超级魅力药水|potion|极致提升魅力的魔药|{"charm": 60}|280
+永恒魅力药水|potion|永久提升魅力的神圣药水|{"charm": 80}|400
+智力药水|potion|提升智力的魔法药剂|{"intelligence": 20}|80
+大智力药水|potion|大幅提升智力的魔法药剂|{"intelligence": 40}|160
+超级智力药水|potion|极致提升智力的魔法药剂|{"intelligence": 60}|280
+智慧源泉|potion|获得智慧源泉的魔法药剂|{"intelligence": 80}|400
+力量药水|potion|增强力量的魔药|{"strength": 20}|80
+大力量药水|potion|大幅增强力量的魔药|{"strength": 40}|160
+超级力量药水|potion|极致增强力量的魔药|{"strength": 60}|280
+泰坦之力|potion|获得泰坦般的力量|{"strength": 80}|400
+敏捷药水|potion|提升敏捷的身法药剂|{"agility": 20}|80
+大敏捷药水|potion|大幅提升敏捷的身法药剂|{"agility": 40}|160
+超级敏捷药水|potion|极致提升敏捷的药剂|{"agility": 60}|280
+风之速|potion|拥有风一般的速度|{"agility": 80}|400
+全能药水|potion|全属性提升的神奇药水|{"health": 15, "energy": 15, "charm": 15, "intelligence": 15, "strength": 15}|200
+完美强化药水|potion|全属性大幅提升|{"health": 30, "energy": 30, "charm": 30, "intelligence": 30, "strength": 30, "agility": 30}|350
+神之祝福|potion|获得神的祝福|{"health": 50, "energy": 50, "charm": 50, "intelligence": 50, "strength": 50, "agility": 50}|500
+龙之血脉药水|potion|获得龙的血脉|{"strength": 45, "charm": 30, "health": 40}|280
+凤凰之血药水|potion|获得凤凰的力量|{"charm": 45, "intelligence": 35, "energy": 40}|280
+精灵之露|potion|精灵族的秘药|{"agility": 40, "charm": 35, "intelligence": 30}|260
+贤者智慧药水|potion|贤者的智慧|{"intelligence": 50, "charm": 20}|220
+帝王之气药水|potion|帝王般的气质|{"charm": 50, "strength": 25, "intelligence": 20}|260
+
+[药水-特殊]
+媚药|adult|让人产生好感的药水|{"charm": 15, "affection": 10}|100
+魅惑药水|adult|增强魅惑能力的药水|{"charm": 25, "sexArousal": 15}|150
+催情药水|adult|激发欲望的粉色药水|{"sexArousal": 25, "sexLibido": 20}|180
+春药|adult|激发性欲的药物|{"sexArousal": 30, "sexLibido": 25}|200
+媚药酒|adult|添加了媚药的酒水|{"charm": 10, "energy": 10, "affection": 15}|120
+
+[食物-水果]
+苹果|food|新鲜的红苹果|{"health": 10, "energy": 5}|15
+梨|food|甘甜多汁的梨|{"health": 8, "energy": 5}|12
+香蕉|food|营养丰富的水果|{"energy": 12}|15
+葡萄|food|一串紫葡萄|{"health": 8, "energy": 8}|18
+橙子|food|富含维生素C|{"health": 12}|15
+西瓜|food|清凉解渴的大西瓜|{"health": 15, "energy": 10}|25
+草莓|food|新鲜的草莓|{"health": 6, "charm": 5}|20
+桃子|food|多汁的桃子|{"health": 10}|15
+樱桃|food|鲜美的小樱桃|{"health": 8, "charm": 8}|22
+芒果|food|香甜的热带水果|{"health": 12, "energy": 8}|20
+
+[食物-饱腹]
+面包|food|香软的白面包|{"energy": 15}|10
+烤肉|food|美味的烤肉类|{"health": 15, "energy": 20}|35
+烤鱼|food|鲜美的烤鱼|{"health": 12, "energy": 15}|30
+炖肉|food|香气四溢的炖肉|{"health": 20, "energy": 20}|40
+粥|food|热腾腾的白粥|{"energy": 10}|8
+馒头|food|松软的白馒头|{"energy": 12}|8
+汤面|food|热气腾腾的汤面|{"health": 10, "energy": 18}|25
+炒饭|food|香气扑鼻的炒饭|{"energy": 22}|22
+煎饼|food|香脆的煎饼|{"energy": 16}|15
+水饺|food|美味的水饺|{"health": 12, "energy": 15}|25
+包子|food|皮薄馅大的包子|{"health": 14, "energy": 16}|20
+油条|food|酥脆的油条|{"energy": 18}|12
+烧饼|food|香气四溢的烧饼|{"energy": 15}|12
+
+[食物-增益]
+蛋糕|food|甜美的蛋糕|{"charm": 10, "energy": 10}|35
+巧克力|food|浓郁的黑巧克力|{"charm": 5, "energy": 10}|25
+葡萄酒|food|醇香的葡萄酒|{"charm": 10, "energy": 10}|40
+香槟|food|高档的香槟酒|{"charm": 15, "energy": 8}|80
+奶茶|food|香甜的奶茶|{"charm": 8, "energy": 12}|20
+咖啡|food|提神醒脑的咖啡|{"energy": 15, "intelligence": 5}|25
+牛奶|food|新鲜的牛奶|{"health": 5, "energy": 10}|15
+蜂蜜|food|天然的甜蜜蜂蜜|{"health": 8, "charm": 8}|30
+水果篮|food|各种新鲜水果的篮子|{"health": 20, "energy": 15}|50
+豪华套餐|food|丰盛的大餐|{"health": 25, "energy": 25, "charm": 10}|80
+
+[武器-剑]
+长剑|weapon|锋利的铁制长剑|{"strength": 15}|200
+短剑|weapon|轻便的防身短剑|{"strength": 10}|120
+重剑|weapon|威力巨大的重剑|{"strength": 25}|350
+细剑|weapon|优雅的细身剑|{"strength": 12, "charm": 5}|180
+魔法剑|weapon|附有魔力的长剑|{"strength": 20, "intelligence": 10}|300
+魔剑|weapon|附有魔法的大剑|{"strength": 25, "intelligence": 5}|320
+激光剑|weapon|未来科技的激光武器|{"strength": 30}|400
+骑士剑|weapon|骑士专用的阔剑|{"strength": 22}|280
+
+[武器-刀剑]
+武士刀|weapon|锋利的日本武士刀|{"strength": 18, "charm": 5}|250
+砍刀|weapon|实用的砍伐刀具|{"strength": 15}|150
+匕首|weapon|小巧的防身匕首|{"strength": 10}|80
+飞刀|weapon|精准的投掷飞刀|{"strength": 12, "agility": 5}|100
+忍者刀|weapon|忍者使用的暗器|{"strength": 14, "agility": 8}|150
+
+[武器-远程]
+弓箭|weapon|精准的狩猎弓箭|{"strength": 12, "agility": 8}|150
+十字弓|weapon|强劲的远程武器|{"strength": 18}|200
+法杖|weapon|蕴含魔力的法杖|{"intelligence": 20, "strength": 5}|180
+魔杖|weapon|施法用的魔法棒|{"intelligence": 25}|220
+权杖|weapon|象征权力的权杖|{"charm": 15, "strength": 10}|200
+鞭子|weapon|皮质的鞭子|{"strength": 12, "agility": 5}|100
+
+[工具-探索]
+魔法卷轴|tool|记载魔法的卷轴|{"intelligence": 20}|150
+神秘钥匙|tool|可以打开某些锁|{}|50
+万能钥匙|tool|可以打开大部分锁|{}|100
+望远镜|tool|可以观察远处的物品|{"agility": 5}|80
+指南针|tool|辨别方向的工具|{}|30
+地图|tool|记录地点的地图|{}|40
+灯笼|tool|照亮黑暗的工具|{"energy": 5}|25
+火把|tool|照明的火光|{"energy": 5}|10
+绳索|tool|攀爬或捆绑用|{}|20
+火柴|tool|生火用的火柴|{}|5
+打火石|tool|取火的工具|{}|15
+油灯|tool|照明的油灯|{"energy": 8}|30
+手电筒|tool|现代照明工具|{"agility": 5}|50
+
+[工具-特殊]
+千里眼|tool|能看到很远地方的魔法道具|{"intelligence": 15}|200
+隐形斗篷|tool|可以隐身的斗篷|{"agility": 20, "charm": 10}|350
+传送卷轴|tool|可以瞬间移动的卷轴|{"intelligence": 15}|180
+空间袋|tool|可以存放物品的袋子|{}|300
+魔法书|tool|记载强大魔法的书|{"intelligence": 25}|250
+占卜球|tool|占卜未来的水晶球|{"intelligence": 20}|200
+召唤符|tool|召唤使魔的符咒|{"intelligence": 20}|180
+护身符|tool|保护安全的护身符|{"health": 10}|80
+平安符|tool|祈求平安的符咒|{"health": 15}|100
+
+[杂物-珠宝]
+宝石|misc|一颗闪亮的宝石|{"charm": 25}|300
+钻石|misc|璀璨的钻石|{"charm": 35}|800
+金银珠宝|misc|昂贵的首饰|{"charm": 30}|500
+翡翠|misc|碧绿的翡翠|{"charm": 28}|400
+红宝石|misc|鲜红的宝石|{"charm": 30}|450
+蓝宝石|misc|深蓝的宝石|{"charm": 30}|450
+戒指|misc|精美的戒指|{"charm": 15}|150
+项链|misc|华丽的项链|{"charm": 20}|200
+耳环|misc|漂亮的耳环|{"charm": 15}|120
+
+[杂物-时尚]
+香水|misc|芳香四溢的香水|{"charm": 15}|80
+化妆品|misc|精致的化妆品套装|{"charm": 20}|150
+高跟鞋|misc|优雅的高跟鞋|{"charm": 15}|120
+名牌包|misc|时尚的名牌包|{"charm": 20}|300
+手表|misc|精致的手表|{"charm": 15}|200
+
+[杂物-心意]
+情书|misc|表达爱意的信件|{"affection": 15}|30
+照片|misc|珍贵的照片|{"affection": 10}|25
+鲜花|misc|美丽的花束|{"affection": 12, "charm": 8}|40
+玩偶|misc|可爱的毛绒玩具|{"affection": 10}|50
+巧克力礼盒|misc|精美的巧克力礼盒|{"affection": 15, "charm": 10}|80
+音乐盒|misc|播放优美音乐的音乐盒|{"affection": 12, "charm": 8}|100
+
+[杂物-特殊]
+媚惑之戒|tool|增加魅惑能力的戒指|{"charm": 30}|280
+力量之戒|tool|增加力量的戒指|{"strength": 20}|200
+智慧之书|tool|增加智慧的书|{"intelligence": 25}|250
+
+[杂物-消耗]
+绷带|misc|包扎伤口的绷带|{"health": 15}|20
+止血带|misc|止血用的带子|{"health": 10}|15
+急救包|tool|包含急救物品的包|{"health": 25}|50
+解毒剂|potion|解除中毒的药剂|{"health": 20}|40
+创可贴|misc|处理小伤口的创可贴|{"health": 5}|5
+消毒酒精|misc|消毒用的酒精|{"health": 8}|10
+消炎药|misc|消炎用的药物|{"health": 15}|25
+
+[成人物品-服装]
+女仆装|adult|可爱的女仆装|{"charm": 20}|150
+性感内衣|adult|性感的内衣|{"charm": 25, "sexArousal": 10}|180
+泳装|adult|清凉的泳装|{"charm": 15, "sexArousal": 5}|120
+情趣内衣|adult|性感的情趣内衣|{"charm": 28, "sexArousal": 15}|200
+角色扮演服|adult|各种角色扮演服装|{"charm": 20, "sexArousal": 10}|180
+兔女郎装|adult|兔女郎服装|{"charm": 25, "sexArousal": 15}|200
+护士装|adult|护士制服|{"charm": 22, "sexArousal": 12}|180
+
+[成人物品-道具]
+按摩油|adult|用于按摩的精油|{"sexArousal": 15}|80
+催情香水|adult|带有催情效果的香水|{"sexArousal": 20, "charm": 10}|150
+润滑剂|adult|润滑用品|{"sexArousal": 5}|30
+催情剂|adult|激发欲望的药物|{"sexArousal": 30, "sexLibido": 25}|200

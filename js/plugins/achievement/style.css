@@ -1,0 +1,117 @@
+.achievement-header {
+    margin-bottom: 16px;
+    display: flex;
+    gap: 8px;
+}
+
+.achievement-section {
+    margin-bottom: 16px;
+}
+.achievement-section h4 {
+    font-size: 0.8rem;
+    color: var(--text-dim);
+    margin-bottom: 8px;
+}
+
+.achievement-card {
+    padding: 12px;
+    background: var(--border);
+    border-radius: 8px;
+    margin-bottom: 8px;
+    display: flex;
+    gap: 12px;
+}
+.achievement-icon {
+    font-size: 1.5rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 40px;
+    height: 40px;
+    background: var(--bg);
+    border-radius: 8px;
+}
+.achievement-content {
+    flex: 1;
+}
+.achievement-header-row {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 4px;
+}
+.achievement-title {
+    font-weight: 500;
+}
+.achievement-percent {
+    color: var(--accent);
+}
+.achievement-desc {
+    font-size: 0.75rem;
+    color: var(--text-dim);
+    margin-bottom: 6px;
+}
+.achievement-progress-bar {
+    height: 4px;
+    background: var(--bg);
+    border-radius: 2px;
+}
+.achievement-progress-fill {
+    height: 100%;
+    background: var(--accent);
+    border-radius: 2px;
+}
+.achievement-count {
+    font-size: 0.75rem;
+    color: var(--text-dim);
+    margin-top: 4px;
+}
+
+.achievement-card.completed {
+    opacity: 0.7;
+}
+.achievement-card.completed .achievement-title::before {
+    content: "";
+}
+
+.library-section {
+    margin-bottom: 16px;
+}
+.library-section h4 {
+    font-size: 0.85rem;
+    color: var(--text-dim);
+    margin-bottom: 8px;
+    padding-bottom: 4px;
+    border-bottom: 1px solid var(--border);
+}
+
+.library-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px;
+    background: var(--bg);
+    border-radius: 6px;
+    margin-bottom: 6px;
+}
+.library-icon {
+    font-size: 1.2rem;
+}
+.library-info {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+.library-name {
+    font-weight: 500;
+    font-size: 0.9rem;
+}
+.library-desc {
+    font-size: 0.75rem;
+    color: var(--text-dim);
+}
+
+.btn-sm {
+    padding: 4px 8px;
+    font-size: 0.75rem;
+}

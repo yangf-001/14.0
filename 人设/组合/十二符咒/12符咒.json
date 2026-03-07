@@ -1,0 +1,463 @@
+{
+  "version": "1.0",
+  "worldId": "0a1eec39-7b2e-4ce9-96a5-b9cb76c3252f",
+  "characters": [
+    {
+      "name": "鼠符咒（灵韵）",
+      "isMain": false,
+      "isFemaleLead": true,
+      "avatar": "🐭",
+      "baseProfile": {
+        "age": 16,
+        "gender": "女性",
+        "appearance": "身高158cm，身材娇小，棕色短发扎成两个小辫子，眼睛明亮如星，皮肤白皙，穿着淡蓝色连衣裙，腰间系着金色鼠形装饰，步伐轻盈灵动",
+        "personality": "活泼、灵动、好奇心强，喜欢探索新事物，性格开朗，有点调皮",
+        "background": "鼠符咒的拟人化形态，拥有赋予无生命物体生命的能力。她性格活泼灵动，总是充满好奇心，喜欢探索周围的世界。她对性方面充满好奇，喜欢尝试新鲜事物。"
+      },
+      "dynamicProfile": {
+        "currentStatus": "正常",
+        "mood": "活泼",
+        "location": "未知"
+      },
+      "stats": {
+        "health": 100,
+        "energy": 100,
+        "arousal": 0,
+        "affection": 50,
+        "sexualExperience": 0,
+        "sexualSensitivity": 50,
+        "sexualSatisfaction": 50,
+        "sexualFantasy": 0
+      },
+      "出场信息": {
+        "isActive": true,
+        "出场概率": 100,
+        "出场场景": [],
+        "出场条件": ""
+      },
+      "inventory": [],
+      "relationships": {},
+      "id": "mmakqnjzcngopzp5fn",
+      "worldId": "0a1eec39-7b2e-4ce9-96a5-b9cb76c3252f"
+    },
+    {
+      "name": "牛符咒（力蛮）",
+      "isMain": false,
+      "isFemaleLead": true,
+      "avatar": "🐮",
+      "baseProfile": {
+        "age": 19,
+        "gender": "女性",
+        "appearance": "身高172cm，身材健壮，黑色长发扎成高马尾，皮肤小麦色，眼睛坚定有神，穿着红色运动装，腰间系着金色牛形装饰，肌肉线条明显",
+        "personality": "豪爽、直率、有力量感，性格开朗，喜欢保护别人",
+        "background": "牛符咒的拟人化形态，拥有超强力量的能力。她性格豪爽直率，总是充满活力，喜欢保护弱小。她对性方面比较直接，喜欢主动出击。"
+      },
+      "dynamicProfile": {
+        "currentStatus": "正常",
+        "mood": "豪爽",
+        "location": "未知"
+      },
+      "stats": {
+        "health": 100,
+        "energy": 100,
+        "arousal": 0,
+        "affection": 50,
+        "sexualExperience": 0,
+        "sexualSensitivity": 50,
+        "sexualSatisfaction": 50,
+        "sexualFantasy": 0
+      },
+      "出场信息": {
+        "isActive": true,
+        "出场概率": 100,
+        "出场场景": [],
+        "出场条件": ""
+      },
+      "inventory": [],
+      "relationships": {},
+      "id": "mmakqnjzdnfbtrr84f",
+      "worldId": "0a1eec39-7b2e-4ce9-96a5-b9cb76c3252f"
+    },
+    {
+      "name": "虎符咒（平衡）",
+      "isMain": false,
+      "isFemaleLead": true,
+      "avatar": "🐯",
+      "baseProfile": {
+        "age": 18,
+        "gender": "女性",
+        "appearance": "身高168cm，身材匀称，橙色长发披肩，皮肤白皙，眼睛深邃，穿着黄色旗袍，腰间系着金色虎形装饰，气质优雅",
+        "personality": "冷静、公正、平衡，性格沉稳，善于分析问题",
+        "background": "虎符咒的拟人化形态，拥有平衡善恶的能力。她性格冷静公正，总是保持平衡的心态。她对性方面比较保守，但在爱人面前会表现出热情的一面。"
+      },
+      "dynamicProfile": {
+        "currentStatus": "正常",
+        "mood": "冷静",
+        "location": "未知"
+      },
+      "stats": {
+        "health": 100,
+        "energy": 100,
+        "arousal": 0,
+        "affection": 50,
+        "sexualExperience": 0,
+        "sexualSensitivity": 50,
+        "sexualSatisfaction": 50,
+        "sexualFantasy": 0
+      },
+      "出场信息": {
+        "isActive": true,
+        "出场概率": 100,
+        "出场场景": [],
+        "出场条件": ""
+      },
+      "inventory": [],
+      "relationships": {},
+      "id": "mmakqnjz4opsg70eswq",
+      "worldId": "0a1eec39-7b2e-4ce9-96a5-b9cb76c3252f"
+    },
+    {
+      "name": "兔符咒（迅疾）",
+      "isMain": false,
+      "isFemaleLead": true,
+      "avatar": "🐰",
+      "baseProfile": {
+        "age": 15,
+        "gender": "女性",
+        "appearance": "身高155cm，身材娇小，白色短发，皮肤白皙，眼睛灵动，穿着粉色运动服，腰间系着金色兔形装饰，步伐轻盈如兔",
+        "personality": "敏捷、活泼、好动，性格开朗，喜欢恶作剧",
+        "background": "兔符咒的拟人化形态，拥有超级速度的能力。她性格敏捷活泼，总是充满活力，喜欢捉弄别人。她对性方面充满好奇，喜欢玩角色扮演。"
+      },
+      "dynamicProfile": {
+        "currentStatus": "正常",
+        "mood": "活泼",
+        "location": "未知"
+      },
+      "stats": {
+        "health": 90,
+        "energy": 100,
+        "arousal": 0,
+        "affection": 50,
+        "sexualExperience": 0,
+        "sexualSensitivity": 50,
+        "sexualSatisfaction": 50,
+        "sexualFantasy": 0
+      },
+      "出场信息": {
+        "isActive": true,
+        "出场概率": 100,
+        "出场场景": [],
+        "出场条件": ""
+      },
+      "inventory": [],
+      "relationships": {},
+      "id": "mmakqnjzinrpm2mvvyq",
+      "worldId": "0a1eec39-7b2e-4ce9-96a5-b9cb76c3252f"
+    },
+    {
+      "name": "龙符咒（炎舞）",
+      "isMain": false,
+      "isFemaleLead": true,
+      "avatar": "🐲",
+      "baseProfile": {
+        "age": 19,
+        "gender": "女性",
+        "appearance": "身高170cm，身材火辣，红色长发披肩，皮肤小麦色，眼睛明亮如火焰，穿着红色露肩装，腰间系着金色龙形装饰，气质热情",
+        "personality": "热情、火辣、充满活力，性格开朗，喜欢表现自己",
+        "background": "龙符咒的拟人化形态，拥有喷出火焰的能力。她性格热情火辣，总是充满活力，喜欢成为焦点。她对性方面非常开放，喜欢尝试新花样。"
+      },
+      "dynamicProfile": {
+        "currentStatus": "正常",
+        "mood": "热情",
+        "location": "未知"
+      },
+      "stats": {
+        "health": 100,
+        "energy": 100,
+        "arousal": 0,
+        "affection": 50,
+        "sexualExperience": 0,
+        "sexualSensitivity": 50,
+        "sexualSatisfaction": 50,
+        "sexualFantasy": 0
+      },
+      "出场信息": {
+        "isActive": true,
+        "出场概率": 100,
+        "出场场景": [],
+        "出场条件": ""
+      },
+      "inventory": [],
+      "relationships": {},
+      "id": "mmakqnjzeesiqhaz5l9",
+      "worldId": "0a1eec39-7b2e-4ce9-96a5-b9cb76c3252f"
+    },
+    {
+      "name": "蛇符咒（幽影）",
+      "isMain": false,
+      "isFemaleLead": true,
+      "avatar": "🐍",
+      "baseProfile": {
+        "age": 18,
+        "gender": "女性",
+        "appearance": "身高165cm，身材苗条，紫色长发披肩，皮肤白皙，眼睛深邃神秘，穿着紫色紧身衣，腰间系着金色蛇形装饰，气质神秘",
+        "personality": "神秘、优雅、妩媚，性格沉稳，喜欢独处",
+        "background": "蛇符咒的拟人化形态，拥有隐身能力。她性格神秘优雅，总是给人一种捉摸不透的感觉。她对性方面比较开放，喜欢玩暧昧。"
+      },
+      "dynamicProfile": {
+        "currentStatus": "正常",
+        "mood": "神秘",
+        "location": "未知"
+      },
+      "stats": {
+        "health": 100,
+        "energy": 100,
+        "arousal": 0,
+        "affection": 50,
+        "sexualExperience": 0,
+        "sexualSensitivity": 50,
+        "sexualSatisfaction": 50,
+        "sexualFantasy": 0
+      },
+      "出场信息": {
+        "isActive": true,
+        "出场概率": 100,
+        "出场场景": [],
+        "出场条件": ""
+      },
+      "inventory": [],
+      "relationships": {},
+      "id": "mmakqnjzejqcnput3js",
+      "worldId": "0a1eec39-7b2e-4ce9-96a5-b9cb76c3252f"
+    },
+    {
+      "name": "马符咒（治愈）",
+      "isMain": false,
+      "isFemaleLead": true,
+      "avatar": "🐴",
+      "baseProfile": {
+        "age": 17,
+        "gender": "女性",
+        "appearance": "身高162cm，身材苗条，白色长发披肩，皮肤白皙，眼睛温柔，穿着淡绿色连衣裙，腰间系着金色马形装饰，气质清新",
+        "personality": "温柔、善良、有爱心，性格温和，喜欢帮助别人",
+        "background": "马符咒的拟人化形态，拥有治愈能力。她性格温柔善良，总是关心别人的健康。她对性方面比较保守，但在爱人面前会表现出温柔的一面。"
+      },
+      "dynamicProfile": {
+        "currentStatus": "正常",
+        "mood": "温柔",
+        "location": "未知"
+      },
+      "stats": {
+        "health": 100,
+        "energy": 100,
+        "arousal": 0,
+        "affection": 50,
+        "sexualExperience": 0,
+        "sexualSensitivity": 50,
+        "sexualSatisfaction": 50,
+        "sexualFantasy": 0
+      },
+      "出场信息": {
+        "isActive": true,
+        "出场概率": 100,
+        "出场场景": [],
+        "出场条件": ""
+      },
+      "inventory": [],
+      "relationships": {},
+      "id": "mmakqnjzam0rvbcp2u",
+      "worldId": "0a1eec39-7b2e-4ce9-96a5-b9cb76c3252f"
+    },
+    {
+      "name": "羊符咒（梦灵）",
+      "isMain": false,
+      "isFemaleLead": true,
+      "avatar": "🐑",
+      "baseProfile": {
+        "age": 16,
+        "gender": "女性",
+        "appearance": "身高158cm，身材娇小，淡粉色长发披肩，皮肤白皙，眼睛梦幻，穿着淡紫色连衣裙，腰间系着金色羊形装饰，气质飘逸",
+        "personality": "梦幻、神秘、温柔，性格内向，喜欢幻想",
+        "background": "羊符咒的拟人化形态，拥有灵魂出窍的能力。她性格梦幻神秘，总是沉浸在自己的世界里。她对性方面充满好奇，喜欢浪漫的氛围。"
+      },
+      "dynamicProfile": {
+        "currentStatus": "正常",
+        "mood": "梦幻",
+        "location": "未知"
+      },
+      "stats": {
+        "health": 90,
+        "energy": 100,
+        "arousal": 0,
+        "affection": 50,
+        "sexualExperience": 0,
+        "sexualSensitivity": 50,
+        "sexualSatisfaction": 50,
+        "sexualFantasy": 0
+      },
+      "出场信息": {
+        "isActive": true,
+        "出场概率": 100,
+        "出场场景": [],
+        "出场条件": ""
+      },
+      "inventory": [],
+      "relationships": {},
+      "id": "mmakqnjz6reyh0rjixy",
+      "worldId": "0a1eec39-7b2e-4ce9-96a5-b9cb76c3252f"
+    },
+    {
+      "name": "猴符咒（百变）",
+      "isMain": false,
+      "isFemaleLead": true,
+      "avatar": "🐒",
+      "baseProfile": {
+        "age": 15,
+        "gender": "女性",
+        "appearance": "身高155cm，身材娇小，棕色短发，皮肤小麦色，眼睛灵动，穿着黄色短袖和短裤，腰间系着金色猴形装饰，气质活泼",
+        "personality": "调皮、多变、机灵，性格开朗，喜欢恶作剧",
+        "background": "猴符咒的拟人化形态，拥有变形能力。她性格调皮多变，总是喜欢变换不同的样子。她对性方面充满好奇，喜欢尝试不同的角色扮演。"
+      },
+      "dynamicProfile": {
+        "currentStatus": "正常",
+        "mood": "调皮",
+        "location": "未知"
+      },
+      "stats": {
+        "health": 100,
+        "energy": 100,
+        "arousal": 0,
+        "affection": 50,
+        "sexualExperience": 0,
+        "sexualSensitivity": 50,
+        "sexualSatisfaction": 50,
+        "sexualFantasy": 0
+      },
+      "出场信息": {
+        "isActive": true,
+        "出场概率": 100,
+        "出场场景": [],
+        "出场条件": ""
+      },
+      "inventory": [],
+      "relationships": {},
+      "id": "mmakqnjzqmdn2j35x5",
+      "worldId": "0a1eec39-7b2e-4ce9-96a5-b9cb76c3252f"
+    },
+    {
+      "name": "鸡符咒（翔空）",
+      "isMain": false,
+      "isFemaleLead": true,
+      "avatar": "🐔",
+      "baseProfile": {
+        "age": 17,
+        "gender": "女性",
+        "appearance": "身高160cm，身材苗条，金色短发，皮肤白皙，眼睛明亮，穿着白色连衣裙，腰间系着金色鸡形装饰，背后有白色翅膀装饰",
+        "personality": "自由、开朗、乐观，性格活泼，喜欢飞翔",
+        "background": "鸡符咒的拟人化形态，拥有飞行能力。她性格自由开朗，总是向往天空。她对性方面比较开放，喜欢在不同的地方尝试。"
+      },
+      "dynamicProfile": {
+        "currentStatus": "正常",
+        "mood": "自由",
+        "location": "未知"
+      },
+      "stats": {
+        "health": 100,
+        "energy": 100,
+        "arousal": 0,
+        "affection": 50,
+        "sexualExperience": 0,
+        "sexualSensitivity": 50,
+        "sexualSatisfaction": 50,
+        "sexualFantasy": 0
+      },
+      "出场信息": {
+        "isActive": true,
+        "出场概率": 100,
+        "出场场景": [],
+        "出场条件": ""
+      },
+      "inventory": [],
+      "relationships": {},
+      "id": "mmakqnjzq7cids4crfd",
+      "worldId": "0a1eec39-7b2e-4ce9-96a5-b9cb76c3252f"
+    },
+    {
+      "name": "狗符咒（永生）",
+      "isMain": false,
+      "isFemaleLead": true,
+      "avatar": "🐶",
+      "baseProfile": {
+        "age": 20,
+        "gender": "女性",
+        "appearance": "身高168cm，身材匀称，棕色长发披肩，皮肤白皙，眼睛温和，穿着金色连衣裙，腰间系着金色狗形装饰，气质高贵",
+        "personality": "成熟、优雅、忠诚，性格沉稳，喜欢照顾别人",
+        "background": "狗符咒的拟人化形态，拥有永生能力。她性格成熟优雅，总是给人一种可靠的感觉。她对性方面比较保守，但在爱人面前会表现出热情的一面。"
+      },
+      "dynamicProfile": {
+        "currentStatus": "正常",
+        "mood": "成熟",
+        "location": "未知"
+      },
+      "stats": {
+        "health": 100,
+        "energy": 100,
+        "arousal": 0,
+        "affection": 50,
+        "sexualExperience": 0,
+        "sexualSensitivity": 50,
+        "sexualSatisfaction": 50,
+        "sexualFantasy": 0
+      },
+      "出场信息": {
+        "isActive": true,
+        "出场概率": 100,
+        "出场场景": [],
+        "出场条件": ""
+      },
+      "inventory": [],
+      "relationships": {},
+      "id": "mmakqnjzma5ipfncnxj",
+      "worldId": "0a1eec39-7b2e-4ce9-96a5-b9cb76c3252f"
+    },
+    {
+      "name": "猪符咒（爆破）",
+      "isMain": false,
+      "isFemaleLead": true,
+      "avatar": "🐷",
+      "baseProfile": {
+        "age": 16,
+        "gender": "女性",
+        "appearance": "身高158cm，身材微胖，粉色短发，皮肤白皙，眼睛明亮，穿着粉色运动服，腰间系着金色猪形装饰，气质可爱",
+        "personality": "活泼、开朗、大胆，性格直率，喜欢刺激",
+        "background": "猪符咒的拟人化形态，拥有爆破能力。她性格活泼开朗，总是喜欢刺激的事物。她对性方面比较开放，喜欢尝试新花样。"
+      },
+      "dynamicProfile": {
+        "currentStatus": "正常",
+        "mood": "活泼",
+        "location": "未知"
+      },
+      "stats": {
+        "health": 100,
+        "energy": 100,
+        "arousal": 0,
+        "affection": 50,
+        "sexualExperience": 0,
+        "sexualSensitivity": 50,
+        "sexualSatisfaction": 50,
+        "sexualFantasy": 0
+      },
+      "出场信息": {
+        "isActive": true,
+        "出场概率": 100,
+        "出场场景": [],
+        "出场条件": ""
+      },
+      "inventory": [],
+      "relationships": {},
+      "id": "mmakqnjz7jr8x0li3mx",
+      "worldId": "0a1eec39-7b2e-4ce9-96a5-b9cb76c3252f"
+    }
+  ],
+  "exportTime": "2026-03-03T12:19:18.028Z"
+}

@@ -6,6 +6,7 @@
         { page: 'worlds', icon: '🌍', label: '世界' },
         { page: 'characters', icon: '👤', label: '角色' },
         { page: 'story', icon: '📖', label: '故事' },
+        { page: 'story-config', icon: '📝', label: 'AI设置' },
         { page: 'storage', icon: '📦', label: '存储库' },
         { page: 'settings', icon: '⚙️', label: '设置' },
         { page: 'plugins', icon: '🔌', label: '插件' }
@@ -64,8 +65,15 @@
                 script.onload = () => {
                     loadedCount++;
                     if (loadedCount === scripts.length) {
-                        console.log('色色插件已加载');
-                        resolve();
+                        if (typeof HentaiUserContent !== 'undefined') {
+                            HentaiUserContent.init().then(() => {
+                                console.log('色色插件已加载');
+                                resolve();
+                            });
+                        } else {
+                            console.log('色色插件已加载');
+                            resolve();
+                        }
                     }
                 };
                 script.onerror = () => {
@@ -112,9 +120,18 @@
             case 'worlds': renderWorlds(main); break;
             case 'characters': renderCharacters(main); break;
             case 'story': renderStory(main); break;
+            case 'story-config': renderStoryConfig(main); break;
             case 'storage': renderStorage(main); break;
             case 'settings': renderSettings(main); break;
             case 'plugins': renderPlugins(main); break;
+        }
+    }
+    
+    function renderStoryConfig(main) {
+        if (typeof View !== 'undefined' && View.render) {
+            main.innerHTML = View.render('story-config.main');
+        } else {
+            main.innerHTML = '<div class="empty">AI设置插件未加载</div>';
         }
     }
 
@@ -360,11 +377,77 @@
                     `).join('')}
                 </div>
                 
-                <div style="display: flex; gap: 8px;">
+                ${(function() {
+                    const lastScene = story.scenes[story.scenes.length - 1];
+                    const statChanges = lastScene?.statChanges || {};
+                    if (Object.keys(statChanges).length === 0) return '';
+                    
+                    const allChars = Data.getCharacters(world.id);
+                    const worldId = world.id;
+                    
+                    const localStatLabels = {
+                        health: '生命', energy: '体力', charm: '魅力', intelligence: '智力', strength: '力量',
+                        agility: '敏捷', stamina: '耐力',
+                        sexArousal: '欲望', sexExperience: '经验', sexSkill: '技巧', sexLibido: '性欲', sexSensitivity: '敏感',
+                        affection: '好感', trust: '信任', intimacy: '亲密', corruption: '堕落', shame: '羞耻'
+                    };
+                    
+                    return `
+                        <div class="stat-changes-mobile" style="margin-bottom: 16px; padding: 12px; background: var(--card); border-radius: 8px;">
+                            <div style="font-size: 0.8rem; color: var(--text-dim); margin-bottom: 8px;">📈 本次变化</div>
+                            <div style="display: flex; flex-wrap: wrap; gap: 8px;">
+                                ${Object.entries(statChanges).map(([charName, changes]) => {
+                                    const charObj = allChars.find(c => c.name === charName);
+                                    const dynamicAge = charObj && window.WorldTimePlugin ? window.WorldTimePlugin.getCharacterAge(charObj, worldId) : (charObj?.age || '');
+                                    const ageDisplay = dynamicAge ? `(${dynamicAge}岁)` : '';
+                                    return `
+                                        <div style="flex: 1 1 auto; min-width: 120px; padding: 8px; background: var(--bg); border-radius: 6px;">
+                                            <div style="font-weight: 600; font-size: 0.8rem; color: var(--accent); margin-bottom: 4px;">${charName} ${ageDisplay}</div>
+                                            <div style="display: flex; flex-wrap: wrap; gap: 3px;">
+                                                ${Object.entries(changes).map(([key, value]) => {
+                                                    const label = localStatLabels[key] || key;
+                                                    const displayValue = value > 0 ? '+' + value : value;
+                                                    const color = value > 0 ? '#22c55e' : value < 0 ? '#ef4444' : '#6b7280';
+                                                    return '<span style="font-size: 0.65rem; padding: 2px 5px; background: var(--card-bg); border-radius: 3px; color: ' + color + ';">' + label + displayValue + '</span>';
+                                                }).join('')}
+                                            </div>
+                                        </div>
+                                    `;
+                                }).join('')}
+                            </div>
+                        </div>
+                    `;
+                })()}
+                
+                <div style="display: flex; gap: 8px; flex-wrap: wrap; align-items: center;">
                     <button class="btn btn-secondary" onclick="makeChoice(null)">🤔 自由发展</button>
                     <button class="btn" onclick="showIntimateTriggerModal()" style="background: linear-gradient(135deg, #ff69b4, #ff1493); color: white;">💕 亲密互动</button>
                     <button class="btn btn-secondary" onclick="showCharacterAttributes()" title="查看角色属性">👤 角色</button>
+                    <button class="btn btn-secondary" onclick="showStoryCharSelector()" title="选择参与角色">🎭 角色</button>
+                    <button class="btn btn-secondary" onclick="getRecommendedChars()" title="根据剧情推荐角色">💡 推荐</button>
                     <button class="btn btn-secondary" onclick="restartStory()" style="margin-left: auto;">🔄 重新开始</button>
+                </div>
+                <div id="storyCharSelector" style="display: none; margin-top: 16px; padding: 12px; background: var(--card-bg); border-radius: 8px;">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+                        <span style="font-size: 0.85rem; color: var(--text-dim);">选择参与角色（可选）</span>
+                        <button class="btn btn-secondary" onclick="getRecommendedChars()" style="padding: 4px 8px; font-size: 0.75rem;">💡 推荐角色</button>
+                    </div>
+                    <div id="recommendedChars" style="display: none; margin-bottom: 12px; padding: 8px; background: var(--accent); opacity: 0.9; border-radius: 6px;">
+                        <div style="font-size: 0.75rem; color: var(--bg); margin-bottom: 4px;">推荐参与：</div>
+                        <div id="recommendedCharsList" style="display: flex; flex-wrap: wrap; gap: 4px;"></div>
+                    </div>
+                    <div style="display: flex; flex-wrap: wrap; gap: 8px;">
+                        ${chars.map(c => `
+                            <label style="display: flex; align-items: center; gap: 6px; padding: 6px 10px; background: var(--border); border-radius: 6px; cursor: pointer;">
+                                <input type="checkbox" name="storyCharsContinue" value="${c.id}" ${story.characters?.some(sc => sc.id === c.id) ? 'checked' : ''}>
+                                ${c.name}
+                            </label>
+                        `).join('')}
+                    </div>
+                    <div style="display: flex; gap: 8px; margin-top: 12px;">
+                        <button class="btn" onclick="refreshChoicesWithNewChars()" style="flex: 1;">🔄 刷新选项</button>
+                        <button class="btn btn-secondary" onclick="continueStoryWithNewChars()" style="flex: 1;">▶️ 继续剧情</button>
+                    </div>
                 </div>
             ` : `
                 <div class="card">
@@ -395,6 +478,50 @@
                         <label>场景设定（可选）</label>
                         <input type="text" id="sceneInput" placeholder="例如：浪漫的烛光晚餐、雨中的相遇...">
                     </div>
+                    <div class="card" id="timeConfigCard" style="background: var(--border); margin-top: 16px;">
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+                            <span style="font-weight: 500;">⏰ 故事时间设置</span>
+                            <button type="button" class="btn btn-secondary" onclick="toggleTimeConfig()" style="padding: 4px 8px; font-size: 0.75rem;">展开/收起</button>
+                        </div>
+                        <div id="timeConfigContent" style="display: none;">
+                            <div class="form-group">
+                                <label>主角开始年龄</label>
+                                <select id="protagonistStartAge" onchange="autoCalcAgeRelations()">
+                                    ${[...Array(19)].map((_, i) => `<option value="${i + 1}" ${i + 1 === 18 ? 'selected' : ''}>${i + 1}岁</option>`).join('')}
+                                </select>
+                                <small style="color: var(--text-dim); font-size: 0.75rem;">选择故事从主角几岁时开始</small>
+                            </div>
+                            <div class="form-group">
+                                <label>故事开始年份</label>
+                                <input type="number" id="storyStartYear" value="2024" min="1900" max="2100">
+                                <small style="color: var(--text-dim); font-size: 0.75rem;">虚拟世界的起始年份</small>
+                            </div>
+                            <div class="form-group">
+                                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+                                    <label style="margin: 0;">其他角色年龄关系</label>
+                                    <button type="button" class="btn btn-secondary" onclick="autoCalcAgeRelations()" style="padding: 4px 8px; font-size: 0.7rem;">🔄 自动计算</button>
+                                </div>
+                                <div style="font-size: 0.75rem; color: var(--text-dim); margin-bottom: 8px;">根据主角年龄自动计算年龄差（点击"自动计算"按钮）</div>
+                                <div id="charAgeRelations" style="max-height: 200px; overflow-y: auto;">
+                                    ${(() => {
+                                        const protagonist = chars.find(c => c.role === '主角' || c.role === '女主');
+                                        const defaultAge = protagonist?.age || 18;
+                                        return chars.filter(c => c.role !== '主角' && c.role !== '女主').map(c => {
+                                            const autoDiff = c.age - defaultAge;
+                                            return `
+                                                <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 8px; padding: 6px; background: var(--card-bg); border-radius: 4px;">
+                                                    <span style="flex: 1; font-size: 0.85rem;">${c.name} (基础: ${c.age}岁)</span>
+                                                    <input type="number" id="ageRelation_${c.id}" value="${autoDiff}" style="width: 60px;" placeholder="差值">
+                                                    <span style="font-size: 0.75rem; color: var(--text-dim);">岁</span>
+                                                </div>
+                                            `;
+                                        }).join('');
+                                    })()}
+                                    ${chars.filter(c => c.role !== '主角' && c.role !== '女主').length === 0 ? '<div style="font-size: 0.8rem; color: var(--text-dim);">暂无其他角色</div>' : ''}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
                     <button class="btn" onclick="startStory()">🎬 开始故事</button>
                 </div>
                 
@@ -405,7 +532,161 @@
                 </div>
             `}
         `;
+        
+        setTimeout(() => {
+            const storyReader = document.querySelector('.story-reader');
+            if (storyReader) {
+                storyReader.scrollTop = storyReader.scrollHeight;
+            }
+        }, 100);
+        
+        const right = document.getElementById('rightPanel');
+        if (right) {
+            renderStoryRightPanel(right, world, story);
+        }
     }
+    
+    function renderStoryRightPanel(right, world, story) {
+        right.style.overflowY = 'auto';
+        right.style.maxHeight = '100%';
+        
+        const chars = Data.getCharacters(world.id);
+        
+        const DEFAULT_STATS = {
+            health: 100, energy: 100, charm: 50, intelligence: 50,
+            strength: 50, agility: 50, stamina: 50,
+            sexArousal: 0, sexExperience: 0, sexSkill: 0, sexLibido: 50, sexSensitivity: 50,
+            affection: 50, trust: 50, intimacy: 0, corruption: 0, shame: 50
+        };
+        
+        const statLabels = {
+            health: '生命', energy: '体力', charm: '魅力', intelligence: '智力', strength: '力量',
+            agility: '敏捷', stamina: '耐力',
+            sexArousal: '欲望', sexExperience: '经验', sexSkill: '技巧', sexLibido: '性欲', sexSensitivity: '敏感',
+            affection: '好感', trust: '信任', intimacy: '亲密', corruption: '堕落', shame: '羞耻'
+        };
+        
+        const storyChars = story && story.characters ? story.characters : chars.slice(0, 3);
+        
+        let timeDisplay = '';
+        if (window.WorldTimePlugin && world) {
+            const timeInfo = window.WorldTimePlugin.getDisplayTime(world.id);
+            if (timeInfo.storyStartAge !== null) {
+                timeDisplay = `
+                    <div style="margin-bottom: 16px; padding: 12px; background: linear-gradient(135deg, var(--accent), #6366f1); border-radius: 8px; color: white;">
+                        <div style="font-size: 0.75rem; opacity: 0.9;">⏰ 故事时间</div>
+                        <div style="font-size: 1rem; font-weight: 600; margin-top: 4px;">${timeInfo.formatted}</div>
+                        <div style="font-size: 0.8rem; margin-top: 4px; opacity: 0.9;">
+                            主角 ${timeInfo.protagonistAge}岁
+                            ${timeInfo.yearsPassed > 0 ? `<span style="opacity: 0.7;">(故事开始后${timeInfo.yearsPassed}年)</span>` : ''}
+                        </div>
+                    </div>
+                `;
+            }
+        }
+        
+        let html = `
+            ${timeDisplay}
+            <h4 style="font-size: 0.8rem; color: var(--text-dim); margin-bottom: 12px;">📈 本次变化</h4>
+        `;
+        
+        if (!story || story.status !== 'ongoing') {
+            html += `<div class="empty" style="font-size: 0.8rem; padding: 12px;">开始故事后可查看属性变化</div>`;
+        } else {
+            const lastScene = story.scenes[story.scenes.length - 1];
+            const statChanges = lastScene?.statChanges || {};
+            
+            if (Object.keys(statChanges).length === 0) {
+                html += `<div class="empty" style="font-size: 0.8rem; padding: 12px;">暂无数值变化</div>`;
+            } else {
+                html += Object.entries(statChanges).map(([charName, changes]) => {
+                    const charObj = chars.find(c => c.name === charName);
+                    const dynamicAge = charObj && window.WorldTimePlugin ? window.WorldTimePlugin.getCharacterAge(charObj, world.id) : (charObj?.age || '');
+                    const ageDisplay = dynamicAge ? `(${dynamicAge}岁)` : '';
+                    
+                    return `
+                    <div style="margin-bottom: 12px; padding: 10px; background: var(--card); border: 1px solid var(--border); border-radius: 8px;">
+                        <div style="font-weight: 600; font-size: 0.85rem; margin-bottom: 6px; color: var(--accent);">${charName} ${ageDisplay}</div>
+                        <div style="display: flex; flex-wrap: wrap; gap: 4px;">
+                            ${Object.entries(changes).map(([key, value]) => {
+                                const label = statLabels[key] || key;
+                                const displayValue = value > 0 ? `+${value}` : value;
+                                const color = value > 0 ? '#22c55e' : value < 0 ? '#ef4444' : '#6b7280';
+                                return `<span style="font-size: 0.7rem; padding: 2px 6px; background: var(--bg); border-radius: 4px; color: ${color};">${label}${displayValue}</span>`;
+                            }).join('')}
+                        </div>
+                    </div>
+                `}).join('');
+            }
+        }
+        
+        right.innerHTML = html;
+    }
+    
+    window.showCharStatsDetail = function(charId) {
+        const world = Data.getCurrentWorld();
+        if (!world) return;
+        
+        const char = Data.getCharacter(world.id, charId);
+        if (!char) return;
+        
+        const DEFAULT_STATS = {
+            health: 100, energy: 100, charm: 50, intelligence: 50,
+            strength: 50, agility: 50, stamina: 50,
+            sexArousal: 0, sexExperience: 0, sexSkill: 0, sexLibido: 50, sexSensitivity: 50,
+            affection: 50, trust: 50, intimacy: 0, corruption: 0, shame: 50
+        };
+        
+        const stats = { ...DEFAULT_STATS, ...char.stats };
+        
+        const statLabels = {
+            health: '生命', energy: '体力', charm: '魅力', intelligence: '智力', strength: '力量',
+            agility: '敏捷', stamina: '耐力',
+            sexArousal: '欲望', sexExperience: '经验', sexSkill: '技巧', sexLibido: '性欲', sexSensitivity: '敏感',
+            affection: '好感', trust: '信任', intimacy: '亲密', corruption: '堕落', shame: '羞耻'
+        };
+        
+        const statGroups = {
+            '基础属性': ['health', 'energy', 'charm', 'intelligence', 'strength', 'agility', 'stamina'],
+            '状态属性': ['affection', 'trust', 'intimacy', 'corruption', 'shame'],
+            '色色属性': ['sexArousal', 'sexExperience', 'sexSkill', 'sexLibido', 'sexSensitivity']
+        };
+        
+        let html = `<div style="padding: 16px;">`;
+        html += `<div style="display: flex; align-items: center; gap: 12px; margin-bottom: 16px;">`;
+        html += `<div class="avatar" style="width: 48px; height: 48px; border-radius: 50%; background: var(--accent); color: white; display: flex; align-items: center; justify-content: center; font-size: 1.5rem;">${char.name[0]}</div>`;
+        html += `<div><div style="font-weight: 600; font-size: 1.1rem;">${char.name}</div><div style="font-size: 0.8rem; color: var(--text-dim);">角色属性</div></div>`;
+        html += `</div>`;
+        
+        Object.entries(statGroups).forEach(([groupName, statsList]) => {
+            const isAdult = groupName === '色色属性';
+            html += `<div style="margin-bottom: 16px;"><div style="font-size: 0.8rem; font-weight: 600; margin-bottom: 8px; ${isAdult ? 'color: #ff69b4;' : ''}">${groupName}</div>`;
+            html += `<div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px;">`;
+            statsList.forEach(stat => {
+                const value = stats[stat] || 0;
+                const label = statLabels[stat] || stat;
+                const color = value >= 80 ? '#22c55e' : value >= 50 ? '#6366f1' : value >= 20 ? '#f59e0b' : '#ef4444';
+                html += `
+                    <div style="padding: 8px; background: var(--bg); border-radius: 6px;">
+                        <div style="font-size: 0.75rem; color: var(--text-dim); margin-bottom: 4px;">${label}</div>
+                        <div style="display: flex; align-items: center; gap: 6px;">
+                            <div style="flex: 1; height: 6px; background: var(--border); border-radius: 3px; overflow: hidden;">
+                                <div style="width: ${Math.min(100, value)}%; height: 100%; background: ${color};"></div>
+                            </div>
+                            <span style="color: ${color}; font-weight: 600; font-size: 0.85rem; min-width: 24px; text-align: right;">${value}</span>
+                        </div>
+                    </div>
+                `;
+            });
+            html += `</div></div>`;
+        });
+        
+        html += `<button class="btn btn-secondary" onclick="closeModal()" style="width: 100%;">关闭</button></div>`;
+        
+        document.getElementById('modalTitle').textContent = `${char.name} - 属性详情`;
+        document.getElementById('modalBody').innerHTML = html;
+        document.getElementById('modal').classList.add('active');
+    };
 
     function renderStorage(main) {
         const world = Data.getCurrentWorld();
@@ -415,9 +696,12 @@
             return;
         }
         
+        const story = Story.load(world.id);
         const archives = Story.getArchives(world.id);
         const level2 = Story.getLevel2Archives(world.id);
         const level3 = Story.getLevel3Archives(world.id);
+        
+        const hasActiveStory = story && story.status === 'ongoing';
         
         main.innerHTML = `
             <h2>📦 存储库</h2>
@@ -430,9 +714,33 @@
                 </div>
             </div>
             
+            ${hasActiveStory ? `
+                <div class="setting-section">
+                    <h4>🔥 活跃剧情 (进行中)</h4>
+                    <div class="card" style="margin-bottom: 12px; border-left: 3px solid #ff6b6b;">
+                        <div style="display: flex; justify-content: space-between; align-items: flex-start;">
+                            <div style="flex: 1;">
+                                <div style="font-weight: 500;">${story.title || '未命名故事'}</div>
+                                <div style="font-size: 0.8rem; color: var(--text-dim); margin-top: 4px;">
+                                    ${Array.isArray(story.characters) ? story.characters.map(c => c.name).join('、') : story.characters || '未知角色'} · 第${story.round}轮 · ${story.scenes.length}幕
+                                </div>
+                            </div>
+                            <div style="display: flex; gap: 6px;">
+                                <button class="btn" onclick="showPage('story')" style="font-size: 0.75rem; padding: 6px 12px;">▶ 继续</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            ` : `
+                <div class="setting-section">
+                    <h4>🔥 活跃剧情</h4>
+                    <div class="empty">暂无进行中的故事</div>
+                </div>
+            `}
+            
             <div class="setting-section">
                 <h4>📚 一级存储 (${archives.length})</h4>
-                ${archives.length === 0 ? '<div class="empty">暂无故事</div>' : ''}
+                ${archives.length === 0 ? '<div class="empty">暂无已存档的故事</div>' : ''}
                 ${archives.map(a => `
                     <div class="card" style="margin-bottom: 12px;">
                         <div style="display: flex; justify-content: space-between; align-items: flex-start;">
@@ -473,7 +781,12 @@
                         </div>
                     `).join('')}
                 </div>
-            ` : ''}
+            ` : `
+                <div class="setting-section">
+                    <h4>📦 二级存储 - 前10幕摘要 (0)</h4>
+                    <div class="empty">暂无二级存储内容</div>
+                </div>
+            `}
             
             ${level3.length > 0 ? `
                 <div class="setting-section">
@@ -496,7 +809,12 @@
                         </div>
                     `).join('')}
                 </div>
-            ` : ''}
+            ` : `
+                <div class="setting-section">
+                    <h4>📚 三级存储 - 故事合集 (0)</h4>
+                    <div class="empty">暂无三级存储内容</div>
+                </div>
+            `}
         `;
     }
 
@@ -597,10 +915,16 @@
                     <div class="plugin-desc">管理角色物品</div>
                 </button>
                 
-                <button class="plugin-btn" onclick="window.location.href='js/plugins/task/index.html'">
-                    <div class="plugin-icon">📋</div>
-                    <div class="plugin-name">任务管理</div>
-                    <div class="plugin-desc">创建和跟踪任务</div>
+                <button class="plugin-btn" onclick="window.location.href='js/plugins/shop/index.html'">
+                    <div class="plugin-icon">🏪</div>
+                    <div class="plugin-name">商店</div>
+                    <div class="plugin-desc">购买物品和管理金钱</div>
+                </button>
+                
+                <button class="plugin-btn" onclick="window.location.href='js/plugins/achievement/index.html'">
+                    <div class="plugin-icon">🏆</div>
+                    <div class="plugin-name">成就系统</div>
+                    <div class="plugin-desc">创建和跟踪成就</div>
                 </button>
                 
                 <button class="plugin-btn" onclick="window.location.href='js/plugins/adult-library/index.html'">
@@ -647,6 +971,11 @@
         if (!name) return;
         const world = Data.createWorld({ name, type });
         Data.setCurrentWorld(world.id);
+        
+        if (typeof AchievementPlugin !== 'undefined') {
+            AchievementPlugin.updateStats('world_create');
+        }
+        
         closeModal();
         showPage('worlds');
     };
@@ -738,6 +1067,11 @@
             appearance: document.getElementById('charAppearance').value,
             personality: document.getElementById('charPersonality').value
         });
+        
+        if (typeof AchievementPlugin !== 'undefined') {
+            AchievementPlugin.updateStats('character_create');
+        }
+        
         closeModal();
         showPage('characters');
     };
@@ -802,6 +1136,17 @@
         const chars = Array.from(document.querySelectorAll('input[name="storyChars"]:checked')).map(c => c.value);
         const scene = document.getElementById('sceneInput').value;
         
+        const protagonistStartAge = parseInt(document.getElementById('protagonistStartAge')?.value || '18');
+        const storyStartYear = parseInt(document.getElementById('storyStartYear')?.value || '2024');
+        
+        const ageRelations = {};
+        chars.forEach(charId => {
+            const input = document.getElementById(`ageRelation_${charId}`);
+            if (input) {
+                ageRelations[charId] = parseInt(input.value) || 0;
+            }
+        });
+        
         const playerCharSelect = document.getElementById('playerCharSelect');
         const customCharName = document.getElementById('customCharName');
         let playerChar = playerCharSelect?.value || '';
@@ -812,11 +1157,50 @@
         }
         
         try {
-            await Story.start({ characters: chars, scene, playerChar });
+            await Story.start({ 
+                characters: chars, 
+                scene, 
+                playerChar,
+                timeConfig: {
+                    protagonistAge: protagonistStartAge,
+                    startYear: storyStartYear,
+                    ageRelations: ageRelations
+                }
+            });
             showPage('story');
+            updateStoryRightPanel();
         } catch (err) {
             alert('错误：' + err.message);
         }
+    };
+    
+    window.toggleTimeConfig = function() {
+        const content = document.getElementById('timeConfigContent');
+        if (content) {
+            content.style.display = content.style.display === 'none' ? 'block' : 'none';
+        }
+    };
+    
+    window.autoCalcAgeRelations = function() {
+        const world = Data.getCurrentWorld();
+        if (!world) return;
+        
+        const chars = Data.getCharacters(world.id);
+        const protagonistAgeInput = document.getElementById('protagonistStartAge');
+        const newProtagonistAge = parseInt(protagonistAgeInput?.value || '18');
+        
+        const protagonist = chars.find(c => c.role === '主角' || c.role === '女主');
+        const originalProtagonistAge = protagonist?.age || 18;
+        
+        chars.forEach(c => {
+            if (c.role !== '主角' && c.role !== '女主') {
+                const input = document.getElementById(`ageRelation_${c.id}`);
+                if (input) {
+                    const originalDiff = c.age - originalProtagonistAge;
+                    input.value = originalDiff;
+                }
+            }
+        });
     };
     
     window.onPlayerCharChange = function() {
@@ -829,12 +1213,227 @@
         }
     };
     
+    window.showStoryCharSelector = function() {
+        const selector = document.getElementById('storyCharSelector');
+        selector.style.display = selector.style.display === 'none' ? 'block' : 'none';
+    };
+    
     window.continueStory = async function() {
+        const selectedCharIds = Array.from(document.querySelectorAll('input[name="storyCharsContinue"]:checked')).map(c => c.value);
+        const world = Data.getCurrentWorld();
+        
+        const currentStory = Story.load(world.id);
+        const currentCharIds = currentStory?.characters?.map(c => c.id) || [];
+        
+        const addedChars = selectedCharIds.filter(id => !currentCharIds.includes(id));
+        const stillPresentChars = selectedCharIds.filter(id => currentCharIds.includes(id));
+        
+        const allChars = Data.getCharacters(world.id);
+        
+        const addedCharInfo = addedChars.map(id => {
+            const char = allChars.find(c => c.id === id);
+            return char ? `${char.name}` : '';
+        }).filter(Boolean);
+        
+        const stillPresentCharInfo = stillPresentChars.map(id => {
+            const char = allChars.find(c => c.id === id);
+            return char ? `${char.name}` : '';
+        }).filter(Boolean);
+        
+        let charChangeNote = '';
+        if (addedCharInfo.length > 0 || stillPresentCharInfo.length > 0) {
+            charChangeNote = '\n\n【参与角色调整】';
+            if (stillPresentCharInfo.length > 0) {
+                charChangeNote += `\n继续参与的角色：${stillPresentCharInfo.join('、')}`;
+            }
+            if (addedCharInfo.length > 0) {
+                charChangeNote += `\n新加入的角色：${addedCharInfo.join('、')}（这些角色与主角可能还不熟悉，需要适当介绍）`;
+            }
+        }
+        
         try {
-            await Story.continue();
+            await Story.continue(null, { 
+                characters: selectedCharIds,
+                charChangeNote: charChangeNote
+            });
             showPage('story');
+            updateStoryRightPanel();
         } catch (err) {
             alert('错误：' + err.message);
+        }
+    };
+    
+    window.continueStoryWithNewChars = async function() {
+        const selectedCharIds = Array.from(document.querySelectorAll('input[name="storyCharsContinue"]:checked')).map(c => c.value);
+        const world = Data.getCurrentWorld();
+        
+        const currentStory = Story.load(world.id);
+        const currentCharIds = currentStory?.characters?.map(c => c.id) || [];
+        
+        const addedChars = selectedCharIds.filter(id => !currentCharIds.includes(id));
+        const stillPresentChars = selectedCharIds.filter(id => currentCharIds.includes(id));
+        
+        const allChars = Data.getCharacters(world.id);
+        
+        const addedCharInfo = addedChars.map(id => {
+            const char = allChars.find(c => c.id === id);
+            return char ? `${char.name}` : '';
+        }).filter(Boolean);
+        
+        const stillPresentCharInfo = stillPresentChars.map(id => {
+            const char = allChars.find(c => c.id === id);
+            return char ? `${char.name}` : '';
+        }).filter(Boolean);
+        
+        let charChangeNote = '';
+        if (addedCharInfo.length > 0 || stillPresentCharInfo.length > 0) {
+            charChangeNote = '\n\n【参与角色调整】';
+            if (stillPresentCharInfo.length > 0) {
+                charChangeNote += `\n继续参与的角色：${stillPresentCharInfo.join('、')}`;
+            }
+            if (addedCharInfo.length > 0) {
+                charChangeNote += `\n新加入的角色：${addedCharInfo.join('、')}（这些角色与主角可能还不熟悉，需要适当介绍）`;
+            }
+        }
+        
+        try {
+            await Story.continue(null, { 
+                characters: selectedCharIds,
+                charChangeNote: charChangeNote,
+                generateNewScene: true
+            });
+            showPage('story');
+            updateStoryRightPanel();
+            document.getElementById('storyCharSelector').style.display = 'none';
+        } catch (err) {
+            alert('错误：' + err.message);
+        }
+    };
+    
+    window.refreshChoicesWithNewChars = async function() {
+        const selectedCharIds = Array.from(document.querySelectorAll('input[name="storyCharsContinue"]:checked')).map(c => c.value);
+        const world = Data.getCurrentWorld();
+        
+        const currentStory = Story.load(world.id);
+        const currentCharIds = currentStory?.characters?.map(c => c.id) || [];
+        
+        const addedChars = selectedCharIds.filter(id => !currentCharIds.includes(id));
+        const stillPresentChars = selectedCharIds.filter(id => currentCharIds.includes(id));
+        
+        const allChars = Data.getCharacters(world.id);
+        
+        const addedCharInfo = addedChars.map(id => {
+            const char = allChars.find(c => c.id === id);
+            return char ? `${char.name}` : '';
+        }).filter(Boolean);
+        
+        const stillPresentCharInfo = stillPresentChars.map(id => {
+            const char = allChars.find(c => c.id === id);
+            return char ? `${char.name}` : '';
+        }).filter(Boolean);
+        
+        let charChangeNote = '';
+        if (addedCharInfo.length > 0 || stillPresentCharInfo.length > 0) {
+            charChangeNote = '\n\n【参与角色调整】';
+            if (stillPresentCharInfo.length > 0) {
+                charChangeNote += `\n继续参与的角色：${stillPresentCharInfo.join('、')}`;
+            }
+            if (addedCharInfo.length > 0) {
+                charChangeNote += `\n新加入的角色：${addedCharInfo.join('、')}（这些角色与主角可能还不熟悉，需要适当介绍）`;
+            }
+        }
+        
+        try {
+            const newChoices = await Story.refreshChoices(currentStory, {
+                characters: selectedCharIds,
+                charChangeNote: charChangeNote
+            });
+            
+            const lastSceneIndex = currentStory.scenes.length - 1;
+            if (currentStory.scenes[lastSceneIndex]) {
+                currentStory.scenes[lastSceneIndex].choices = newChoices;
+            }
+            
+            Data.saveStory(world.id, currentStory);
+            
+            showPage('story');
+            updateStoryRightPanel();
+            document.getElementById('storyCharSelector').style.display = 'none';
+        } catch (err) {
+            alert('错误：' + err.message);
+        }
+    };
+    
+    window.getRecommendedChars = async function() {
+        const world = Data.getCurrentWorld();
+        if (!world) return;
+        
+        const story = Story.load(world.id);
+        if (!story || !story.scenes || story.scenes.length === 0) {
+            alert('暂无剧情内容，无法推荐角色');
+            return;
+        }
+        
+        const allChars = Data.getCharacters(world.id);
+        if (allChars.length === 0) {
+            alert('暂无角色数据');
+            return;
+        }
+        
+        const recentScenes = story.scenes.slice(-3);
+        const recentContent = recentScenes.map(s => s.content).join('\n\n');
+        const currentCharNames = story.characters?.map(c => c.name).join('、') || '无';
+        const allCharNames = allChars.map(c => c.name).join('、');
+        
+        const prompt = `根据以下最近的故事剧情，推荐接下来最应该参与剧情的角色。
+
+【当前参与角色】：${currentCharNames}
+【所有可用角色】：${allCharNames}
+
+【最近剧情】：
+${recentContent}
+
+请根据剧情发展和人物关系，推荐3-5个最适合参与下一段剧情的角色。只返回角色名字，用顿号分隔，不需要其他解释。`;
+
+        try {
+            const loadingDiv = document.getElementById('recommendedChars');
+            const loadingList = document.getElementById('recommendedCharsList');
+            loadingDiv.style.display = 'block';
+            loadingList.innerHTML = '<span style="color: var(--bg); font-size: 0.8rem;">正在分析剧情...</span>';
+            
+            const result = await ai.call(prompt, { 
+                system: '你是一个故事创作助手，擅长分析剧情和人物关系。',
+                temperature: 0.3
+            });
+            
+            const recommended = result.split(/[、，,]/).map(s => s.trim()).filter(s => s.length > 0);
+            
+            const matchedChars = allChars.filter(c => 
+                recommended.some(r => c.name.includes(r) || r.includes(c.name))
+            );
+            
+            loadingList.innerHTML = matchedChars.map(c => `
+                <button class="btn btn-secondary" onclick="toggleRecommendChar('${c.id}')" 
+                    style="padding: 4px 8px; font-size: 0.75rem; background: var(--bg); color: var(--accent);">
+                    ${c.name}
+                </button>
+            `).join('');
+            
+            matchedChars.forEach(c => {
+                const checkbox = document.querySelector(`input[name="storyCharsContinue"][value="${c.id}"]`);
+                if (checkbox) checkbox.checked = true;
+            });
+            
+        } catch (err) {
+            console.error('推荐角色失败:', err);
+            alert('推荐角色失败，请重试');
+        }
+    };
+    
+    window.toggleRecommendChar = function(charId) {
+        const checkbox = document.querySelector(`input[name="storyCharsContinue"][value="${charId}"]`);
+        if (checkbox) {
+            checkbox.checked = !checkbox.checked;
         }
     };
 
@@ -842,9 +1441,21 @@
         try {
             await Story.continue(choice);
             showPage('story');
+            updateStoryRightPanel();
         } catch (err) {
             alert('错误：' + err.message);
         }
+    };
+    
+    window.updateStoryRightPanel = function() {
+        const world = Data.getCurrentWorld();
+        if (!world) return;
+        
+        const right = document.getElementById('rightPanel');
+        if (!right) return;
+        
+        const story = Story.load(world.id);
+        renderStoryRightPanel(right, world, story);
     };
 
     window.showCustomChoiceInput = function() {
@@ -882,6 +1493,15 @@
     window.endStory = async function() {
         try {
             const archive = await Story.end();
+            
+            if (typeof AchievementPlugin !== 'undefined') {
+                AchievementPlugin.updateStats('story_end');
+                const wordCount = archive.scenes ? archive.scenes.reduce((sum, s) => sum + (s.content?.length || 0), 0) : 0;
+                if (wordCount > 0) {
+                    AchievementPlugin.updateStats('total_words', wordCount);
+                }
+            }
+            
             closeModal();
             alert(`故事已结束！\n标题：${archive.title}\n幕数：${archive.sceneCount}`);
             showPage('story');
@@ -1057,7 +1677,7 @@
 
         const categoryHtml = categories.map(cat => {
             const items = pluginItems[cat.id] || [];
-            const optionsHtml = items.slice(0, 10).map((item, idx) => `
+            const optionsHtml = items.map((item, idx) => `
                 <label style="display: block; padding: 8px 12px; background: var(--bg); border-radius: 6px; cursor: pointer; margin-bottom: 4px; transition: all 0.2s;"
                        onmouseover="this.style.background='var(--accent-dim)'" 
                        onmouseout="this.style.background='var(--bg)'">
@@ -1075,7 +1695,7 @@
                         <span style="font-weight: bold;">${cat.name}</span>
                         <span style="font-size: 0.8rem; color: var(--text-dim);">${cat.desc}</span>
                     </label>
-                    <div class="intimate-category-options" id="options_${cat.id}" style="max-height: 150px; overflow-y: auto; padding: 8px; background: var(--bg); border-radius: 8px; display: none;">
+                    <div class="intimate-category-options" id="options_${cat.id}" style="max-height: 400px; overflow-y: auto; padding: 8px; background: var(--bg); border-radius: 8px; display: none;">
                         ${optionsHtml || '<div style="color: var(--text-dim); text-align: center;">无可用选项</div>'}
                     </div>
                 </div>
@@ -1377,6 +1997,18 @@
             alert('没有可应用的内容');
             return;
         }
+        
+        if (typeof AchievementPlugin !== 'undefined') {
+            let intimateType = 'general';
+            if (prompt.includes('姿势')) intimateType = 'poses';
+            else if (prompt.includes('动作')) intimateType = 'actions';
+            else if (prompt.includes('部位')) intimateType = 'body';
+            else if (prompt.includes('对话')) intimateType = 'dialogue';
+            else if (prompt.includes('风格')) intimateType = 'style';
+            
+            AchievementPlugin.updateStats('intimate', { type: intimateType, pose: prompt.includes('姿势') ? prompt : null });
+        }
+        
         closeModal();
         makeChoice(prompt);
     };
@@ -1536,6 +2168,10 @@
     window.exportArchive = function(archiveId) {
         try {
             Story.exportArchive(archiveId);
+            
+            if (typeof AchievementPlugin !== 'undefined') {
+                AchievementPlugin.updateStats('export');
+            }
         } catch (err) {
             alert('导出失败：' + err.message);
         }
@@ -1606,6 +2242,9 @@
             try {
                 const archive = Story.importArchive(e.target.result);
                 if (archive) {
+                    if (typeof AchievementPlugin !== 'undefined') {
+                        AchievementPlugin.updateStats('import');
+                    }
                     showPage('story');
                 }
             } catch (err) {
@@ -1640,10 +2279,16 @@
     window.saveAdultSettings = function() {
         const world = Data.getCurrentWorld();
         const settings = Settings.get(world?.id);
+        const wasEnabled = settings.adult?.enabled;
         settings.adult = settings.adult || {};
         settings.adult.enabled = document.getElementById('adultEnabled').checked;
         settings.adult.intensity = parseInt(document.getElementById('adultIntensity').value);
         Settings.save(world?.id, settings);
+        
+        if (!wasEnabled && settings.adult.enabled && typeof AchievementPlugin !== 'undefined') {
+            AchievementPlugin.updateStats('adult_enable');
+        }
+        
         alert('成人设置已保存');
     };
     
@@ -1679,15 +2324,15 @@
         document.getElementById('modal').classList.add('active');
     };
 
-    window.showCharTasks = function() {
+    window.showCharAchievements = function() {
         const world = Data.getCurrentWorld();
         if (!world) return;
         
-        const tasksHtml = View.render('task.main', world.id);
+        const achievementsHtml = View.render('achievement.main', world.id);
         
-        document.getElementById('modalTitle').textContent = '任务中心';
+        document.getElementById('modalTitle').textContent = '成就中心';
         document.getElementById('modalBody').innerHTML = `
-            ${tasksHtml}
+            ${achievementsHtml}
         `;
         document.getElementById('modal').classList.add('active');
     };
@@ -1749,9 +2394,9 @@
                     content = '<div class="empty">请先选择一个世界</div>';
                 }
                 break;
-            case 'task':
+            case 'achievement':
                 if (world) {
-                    content = View.render('task.main', world.id);
+                    content = View.render('achievement.main', world.id);
                 } else {
                     content = '<div class="empty">请先选择一个世界</div>';
                 }

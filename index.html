@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AI故事 - 2.0</title>
+    <title>AI故事 - 5.0</title>
     <link rel="stylesheet" href="css/main.css">
 </head>
 <body>
@@ -16,6 +16,7 @@
                 <button class="nav-btn" data-page="worlds">🌍 世界</button>
                 <button class="nav-btn" data-page="characters">👤 角色</button>
                 <button class="nav-btn" data-page="story">📖 故事</button>
+                <button class="nav-btn" data-page="story-config">📝 AI设置</button>
                 <button class="nav-btn" data-page="storage">📦 存储库</button>
                 <button class="nav-btn" data-page="settings">⚙️ 设置</button>
                 <button class="nav-btn" data-page="plugins">🔌 插件</button>
@@ -41,14 +42,22 @@
 
     <div class="mobile-nav" id="mobileNav"></div>
 
+    <script src="js/common/keyboard.js"></script>
+    <script src="js/common/history.js"></script>
+    <script src="js/common/backup.js"></script>
+    <script src="js/common/loading.js"></script>
+    <script src="js/common/indexeddb.js"></script>
     <script src="js/plugin.js"></script>
     <script src="js/view.js"></script>
     
     <script src="js/plugins/inventory/index.js"></script>
-    <script src="js/plugins/task/index.js"></script>
+    <script src="js/plugins/shop/index.js"></script>
+    <script src="js/plugins/story-config/index.js"></script>
+    <script src="js/plugins/world-time/index.js"></script>
     
     <script src="js/plugins/inventory/view.js"></script>
-    <script src="js/plugins/task/view.js"></script>
+    <script src="js/plugins/shop/view.js"></script>
+    <script src="js/plugins/story-config/view.js"></script>
     
     <script src="js/ai.js"></script>
     <script src="js/data.js"></script>

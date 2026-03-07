@@ -2,22 +2,23 @@ const HentaiUserContent = {
     basePath: '',
     cache: {},
     
-    async init() {
+    async init(basePathOverride) {
         console.log('📝 Hentai User Content Loader Initializing...');
         
-        const scripts = document.getElementsByTagName('script');
-        let currentScript = '';
-        for (let s of scripts) {
-            if (s.src && s.src.includes('hentai-user-content')) {
-                currentScript = s.src;
-                break;
-            }
-        }
-        
-        if (currentScript) {
-            this.basePath = currentScript.replace('hentai-user-content.js', '') + 'user-content/';
+        if (basePathOverride && !basePathOverride.includes('js/plugins/adult-library/js/plugins')) {
+            this.basePath = basePathOverride;
         } else {
-            this.basePath = 'user-content/';
+            const scripts = document.getElementsByTagName('script');
+            for (let script of scripts) {
+                if (script.src && script.src.includes('hentai-user-content.js')) {
+                    const basePath = script.src.substring(0, script.src.lastIndexOf('/') + 1);
+                    this.basePath = basePath + 'user-content/';
+                    break;
+                }
+            }
+            if (!this.basePath) {
+                this.basePath = 'js/plugins/adult-library/user-content/';
+            }
         }
         
         console.log('📝 Base path:', this.basePath);

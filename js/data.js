@@ -151,6 +151,64 @@ const Data = {
         this._saveWorldData(worldId, data);
     },
 
+    getGroups(worldId) {
+        const data = this._loadWorldData(worldId);
+        return data.groups || [];
+    },
+
+    getGroup(worldId, groupId) {
+        const groups = this.getGroups(worldId);
+        return groups.find(g => g.id === groupId);
+    },
+
+    createGroup(worldId, config) {
+        const data = this._loadWorldData(worldId);
+        data.groups = data.groups || [];
+        const group = {
+            id: this._genId(),
+            name: config.name || '新组合',
+            description: config.description || '',
+            characterIds: config.characterIds || [],
+            created: Date.now()
+        };
+        data.groups.push(group);
+        this._saveWorldData(worldId, data);
+        return group;
+    },
+
+    updateGroup(worldId, groupId, updates) {
+        const data = this._loadWorldData(worldId);
+        const group = data.groups?.find(g => g.id === groupId);
+        if (group) {
+            Object.assign(group, updates);
+            this._saveWorldData(worldId, data);
+        }
+    },
+
+    deleteGroup(worldId, groupId) {
+        const data = this._loadWorldData(worldId);
+        data.groups = data.groups?.filter(g => g.id !== groupId) || [];
+        this._saveWorldData(worldId, data);
+    },
+
+    addCharacterToGroup(worldId, groupId, charId) {
+        const data = this._loadWorldData(worldId);
+        const group = data.groups?.find(g => g.id === groupId);
+        if (group && !group.characterIds.includes(charId)) {
+            group.characterIds.push(charId);
+            this._saveWorldData(worldId, data);
+        }
+    },
+
+    removeCharacterFromGroup(worldId, groupId, charId) {
+        const data = this._loadWorldData(worldId);
+        const group = data.groups?.find(g => g.id === groupId);
+        if (group) {
+            group.characterIds = group.characterIds.filter(id => id !== charId);
+            this._saveWorldData(worldId, data);
+        }
+    },
+
     saveStory(worldId, story) {
         const data = this._loadWorldData(worldId);
         data.story = story;

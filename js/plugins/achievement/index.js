@@ -12,22 +12,32 @@ PluginSystem.register('achievement', {
             localStorage.removeItem('achievement_library');
         }
 
-        try {
-            const response = await fetch('./user-content/achievements.txt');
-            const text = await response.text();
-            const achievements = this._parseAchievementsText(text);
-            if (achievements.length > 0) {
-                const library = this.getAchievementLibrary();
-                const existingNames = library.map(a => a.name);
-                achievements.forEach(ach => {
-                    if (!existingNames.includes(ach.name)) {
-                        this.addToLibrary(ach);
+        const possiblePaths = [
+            './js/plugins/achievement/user-content/achievements.txt',
+            './user-content/achievements.txt'
+        ];
+
+        for (const path of possiblePaths) {
+            try {
+                const response = await fetch(path);
+                if (response && response.ok) {
+                    const text = await response.text();
+                    const achievements = this._parseAchievementsText(text);
+                    if (achievements.length > 0) {
+                        const library = this.getAchievementLibrary();
+                        const existingNames = library.map(a => a.name);
+                        achievements.forEach(ach => {
+                            if (!existingNames.includes(ach.name)) {
+                                this.addToLibrary(ach);
+                            }
+                        });
+                        console.log('Achievements loaded from:', path);
+                        return Promise.resolve();
                     }
-                });
-                return Promise.resolve();
+                }
+            } catch (e) {
+                console.warn('Failed to load achievements from', path, e);
             }
-        } catch (e) {
-            console.warn('Failed to load achievements preset:', e);
         }
 
         this._addHardcodedDefaults();
@@ -177,5 +187,19 @@ PluginSystem.register('achievement', {
         let achievements = JSON.parse(localStorage.getItem(key) || '[]');
         achievements = achievements.filter(a => a.id !== achievementId);
         localStorage.setItem(key, JSON.stringify(achievements));
+    },
+
+    updateStats(eventType, data) {
+        const worldId = Data.getCurrentWorld()?.id;
+        if (!worldId) return;
+
+        const achievements = this.getAchievements(worldId);
+        achievements.forEach(ach => {
+            if (ach.status !== 'completed') {
+                this.updateAchievementProgress(worldId, ach.id, ach.progress + 1);
+            }
+        });
+
+        PluginSystem.triggerPluginEvent('achievementUpdated', { eventType, data });
     }
 });

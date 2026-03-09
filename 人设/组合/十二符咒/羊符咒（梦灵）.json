@@ -1,0 +1,38 @@
+{
+  "id": "mmakqnjz6reyh0rjixy",
+  "name": "羊符咒（梦灵）",
+  "role": "符咒",
+  "gender": "女",
+  "age": 16,
+  "profile": {
+    "race": "符咒精灵",
+    "occupation": "梦境行者",
+    "height": "158cm",
+    "appearance": "身高158cm，身材娇小玲珑，淡粉色长发如瀑布般披肩，发梢自然卷曲，仿佛被梦境的微风轻轻吹拂。皮肤白皙如月光，透着淡淡的粉色，眼睛梦幻如星空，总是带着一丝迷离的神情。穿着淡紫色轻纱连衣裙，薄纱材质随风飘动，若隐若现地勾勒出少女青涩的曲线，胸前发育中的双峰小巧精致，腰间系着金色羊形装饰，整体气质飘逸如仙，仿佛随时会融入梦境之中。",
+    "personality": "梦幻、神秘、温柔，性格内向，喜欢幻想",
+    "hobby": "幻想、做梦",
+    "favorite": "梦境",
+    "dislike": "现实",
+    "backstory": "羊符咒的拟人化形态，拥有灵魂出窍的能力。她性格梦幻神秘，总是沉浸在自己的世界里。她对性方面充满好奇，喜欢浪漫的氛围。",
+    "catchphrase": "像梦一样~"
+  },
+  "adultProfile": {
+    "sexuality": "异性恋",
+    "sensitiveParts": "耳朵、颈部、胸部、腰部",
+    "fetish": "浪漫、梦境",
+    "fantasy": "在梦境中与爱人温柔缠绵",
+    "limits": "粗暴、现实",
+    "fantasies": "月光下、花瓣雨、梦幻场景"
+  },
+  "stats": {
+    "health": 90,
+    "energy": 100,
+    "arousal": 0,
+    "affection": 50,
+    "sexualExperience": 0,
+    "sexualSensitivity": 50,
+    "sexualSatisfaction": 50,
+    "sexualFantasy": 0
+  },
+  "relationship": "符咒精灵"
+}

@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>成人标签系统 - AI故事</title>
+    <link rel="stylesheet" href="../../../css/main.css">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="app">
+        <div class="sidebar">
+            <h1>✨ AI故事</h1>
+            <nav>
+                <button class="nav-btn" onclick="window.location.href='../../../index.html?page=plugins'">⬅️ 返回</button>
+                <button class="nav-btn" onclick="window.location.href='../../../index.html'">🏠 首页</button>
+                <button class="nav-btn" onclick="window.location.href='../../../index.html?page=worlds'">🌍 世界</button>
+                <button class="nav-btn" onclick="window.location.href='../../../index.html?page=characters'">👤 角色</button>
+                <button class="nav-btn" onclick="window.location.href='../character-editor/index.html'">🧩 角色插件</button>
+                <button class="nav-btn" onclick="window.location.href='../../../index.html?page=story'">📖 故事</button>
+                <button class="nav-btn" onclick="window.location.href='../../../index.html?page=settings'">⚙️ 设置</button>
+                <button class="nav-btn" onclick="window.location.href='../../../index.html?page=plugins'">🔌 插件</button>
+            </nav>
+        </div>
+        
+        <div class="main" id="mainContent"></div>
+        
+        <div class="right">
+            <div id="rightPanel"></div>
+        </div>
+    </div>
+    
+    <div class="modal" id="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 id="modalTitle">标题</h3>
+                <button class="modal-close" onclick="closeModal()">×</button>
+            </div>
+            <div id="modalBody"></div>
+        </div>
+    </div>
+
+    <div class="mobile-nav" id="mobileNav"></div>
+
+    <script src="../../plugin.js"></script>
+    <script src="../../view.js"></script>
+    
+    <script src="index.js"></script>
+    <script src="view.js"></script>
+    
+    <script src="../../ai.js"></script>
+    <script src="../../data.js"></script>
+    <script src="../../settings.js"></script>
+    <script src="../../story.js"></script>
+    <script>
+        (function() {
+            const mobileNavItems = [
+                { page: 'plugins', icon: '🔌', label: '插件', url: '../../../index.html?page=plugins' },
+                { page: 'home', icon: '🏠', label: '首页', url: '../../../index.html' },
+                { page: 'settings', icon: '⚙️', label: '设置', url: '../../../index.html?page=settings' }
+            ];
+            
+            async function init() {
+                setupMobileNav();
+                if (PluginSystem && !PluginSystem.loaded) {
+                    await PluginSystem.init();
+                }
+                renderAdultTagsPage();
+            }
+
+            function setupMobileNav() {
+                const mobileNav = document.getElementById('mobileNav');
+                if (!mobileNav) return;
+                
+                mobileNav.innerHTML = mobileNavItems.map(item => `
+                    <button class="mobile-nav-btn" data-url="${item.url}">
+                        <span class="icon">${item.icon}</span>
+                        <span class="label">${item.label}</span>
+                    </button>
+                `).join('');
+                
+                mobileNav.querySelectorAll('.mobile-nav-btn').forEach(btn => {
+                    btn.addEventListener('click', () => {
+                        const url = btn.dataset.url;
+                        if (url) {
+                            window.location.href = url;
+                        }
+                    });
+                });
+            }
+
+            function renderAdultTagsPage() {
+                const main = document.getElementById('mainContent');
+                const world = Data.getCurrentWorld();
+                
+                if (!world) {
+                    main.innerHTML = `
+                        <h2>成人标签系统</h2>
+                        <p class="desc">管理兴奋值、尺度和标签库</p>
+                        <div class="empty">请先在"世界"页面选择一个世界</div>
+                    `;
+                    return;
+                }
+                
+                const content = View.render('adultTags.main', world.id);
+                main.innerHTML = `
+                    <h2>成人标签系统</h2>
+                    <p class="desc">当前世界：${world.name}</p>
+                    <div id="adultTagsContent">
+                        ${content}
+                    </div>
+                `;
+            }
+
+            window.closeModal = function() {
+                document.getElementById('modal').classList.remove('active');
+                renderAdultTagsPage();
+            };
+
+            window.showPage = function(page) {
+                renderAdultTagsPage();
+            };
+
+            document.addEventListener('DOMContentLoaded', init);
+        })();
+    </script>
+</body>
+</html>

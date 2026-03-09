@@ -1,0 +1,38 @@
+{
+  "id": "mmakqnjzejqcnput3js",
+  "name": "蛇符咒（幽影）",
+  "role": "符咒",
+  "gender": "女",
+  "age": 18,
+  "profile": {
+    "race": "符咒精灵",
+    "occupation": "隐匿者",
+    "height": "165cm",
+    "appearance": "身高165cm，身材苗条婀娜，紫色长发如瀑布般披肩，发梢自然卷曲，皮肤白皙如月光，透着淡淡的紫色光晕。眼睛深邃神秘，如紫色宝石般闪亮，眼尾上翘带着勾人的妩媚。穿着紫色紧身衣，完美勾勒出她的曲线，胸部丰满挺拔，腰部纤细如蛇，臀部圆润挺翘，双腿修长，腰间系着金色蛇形装饰，整体气质神秘妩媚，仿佛一条诱惑的美女蛇。",
+    "personality": "神秘、优雅、妩媚，性格沉稳，喜欢独处",
+    "hobby": "独处、冥想",
+    "favorite": "神秘",
+    "dislike": "嘈杂",
+    "backstory": "蛇符咒的拟人化形态，拥有隐身能力。她性格神秘优雅，总是给人一种捉摸不透的感觉。她对性方面比较开放，喜欢玩暧昧。",
+    "catchphrase": "你看不到我~"
+  },
+  "adultProfile": {
+    "sexuality": "异性恋",
+    "sensitiveParts": "颈部、耳朵、胸部、蛇尾",
+    "fetish": "暧昧、隐身",
+    "fantasy": "在隐身状态下与爱人玩暧昧游戏",
+    "limits": "粗暴、暴露",
+    "fantasies": "蛇女、诱惑、神秘场景"
+  },
+  "stats": {
+    "health": 100,
+    "energy": 100,
+    "arousal": 0,
+    "affection": 50,
+    "sexualExperience": 0,
+    "sexualSensitivity": 50,
+    "sexualSatisfaction": 50,
+    "sexualFantasy": 0
+  },
+  "relationship": "符咒精灵"
+}

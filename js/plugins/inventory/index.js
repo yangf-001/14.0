@@ -11,25 +11,35 @@ PluginSystem.register('inventory', {
         const library = this.getItemLibrary();
         if (library.length > 0 && !force) return Promise.resolve();
         
-        try {
-            const response = await fetch('./user-content/items.txt');
-            const text = await response.text();
-            const items = this._parseItemsText(text);
-            if (items.length > 0) {
-                if (force) {
-                    items.forEach(item => this.addToLibrary(item));
-                } else {
-                    const existingNames = library.map(i => i.name);
-                    items.forEach(item => {
-                        if (!existingNames.includes(item.name)) {
-                            this.addToLibrary(item);
+        const possiblePaths = [
+            './js/plugins/inventory/user-content/items.txt',
+            './user-content/items.txt'
+        ];
+        
+        for (const path of possiblePaths) {
+            try {
+                const response = await fetch(path);
+                if (response && response.ok) {
+                    const text = await response.text();
+                    const items = this._parseItemsText(text);
+                    if (items.length > 0) {
+                        if (force) {
+                            items.forEach(item => this.addToLibrary(item));
+                        } else {
+                            const existingNames = library.map(i => i.name);
+                            items.forEach(item => {
+                                if (!existingNames.includes(item.name)) {
+                                    this.addToLibrary(item);
+                                }
+                            });
                         }
-                    });
+                        console.log('Inventory items loaded from:', path);
+                        return Promise.resolve();
+                    }
                 }
-                return Promise.resolve();
+            } catch (e) {
+                console.warn('Failed to load items from', path, e);
             }
-        } catch (e) {
-            console.warn('Failed to load items preset:', e);
         }
         
         this._addHardcodedDefaults();

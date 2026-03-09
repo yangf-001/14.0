@@ -1,0 +1,38 @@
+{
+  "id": "mmakqnjzdnfbtrr84f",
+  "name": "牛符咒（力蛮）",
+  "role": "符咒",
+  "gender": "女",
+  "age": 19,
+  "profile": {
+    "race": "符咒精灵",
+    "occupation": "保护者",
+    "height": "172cm",
+    "appearance": "身高172cm，身材健壮而性感，黑色长发高高扎成马尾辫，发丝在运动中飞舞。皮肤呈健康的小麦色，肌肉线条明显但不失女性曲线，胸部丰满挺拔，臀部紧实有弹性。眼睛坚定有神，如黑曜石般深邃，穿着红色运动背心和短裤，露出结实的手臂和修长的双腿，腰间系着金色牛形装饰，跑动时胸前波涛起伏，充满力量感。",
+    "personality": "豪爽、直率、有力量感，性格开朗，喜欢保护别人",
+    "hobby": "运动、保护他人",
+    "favorite": "力量训练",
+    "dislike": "软弱",
+    "backstory": "牛符咒的拟人化形态，拥有超强力量的能力。她性格豪爽直率，总是充满活力，喜欢保护弱小。她对性方面比较直接，喜欢主动出击。",
+    "catchphrase": "有我在，没问题！"
+  },
+  "adultProfile": {
+    "sexuality": "异性恋",
+    "sensitiveParts": "胸部、臀部、腰部、乳头",
+    "fetish": "力量展示、征服",
+    "fantasy": "在力量训练后与爱人热情相拥",
+    "limits": "虐待、羞辱",
+    "fantasies": "女上位、野外、浴室"
+  },
+  "stats": {
+    "health": 100,
+    "energy": 100,
+    "arousal": 0,
+    "affection": 50,
+    "sexualExperience": 0,
+    "sexualSensitivity": 50,
+    "sexualSatisfaction": 50,
+    "sexualFantasy": 0
+  },
+  "relationship": "符咒精灵"
+}

@@ -1,0 +1,38 @@
+{
+  "id": "qiyuansu6",
+  "name": "光（希望）",
+  "role": "元素",
+  "gender": "女",
+  "age": 18,
+  "profile": {
+    "race": "元素精灵",
+    "occupation": "光灵",
+    "height": "167cm",
+    "appearance": "身高167cm，身材高挑优雅，金色长发如阳光般灿烂，发梢自然卷曲，肌肤若光般散发着柔和的光芒，透着淡淡的金色光晕。眼眸如晨曦般温暖，眼尾微微上翘增添温柔。身穿由光芒编织的金白色纱裙，薄纱材质随风飘动，若隐若现地勾勒出她的曲线，胸部丰满挺拔，腰部纤细，臀部圆润挺翘，双腿修长，周身散发着温暖治愈的气息，仿佛光明的化身。",
+    "personality": "温暖、希望、治愈，性格温柔，充满爱心",
+    "hobby": "照耀、治愈、引领",
+    "favorite": "希望",
+    "dislike": "绝望",
+    "backstory": "光元素精灵的拟人化形态，象征希望与治愈。作为光明的化身，她代表着温暖与希望。她的光芒能够驱散黑暗，治愈一切伤痛，给人们带来希望。",
+    "catchphrase": "光芒照耀，希望永存~"
+  },
+  "adultProfile": {
+    "sexuality": "异性恋",
+    "sensitiveParts": "颈部、耳朵、胸部、腰部",
+    "fetish": "光芒、治愈",
+    "fantasy": "在光芒中与爱人温柔相拥",
+    "limits": "绝望、黑暗",
+    "fantasies": "光芒、治愈、温柔"  
+  },
+  "stats": {
+    "health": 100,
+    "energy": 100,
+    "arousal": 0,
+    "affection": 50,
+    "sexualExperience": 0,
+    "sexualSensitivity": 50,
+    "sexualSatisfaction": 50,
+    "sexualFantasy": 0
+  },
+  "relationship": "元素精灵"
+}

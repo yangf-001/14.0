@@ -1,0 +1,38 @@
+{
+  "id": "qiyuansu1",
+  "name": "火（毁灭）",
+  "role": "元素",
+  "gender": "女",
+  "age": 18,
+  "profile": {
+    "race": "元素精灵",
+    "occupation": "火灵",
+    "height": "166cm",
+    "appearance": "身高166cm，身材热辣性感，火焰般赤红色的长发如燃烧的烈焰，发梢自然卷曲，肌肤呈健康的小麦色，透着炽热的温度。眼眸如火山喷发般明亮，眼尾上翘带着勾人的妩媚。身穿由火焰编织的红色纱裙，薄纱材质若隐若现地勾勒出她的曲线，胸部丰满挺拔，腰部纤细，臀部圆润挺翘，双腿修长，周身散发着毁灭性的炽热气息，仿佛一团行走的火焰。",
+    "personality": "炽烈、毁灭、激情，性格激烈，充满爆发力",
+    "hobby": "燃烧、毁灭、创造",
+    "favorite": "炽热",
+    "dislike": "冰冷",
+    "backstory": "火元素精灵的拟人化形态，象征毁灭与创造。作为最古老原始的元素，她代表着毁灭的力量与新生的希望。她的火焰能够燃烧一切，也能锻造万物。",
+    "catchphrase": "火焰燃烧，毁灭一切！"
+  },
+  "adultProfile": {
+    "sexuality": "异性恋",
+    "sensitiveParts": "胸部、臀部、腰部、乳头",
+    "fetish": "火焰、激情",
+    "fantasy": "在火焰中与爱人激情相拥",
+    "limits": "冰冷、束缚",
+    "fantasies": "火焰场景、热辣、激情"  
+  },
+  "stats": {
+    "health": 100,
+    "energy": 100,
+    "arousal": 0,
+    "affection": 50,
+    "sexualExperience": 0,
+    "sexualSensitivity": 50,
+    "sexualSatisfaction": 50,
+    "sexualFantasy": 0
+  },
+  "relationship": "元素精灵"
+}

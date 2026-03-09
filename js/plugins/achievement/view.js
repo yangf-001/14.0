@@ -237,6 +237,3 @@ ViewCallbacks.achievement = {
         document.getElementById('modal').classList.remove('active');
     }
 };
-
-window.ViewCallbacks = window.ViewCallbacks || {};
-Object.assign(window.ViewCallbacks, ViewCallbacks);

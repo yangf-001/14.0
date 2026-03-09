@@ -1,0 +1,38 @@
+{
+  "id": "xingzuo2",
+  "name": "金牛（固执）",
+  "role": "星座",
+  "gender": "女",
+  "age": 19,
+  "profile": {
+    "race": "星座精灵",
+    "occupation": "金牛灵",
+    "height": "165cm",
+    "appearance": "身高165cm，身材丰腴且富有曲线，36D的酥胸饱满圆润，腰肢丰腴适中，臀部圆润翘挺，棕色长发如大地般厚重，肌肤若琥珀般温润，眼眸如大地般沉稳，粉唇如玫瑰般娇艳，身穿金色与棕色相间的华丽长裙，勾勒出丰腴诱人的曲线，手持金色号角，周身散发着稳固可靠的气息",
+    "personality": "固执、稳定、忠诚，性格沉稳，值得信赖",
+    "hobby": "理财、享受美食、艺术",
+    "favorite": "稳定",
+    "dislike": "变动",
+    "backstory": "金牛座精灵的拟人化形态，象征固执与稳定。作为土象星座的代表，她代表着财富与稳固。她性格固执稳定，对认定的事物绝不轻易改变，忠诚可靠。",
+    "catchphrase": "慢工出细活，稳定才是王道~"
+  },
+  "adultProfile": {
+    "sexuality": "异性恋",
+    "sensitiveParts": "乳房、大腿内侧、后腰",
+    "fetish": "舒适的环境、美食前戏、身体按摩",
+    "fantasy": "在温馨的家中与爱人享受美食后亲密，体验稳定而深刻的情感",
+    "limits": "快速的节奏、不稳定的环境",
+    "fantasies": "在豪华的餐厅享用美食后，与爱人在舒适的床上亲密，享受慢节奏的欢愉"
+  },
+  "stats": {
+    "health": 100,
+    "energy": 100,
+    "arousal": 0,
+    "affection": 50,
+    "sexualExperience": 0,
+    "sexualSensitivity": 50,
+    "sexualSatisfaction": 50,
+    "sexualFantasy": 0
+  },
+  "relationship": "星座精灵"
+}

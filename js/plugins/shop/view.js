@@ -389,6 +389,3 @@ ViewCallbacks.shop = {
         return plugin?.spendCharacterMoney(worldId, characterId, amount);
     }
 };
-
-window.ViewCallbacks = window.ViewCallbacks || {};
-Object.assign(window.ViewCallbacks, ViewCallbacks);

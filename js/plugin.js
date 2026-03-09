@@ -1,6 +1,7 @@
 const PluginSystem = {
     plugins: {},
     loaded: false,
+    eventListeners: {},
 
     register(name, plugin) {
         if (this.plugins[name]) {
@@ -45,6 +46,8 @@ const PluginSystem = {
     },
 
     async init() {
+        if (this.loaded) return;
+        
         for (const plugin of Object.values(this.plugins)) {
             if (plugin.enabled && plugin.init) {
                 await plugin.init();
@@ -62,14 +65,32 @@ const PluginSystem = {
         }));
     },
 
+    onPluginEvent(eventName, callback) {
+        if (!this.eventListeners[eventName]) {
+            this.eventListeners[eventName] = [];
+        }
+        this.eventListeners[eventName].push(callback);
+    },
+
     triggerPluginEvent(eventName, data) {
         const enabledPlugins = this.getEnabled();
+        
         for (const plugin of enabledPlugins) {
             if (plugin.onPluginEvent) {
                 try {
                     plugin.onPluginEvent(eventName, data);
                 } catch (e) {
                     console.error(`Plugin ${plugin.name} event error:`, e);
+                }
+            }
+        }
+        
+        if (this.eventListeners[eventName]) {
+            for (const callback of this.eventListeners[eventName]) {
+                try {
+                    callback(eventName, data);
+                } catch (e) {
+                    console.error(`Event listener error for ${eventName}:`, e);
                 }
             }
         }

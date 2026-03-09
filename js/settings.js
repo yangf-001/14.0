@@ -94,8 +94,8 @@ const Settings = {
             ctx.push(`描写程度：${settings.content.detailLevel || '中'}`);
             
             if (settings.adult?.enabled) {
-                const intimacyLabels = ['纯爱', '暧昧', '亲密', '热烈', '激情'];
-                const intimacyIdx = Math.min(4, Math.floor((settings.adult.intensity || 0) / 25));
+                const intimacyLabels = ['纯爱', '暧昧', '亲密', '热烈', '激情', '淫乱', '重口'];
+                const intimacyIdx = Math.min(6, Math.floor((settings.adult.intensity || 0) / 15));
                 ctx.push(`亲密程度：${intimacyLabels[intimacyIdx]}`);
             }
             

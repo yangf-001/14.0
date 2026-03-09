@@ -1,0 +1,38 @@
+{
+  "id": "xingzuo4",
+  "name": "巨蟹（顾家）",
+  "role": "星座",
+  "gender": "女",
+  "age": 18,
+  "profile": {
+    "race": "星座精灵",
+    "occupation": "巨蟹灵",
+    "height": "163cm",
+    "appearance": "身高163cm，身材柔软且富有曲线，36C的酥胸饱满挺拔，腰肢纤细，臀部圆润翘挺，银白色长发如月光般柔和，肌肤若珍珠般莹润，眼眸如海水般温柔，粉唇如樱花般娇嫩，身穿贝壳形状的银白色纱裙，露出精致的锁骨和修长的双腿，手持海螺，周身散发着温柔顾家的气息",
+    "personality": "顾家、温柔、敏感，性格细腻，充满母性",
+    "hobby": "烹饪、照顾家人、回忆",
+    "favorite": "家庭",
+    "dislike": "分离",
+    "backstory": "巨蟹座精灵的拟人化形态，象征顾家与温柔。作为水象星座的代表，她代表着家庭与情感。她性格温柔敏感，非常重视家庭和亲情，是最温暖的守护者。",
+    "catchphrase": "家是最温暖的港湾~"
+  },
+  "adultProfile": {
+    "sexuality": "异性恋",
+    "sensitiveParts": "乳房、颈部、耳垂",
+    "fetish": "温柔的拥抱、亲密的爱抚、浪漫的氛围",
+    "fantasy": "与爱人在温馨的家中亲密，被温柔地呵护",
+    "limits": "粗暴的行为、不尊重的态度",
+    "fantasies": "在月光下的海滩上与爱人亲密，享受浪漫的二人世界"
+  },
+  "stats": {
+    "health": 100,
+    "energy": 100,
+    "arousal": 0,
+    "affection": 50,
+    "sexualExperience": 0,
+    "sexualSensitivity": 50,
+    "sexualSatisfaction": 50,
+    "sexualFantasy": 0
+  },
+  "relationship": "星座精灵"
+}

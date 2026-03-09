@@ -282,7 +282,7 @@ View.register('character.stats', function(worldId, characterId) {
     const DEFAULT_STATS = {
         health: 100, energy: 100, charm: 50, intelligence: 50,
         strength: 50, agility: 50, stamina: 50,
-        sexArousal: 0, sexExperience: 0, sexSkill: 0, sexLibido: 50, sexSensitivity: 50,
+        sexArousal: 0, sexExperience: 0, sexSkill: 0, sexLibido: 50, sexSensitivity: 50, sexExcitement: 0,
         affection: 50, trust: 50, intimacy: 0, corruption: 0, shame: 50
     };
     const stats = { ...DEFAULT_STATS, ...char?.stats };
@@ -296,7 +296,7 @@ View.register('character.stats', function(worldId, characterId) {
     const statLabels = {
         health: '生命', energy: '体力', charm: '魅力', intelligence: '智力', strength: '力量',
         agility: '敏捷', stamina: '耐力',
-        sexArousal: '欲望', sexExperience: '经验', sexSkill: '技巧', sexLibido: '性欲', sexSensitivity: '敏感',
+        sexArousal: '欲望', sexExcitement: '兴奋', sexExperience: '经验', sexSkill: '技巧', sexLibido: '性欲', sexSensitivity: '敏感',
         affection: '好感', trust: '信任', intimacy: '亲密', corruption: '堕落', shame: '羞耻'
     };
     
@@ -453,8 +453,14 @@ ViewCallbacks.inventory = {
         
         let effects = {};
         try {
-            effects = JSON.parse(document.getElementById('itemEffects')?.value || '{}');
-        } catch {}
+            const effectsStr = document.getElementById('itemEffects')?.value;
+            if (effectsStr && effectsStr.trim()) {
+                effects = JSON.parse(effectsStr);
+            }
+        } catch (e) {
+            console.warn('物品效果JSON解析失败:', e);
+            return;
+        }
         
         const plugin = PluginSystem.get('inventory');
         plugin?.addItem(world.id, characterId, {
@@ -493,13 +499,22 @@ View.register('characterRead.basic', function(worldId, characterId) {
 
     const p = char?.profile || {};
     
+    const getDynamicAge = (char) => {
+        if (!char) return '-';
+        const world = Data.getCurrentWorld();
+        if (world && window.WorldTimePlugin) {
+            return window.WorldTimePlugin.getCharacterAge(char, world.id) || char.age || '-';
+        }
+        return char.age || '-';
+    };
+    
     return `
         <div class="card">
             <h4>📋 基础信息</h4>
             <div class="info-grid" style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px;">
                 <div class="info-item"><span class="info-label">名字</span><span class="info-value">${char?.name || '-'}</span></div>
                 <div class="info-item"><span class="info-label">性别</span><span class="info-value">${char?.gender || '-'}</span></div>
-                <div class="info-item"><span class="info-label">年龄</span><span class="info-value">${char?.age || '-'}</span></div>
+                <div class="info-item"><span class="info-label">年龄</span><span class="info-value">${getDynamicAge(char)}岁</span></div>
                 <div class="info-item"><span class="info-label">角色定位</span><span class="info-value">${char?.role || '-'}</span></div>
                 <div class="info-item"><span class="info-label">种族</span><span class="info-value">${p.race || '-'}</span></div>
                 <div class="info-item"><span class="info-label">职业</span><span class="info-value">${p.occupation || '-'}</span></div>
@@ -544,21 +559,21 @@ View.register('characterRead.stats', function(worldId, characterId) {
     const DEFAULT_STATS = {
         health: 100, energy: 100, charm: 50, intelligence: 50,
         strength: 50, agility: 50, stamina: 50,
-        sexArousal: 0, sexExperience: 0, sexSkill: 0, sexLibido: 50, sexSensitivity: 50,
+        sexArousal: 0, sexExperience: 0, sexSkill: 0, sexLibido: 50, sexSensitivity: 50, sexExcitement: 0,
         affection: 50, trust: 50, intimacy: 0, corruption: 0, shame: 50
     };
     const stats = { ...DEFAULT_STATS, ...char?.stats };
     
     const statGroups = {
         '基础属性': ['health', 'energy', 'charm', 'intelligence', 'strength', 'agility', 'stamina'],
-        '色色属性': ['sexArousal', 'sexExperience', 'sexSkill', 'sexLibido', 'sexSensitivity'],
+        '色色属性': ['sexArousal', 'sexExcitement', 'sexExperience', 'sexSkill', 'sexLibido', 'sexSensitivity'],
         '状态属性': ['affection', 'trust', 'intimacy', 'corruption', 'shame']
     };
     
     const statLabels = {
         health: '生命', energy: '体力', charm: '魅力', intelligence: '智力', strength: '力量',
         agility: '敏捷', stamina: '耐力',
-        sexArousal: '欲望', sexExperience: '经验', sexSkill: '技巧', sexLibido: '性欲', sexSensitivity: '敏感',
+        sexArousal: '欲望', sexExcitement: '兴奋', sexExperience: '经验', sexSkill: '技巧', sexLibido: '性欲', sexSensitivity: '敏感',
         affection: '好感', trust: '信任', intimacy: '亲密', corruption: '堕落', shame: '羞耻'
     };
     
@@ -698,109 +713,3 @@ View.register('inventory.libraryPicker', function(characterId) {
 
 window.ViewCallbacks = window.ViewCallbacks || {};
 Object.assign(window.ViewCallbacks, ViewCallbacks);
-
-if (!window.ViewCallbacks.inventory.useItemFromCharPanel) {
-    window.ViewCallbacks.inventory = window.ViewCallbacks.inventory || {};
-    window.ViewCallbacks.inventory.useItemFromCharPanel = function(worldId, characterId, itemId) {
-        const plugin = PluginSystem.get('inventory');
-        const result = plugin?.useItem(worldId, characterId, itemId);
-        if (result) {
-            document.getElementById('charTabContent').innerHTML = View.render('characterRead.inventory', worldId, characterId);
-        }
-    };
-    window.ViewCallbacks.inventory.showAddFromCharPanel = function(worldId, characterId) {
-        const html = View.render('inventory.addFromCharPanel', worldId, characterId);
-        document.getElementById('charTabContent').innerHTML = html;
-    };
-    window.ViewCallbacks.inventory.showAddFormFromCharPanel = function(characterId) {
-        const world = Data.getCurrentWorld();
-        document.getElementById('addItemFormCharPanel').innerHTML = View.render('inventory.add', characterId);
-    };
-    window.ViewCallbacks.inventory.addFromCharPanel = function(characterId) {
-        const world = Data.getCurrentWorld();
-        const name = document.getElementById('itemName')?.value;
-        if (!name) return;
-        let effects = {};
-        try {
-            effects = JSON.parse(document.getElementById('itemEffects')?.value || '{}');
-        } catch {}
-        const plugin = PluginSystem.get('inventory');
-        plugin?.addItem(world.id, characterId, {
-            name,
-            type: document.getElementById('itemType')?.value || 'misc',
-            effects
-        });
-        document.getElementById('charTabContent').innerHTML = View.render('characterRead.inventory', world.id, characterId);
-    };
-    window.ViewCallbacks.inventory.showLibraryPickerFromCharPanel = function(characterId) {
-        document.getElementById('addItemFormCharPanel').innerHTML = View.render('inventory.libraryPicker', characterId);
-    };
-    window.ViewCallbacks.inventory.addFromLibraryFromCharPanel = function(characterId, itemId) {
-        const world = Data.getCurrentWorld();
-        const plugin = PluginSystem.get('inventory');
-        const library = plugin?.getItemLibrary() || [];
-        const item = library.find(i => i.id === itemId);
-        if (item) {
-            plugin?.addItem(world.id, characterId, item);
-            document.getElementById('charTabContent').innerHTML = View.render('characterRead.inventory', world.id, characterId);
-        }
-    };
-    
-    window.ViewCallbacks.inventory.showUseItemTargetPicker = function(worldId, itemOwnerCharId, itemId) {
-        const world = Data.getCurrentWorld();
-        const allChars = Data.getCharacters(worldId) || [];
-        const plugin = PluginSystem.get('inventory');
-        const items = plugin?.getItems(worldId, itemOwnerCharId) || [];
-        const item = items.find(i => i.id === itemId);
-        
-        if (!item) return;
-        
-        const charOptions = allChars.map(c => 
-            `<option value="${c.id}">${c.name}</option>`
-        ).join('');
-        
-        document.getElementById('modalTitle').textContent = `使用 ${item.name}`;
-        document.getElementById('modalBody').innerHTML = `
-            <div style="padding: 16px;">
-                <p style="margin-bottom: 16px;">选择物品使用对象：</p>
-                <div style="margin-bottom: 16px;">
-                    <label style="display: block; margin-bottom: 8px; font-weight: bold;">目标角色</label>
-                    <select id="itemTargetChar" style="width: 100%; padding: 8px; border-radius: 6px; border: 1px solid var(--border); background: var(--bg); color: var(--text);">
-                        ${charOptions}
-                    </select>
-                </div>
-                ${item.effects ? `
-                    <div style="margin-bottom: 16px; padding: 12px; background: var(--border); border-radius: 6px;">
-                        <div style="font-weight: bold; margin-bottom: 8px;">物品效果：</div>
-                        <div style="font-size: 0.85rem; color: var(--accent);">${JSON.stringify(item.effects)}</div>
-                    </div>
-                ` : ''}
-                <div style="display: flex; gap: 8px;">
-                    <button class="btn" onclick="ViewCallbacks.inventory.useItemOnTarget('${worldId}', '${itemOwnerCharId}', '${item.id}')">在剧情中使用</button>
-                    <button class="btn btn-secondary" onclick="ViewCallbacks.inventory.useItemDirect('${worldId}', '${itemOwnerCharId}', '${item.id}')">直接使用</button>
-                    <button class="btn btn-secondary" onclick="closeModal()">取消</button>
-                </div>
-            </div>
-        `;
-        document.getElementById('modal').classList.add('active');
-    };
-    
-    window.ViewCallbacks.inventory.useItemOnTarget = function(worldId, itemOwnerCharId, itemId) {
-        const targetCharId = document.getElementById('itemTargetChar')?.value;
-        if (!targetCharId) {
-            alert('请选择目标角色');
-            return;
-        }
-        
-        closeModal();
-        
-        const plugin = PluginSystem.get('inventory');
-        plugin?.useItem(worldId, itemOwnerCharId, itemId, { 
-            targetCharId: targetCharId,
-            userCharId: itemOwnerCharId,
-            generateStory: true
-        });
-        
-        document.getElementById('charTabContent').innerHTML = View.render('characterRead.inventory', worldId, itemOwnerCharId);
-    };
-}

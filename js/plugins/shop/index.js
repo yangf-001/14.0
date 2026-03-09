@@ -13,8 +13,8 @@ PluginSystem.register('shop', {
         if (goods.length > 0 && !force) return Promise.resolve();
         
         const possiblePaths = [
-            './user-content/goods.txt',
-            '../shop/user-content/goods.txt'
+            './js/plugins/shop/user-content/goods.txt',
+            './user-content/goods.txt'
         ];
         
         for (const path of possiblePaths) {
@@ -63,13 +63,23 @@ PluginSystem.register('shop', {
                 if (parts.length >= 2) {
                     let effects = {};
                     try {
-                        effects = JSON.parse(parts[3] || '{}');
-                    } catch {}
+                        const effectsStr = parts[3];
+                        if (effectsStr && effectsStr.trim()) {
+                            effects = JSON.parse(effectsStr);
+                        }
+                    } catch (e) {
+                        console.warn('解析物品效果失败:', e);
+                    }
                     
                     let price = 0;
                     try {
-                        price = parseInt(parts[4]?.trim()) || 0;
-                    } catch {}
+                        const priceStr = parts[4];
+                        if (priceStr && priceStr.trim()) {
+                            price = parseInt(priceStr.trim()) || 0;
+                        }
+                    } catch (e) {
+                        console.warn('解析价格失败:', e);
+                    }
                     
                     items.push({
                         name: parts[0].trim(),

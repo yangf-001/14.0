@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>时间插件 - AI故事</title>
+    <link rel="stylesheet" href="../../../css/main.css">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="app">
+        <div id="navContainer"></div>
+        
+        <div class="main" id="mainContent"></div>
+        
+        <div class="right">
+            <div id="rightPanel"></div>
+        </div>
+    </div>
+
+    <div class="mobile-nav" id="mobileNav"></div>
+
+    <script src="../../plugin.js"></script>
+    <script src="../../view.js"></script>
+    <script src="../common/nav.js"></script>
+    <script src="../common/feedback.js"></script>
+    <script src="index.js"></script>
+    <script src="../../data.js"></script>
+    <script>
+        (function() {
+            const mobileNavItems = [
+                { page: 'plugins', icon: '🔌', label: '插件', url: '../../../index.html?page=plugins' },
+                { page: 'home', icon: '🏠', label: '首页', url: '../../../index.html' },
+                { page: 'time-plugin', icon: '⏰', label: '时间', url: '' },
+                { page: 'character-editor', icon: '🧩', label: '角色', url: '../character-editor/index.html' },
+                { page: 'settings', icon: '⚙️', label: '设置', url: '../../../index.html?page=settings' }
+            ];
+
+            function init() {
+                setupMobileNav();
+                document.getElementById('navContainer').innerHTML = NavSystem.generateNav('time-plugin', true);
+                renderTimePluginPage();
+                TimePluginUI.setRefreshCallback(renderTimePluginPage);
+            }
+
+            function setupMobileNav() {
+                const mobileNav = document.getElementById('mobileNav');
+                if (!mobileNav) return;
+                
+                mobileNav.innerHTML = mobileNavItems.map(item => `
+                    <button class="mobile-nav-btn ${item.url === '' ? 'active' : ''}" data-url="${item.url}">
+                        <span class="icon">${item.icon}</span>
+                        <span class="label">${item.label}</span>
+                    </button>
+                `).join('');
+                
+                mobileNav.querySelectorAll('.mobile-nav-btn').forEach(btn => {
+                    btn.addEventListener('click', () => {
+                        const url = btn.dataset.url;
+                        if (url) {
+                            window.location.href = url;
+                        }
+                    });
+                });
+            }
+
+            function renderTimePluginPage() {
+                const world = Data.getCurrentWorld();
+                const main = document.getElementById('mainContent');
+                const right = document.getElementById('rightPanel');
+                
+                if (!world) {
+                    main.innerHTML = `
+                        <h2>⏰ 时间插件</h2>
+                        <p class="desc">故事时间与角色年龄动态管理系统</p>
+                        <div class="empty">请先选择一个世界</div>
+                    `;
+                    return;
+                }
+
+                const stats = TimePlugin.getPluginStats(world.id);
+
+                main.innerHTML = `
+                    <h2>⏰ 时间插件</h2>
+                    <p class="desc">当前世界：${world.name}</p>
+                    
+                    ${TimePlugin.renderTimeInfoPanel(world.id)}
+                `;
+
+                right.innerHTML = `
+                    <h4 style="font-size: 0.8rem; color: var(--text-dim); margin-bottom: 16px;">帮助信息</h4>
+                    <div class="help-card">
+                        <div class="help-title">💡 使用说明</div>
+                        <div class="help-content">
+                            <p>1. 点击"设置故事时间"初始化故事开始时间</p>
+                            <p>2. AI在故事中加入【时间变化：X天】来控制时间</p>
+                            <p>3. 可以手动调整角色与主角的年龄关系</p>
+                            <p>4. 角色年龄会随剧情自动更新</p>
+                        </div>
+                    </div>
+                    <div class="help-card">
+                        <div class="help-title">📊 当前状态</div>
+                        <div class="help-content">
+                            <p>角色数量：${stats.totalCharacters}</p>
+                            ${stats.time && stats.time.storyStartAge !== null ? `
+                                <p>故事开始：${stats.time.storyStartAge}岁</p>
+                                <p>已过年数：${stats.time.yearsPassed}年</p>
+                                <p>当前年份：${stats.time.year}年</p>
+                            ` : '<p>尚未设置</p>'}
+                        </div>
+                    </div>
+                `;
+            }
+
+            document.addEventListener('DOMContentLoaded', init);
+        })();
+    </script>
+</body>
+</html>

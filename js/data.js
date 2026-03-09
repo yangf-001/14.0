@@ -5,6 +5,16 @@ const Data = {
     _lastSaveTime: null,
     _autoSaveInterval: 30000,
     _onSaveCallback: null,
+    _cache: new Map(),
+    _pendingSaves: new Map(),
+    _saveDebounceTimer: null,
+
+    CONSTANTS: {
+        MIN_AGE: 18,
+        DEFAULT_AUTO_SAVE_INTERVAL: 30000,
+        DEBOUNCE_DELAY: 500,
+        CACHE_EXPIRY: 5000
+    },
 
     init() {
         this._worlds = JSON.parse(localStorage.getItem('worlds') || '[]');
@@ -13,9 +23,7 @@ const Data = {
             this._currentWorld = this._worlds.find(w => w.id === currentId) || null;
         }
         const savedInterval = localStorage.getItem('autoSaveInterval');
-        if (savedInterval) {
-            this._autoSaveInterval = parseInt(savedInterval, 10);
-        }
+        this._autoSaveInterval = savedInterval ? parseInt(savedInterval, 10) : this.CONSTANTS.DEFAULT_AUTO_SAVE_INTERVAL;
         this._startAutoSave();
     },
 
@@ -29,19 +37,24 @@ const Data = {
     },
 
     _doAutoSave() {
-        if (this._currentWorld) {
-            try {
-                const worldData = localStorage.getItem('world_' + this._currentWorld.id);
-                if (worldData) {
-                    this._lastSaveTime = Date.now();
-                    console.log(`[自动保存] ${new Date().toLocaleTimeString()} - ${this._currentWorld.name}`);
-                    if (this._onSaveCallback) {
-                        this._onSaveCallback(this._lastSaveTime);
-                    }
+        if (!this._currentWorld) return;
+        
+        try {
+            const worldData = localStorage.getItem('world_' + this._currentWorld.id);
+            if (worldData) {
+                const data = JSON.parse(worldData);
+                localStorage.setItem('world_' + this._currentWorld.id, JSON.stringify(data));
+                this._lastSaveTime = Date.now();
+                console.log(`[自动保存] ${new Date().toLocaleTimeString()} - ${this._currentWorld.name}`);
+                if (this._onSaveCallback) {
+                    this._onSaveCallback(this._lastSaveTime);
                 }
-            } catch (e) {
-                console.warn('自动保存失败:', e);
+            } else {
+                this._saveWorldData(this._currentWorld.id, { world: this._currentWorld });
+                console.log(`[自动保存] ${new Date().toLocaleTimeString()} - ${this._currentWorld.name} (新世界)`);
             }
+        } catch (e) {
+            console.warn('自动保存失败:', e);
         }
     },
 
@@ -133,6 +146,7 @@ const Data = {
         data.characters = data.characters || [];
         data.characters.push(char);
         this._saveWorldData(worldId, data);
+        
         return char;
     },
 
@@ -220,6 +234,12 @@ const Data = {
         return data.story;
     },
 
+    deleteStory(worldId) {
+        const data = this._loadWorldData(worldId);
+        delete data.story;
+        this._saveWorldData(worldId, data);
+    },
+
     getSettings(worldId) {
         const world = this._worlds.find(w => w.id === worldId);
         return world?.settings || this._defaultSettings();
@@ -250,17 +270,51 @@ const Data = {
     },
 
     _genId() {
-        return Date.now().toString(36) + Math.random().toString(36).substr(2);
+        const timestamp = Date.now().toString(36);
+        const randomPart = Math.random().toString(36).substring(2, 10);
+        const uniquePart = (Math.random() * 10000).toString(36).substring(0, 4);
+        return timestamp + randomPart + uniquePart;
     },
 
     _loadWorldData(worldId) {
+        const cached = this._cache.get(worldId);
+        if (cached && Date.now() - cached.timestamp < this.CONSTANTS.CACHE_EXPIRY) {
+            return cached.data;
+        }
+        
         try {
-            return JSON.parse(localStorage.getItem('world_' + worldId) || '{}');
+            const data = JSON.parse(localStorage.getItem('world_' + worldId) || '{}');
+            this._cache.set(worldId, { data, timestamp: Date.now() });
+            return data;
         } catch { return {}; }
     },
 
     _saveWorldData(worldId, data) {
+        if (this._saveDebounceTimer) {
+            clearTimeout(this._saveDebounceTimer);
+        }
+        
+        this._saveDebounceTimer = setTimeout(() => {
+            localStorage.setItem('world_' + worldId, JSON.stringify(data));
+            this._cache.set(worldId, { data, timestamp: Date.now() });
+        }, this.CONSTANTS.DEBOUNCE_DELAY);
+    },
+
+    _saveWorldDataImmediate(worldId, data) {
+        if (this._saveDebounceTimer) {
+            clearTimeout(this._saveDebounceTimer);
+            this._saveDebounceTimer = null;
+        }
         localStorage.setItem('world_' + worldId, JSON.stringify(data));
+        this._cache.set(worldId, { data, timestamp: Date.now() });
+    },
+
+    invalidateCache(worldId) {
+        this._cache.delete(worldId);
+    },
+
+    clearCache() {
+        this._cache.clear();
     },
 
     _save() {

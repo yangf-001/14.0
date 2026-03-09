@@ -3,6 +3,141 @@ const Storage = {
         window.renderStorage = this.renderStorage.bind(this);
     },
 
+    formatDateTime(timestamp) {
+        if (!timestamp) return '未知';
+        const date = new Date(timestamp);
+        const year = date.getFullYear();
+        const month = String(date.getMonth() + 1).padStart(2, '0');
+        const day = String(date.getDate()).padStart(2, '0');
+        const hours = String(date.getHours()).padStart(2, '0');
+        const minutes = String(date.getMinutes()).padStart(2, '0');
+        const weekDays = ['日', '一', '二', '三', '四', '五', '六'];
+        const weekDay = weekDays[date.getDay()];
+        return `${year}年${month}月${day}日 ${hours}:${minutes} 星期${weekDay}`;
+    },
+
+    toggleArchiveDetails(id) {
+        const el = document.getElementById(id);
+        if (el) {
+            el.style.display = el.style.display === 'none' ? 'block' : 'none';
+        }
+    },
+
+    resumeArchiveFromStorage(id) {
+        if (!window.Story) {
+            alert('Story模块正在加载中，请稍后再试');
+            return;
+        }
+        const resumed = Story.resumeArchive(id);
+        if (resumed) {
+            showPage('story');
+        }
+    },
+
+    viewArchiveDetails(archiveId) {
+        if (!window.Story) {
+            const main = document.getElementById('mainContent');
+            main.innerHTML = `<div class="empty">Story模块正在加载中，请稍后再试</div>`;
+            return;
+        }
+        const world = Data.getCurrentWorld();
+        if (!world) return;
+        
+        const archives = Story.getArchives(world.id);
+        const archive = archives.find(a => a.id === archiveId);
+        
+        if (!archive) {
+            alert('存档不存在');
+            return;
+        }
+        
+        const level2Archives = Story.getLevel2Archives(world.id);
+        const level3Archives = Story.getLevel3Archives(world.id);
+        
+        const main = document.getElementById('mainContent');
+        
+        main.innerHTML = `
+            <div style="margin-bottom: 20px;">
+                <button class="btn btn-secondary" onclick="Storage.renderStorage(document.getElementById('mainContent'))" style="font-size: 0.8rem;">← 返回</button>
+            </div>
+            
+            <div class="card" style="margin-bottom: 20px;">
+                <h3 style="margin-bottom: 16px;">📖 ${archive.title}</h3>
+                <div style="font-size: 0.85rem; color: var(--text-dim); margin-bottom: 16px;">
+                    <div>角色：${Array.isArray(archive.characters) ? archive.characters.map(c => c.name).join('、') : archive.characters || '未知'}</div>
+                    <div>幕数：${archive.sceneCount}幕</div>
+                    <div>开始：${this.formatDateTime(archive.startTime)}</div>
+                    <div>结束：${this.formatDateTime(archive.endTime) || this.formatDateTime(archive.startTime)}</div>
+                </div>
+                
+                <div style="display: flex; gap: 8px; margin-top: 16px;">
+                    <button class="btn btn-secondary" onclick="exportArchive('${archive.id}')">📤 导出</button>
+                    <button class="btn btn-secondary" onclick="if(confirm('确定删除?')){ deleteArchive('${archive.id}'); Storage.renderStorage(document.getElementById('mainContent')); }">🗑️ 删除</button>
+                </div>
+            </div>
+            
+            <div class="setting-section">
+                <h4>📊 储存统计</h4>
+                <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-bottom: 20px;">
+                    <div class="card" style="text-align: center;">
+                        <div style="font-size: 1.5rem; font-weight: bold; color: var(--accent);">${archives.length}</div>
+                        <div style="font-size: 0.8rem; color: var(--text-dim);">一级储存</div>
+                    </div>
+                    <div class="card" style="text-align: center;">
+                        <div style="font-size: 1.5rem; font-weight: bold; color: #f59e0b;">${level2Archives.length}</div>
+                        <div style="font-size: 0.8rem; color: var(--text-dim);">二级储存</div>
+                    </div>
+                    <div class="card" style="text-align: center;">
+                        <div style="font-size: 1.5rem; font-weight: bold; color: #8b5cf6;">${level3Archives.length}</div>
+                        <div style="font-size: 0.8rem; color: var(--text-dim);">三级储存</div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="setting-section">
+                <h4>📖 一级储存</h4>
+                ${(() => {
+                    const displayContent = archive.fullSummary || (archive.stories && archive.stories.length > 0 ? archive.stories[archive.stories.length - 1].content : null);
+                    return `
+                <div class="card" style="margin-bottom: 12px;">
+                    <div style="font-size: 0.85rem; font-weight: 600; margin-bottom: 8px; color: var(--accent);">${archive.title}</div>
+                    <div style="font-size: 0.8rem; line-height: 1.6; white-space: pre-wrap;">${displayContent || '无内容'}</div>
+                </div>
+                    `;
+                })()}
+            </div>
+            
+            ${level2Archives.length > 0 ? `
+            <div class="setting-section">
+                <h4>📦 二级储存 (共${level2Archives.length}个)</h4>
+                ${level2Archives.map((l2, i) => `
+                <div class="card" style="margin-bottom: 12px; border-left: 3px solid #f59e0b;">
+                    <div style="font-size: 0.85rem; font-weight: 600; margin-bottom: 8px;">
+                        ${l2.archive ? l2.archive.title : '二级储存 #' + (i + 1)}
+                    </div>
+                    <div style="font-size: 0.75rem; color: var(--text-dim); margin-bottom: 8px;">
+                        ${l2.archive ? '角色: ' + (Array.isArray(l2.archive.characters) ? l2.archive.characters.map(c => c.name).join('、') : '未知') + ' | ' + l2.archive.sceneCount + '幕' : ''}
+                    </div>
+                    <div style="font-size: 0.8rem; line-height: 1.6; white-space: pre-wrap;">${l2.summary || '无内容'}</div>
+                </div>
+                `).join('')}
+            </div>
+            ` : ''}
+            
+            ${level3Archives.length > 0 ? `
+            <div class="setting-section">
+                <h4>📚 三级储存 (共${level3Archives.length}个)</h4>
+                ${level3Archives.map((l3, i) => `
+                <div class="card" style="margin-bottom: 12px; border-left: 3px solid #8b5cf6;">
+                    <div style="font-size: 0.85rem; font-weight: 600; margin-bottom: 8px;">三级储存 #${i + 1}</div>
+                    <div style="font-size: 0.8rem; line-height: 1.6; white-space: pre-wrap;">${l3.summary || '无内容'}</div>
+                </div>
+                `).join('')}
+            </div>
+            ` : ''}
+        `;
+    },
+
     renderStorage(main) {
         const world = Data.getCurrentWorld();
         
@@ -51,10 +186,12 @@ const Storage = {
     },
 
     renderStory(content, world) {
+        if (!window.Story) {
+            content.innerHTML = `<div class="empty">Story模块正在加载中，请稍后再试</div>`;
+            return;
+        }
         const story = Story.load(world.id);
         const archives = Story.getArchives(world.id);
-        const level2 = Story.getLevel2Archives(world.id);
-        const level3 = Story.getLevel3Archives(world.id);
         
         const hasActiveStory = story && story.status === 'ongoing';
         
@@ -91,82 +228,33 @@ const Storage = {
             `}
             
             <div class="setting-section">
-                <h4>📚 一级存储 (${archives.length})</h4>
+                <h4>📚 故事存档 (${archives.length})</h4>
                 ${archives.length === 0 ? '<div class="empty">暂无已存档的故事</div>' : ''}
-                ${archives.map(a => `
-                    <div class="card" style="margin-bottom: 12px;">
-                        <div style="display: flex; justify-content: space-between; align-items: flex-start;">
-                            <div style="flex: 1;">
-                                <div style="font-weight: 500;">${a.title}</div>
-                                <div style="font-size: 0.8rem; color: var(--text-dim); margin-top: 4px;">
-                                    ${Array.isArray(a.characters) ? a.characters.map(c => c.name).join('、') : a.characters || '未知角色'} · ${a.sceneCount}幕
+                ${archives.map((a, index) => {
+                    const level2Archives = Story.getLevel2Archives(world.id);
+                    const level3Archives = Story.getLevel3Archives(world.id);
+                    
+                    return `
+                        <div class="card" style="margin-bottom: 12px; border: 1px solid var(--border);">
+                            <div style="display: flex; justify-content: space-between; align-items: flex-start;">
+                                <div style="flex: 1;">
+                                    <div style="font-weight: 500; cursor: pointer; color: var(--accent);" onclick="Storage.viewArchiveDetails('${a.id}')">${a.title}</div>
+                                    <div style="font-size: 0.8rem; color: var(--text-dim); margin-top: 4px;">
+                                        ${Array.isArray(a.characters) ? a.characters.map(c => c.name).join('、') : a.characters || '未知角色'} · ${a.sceneCount}幕 · ${a.endTime ? new Date(a.endTime).toLocaleDateString() : (a.startTime ? new Date(a.startTime).toLocaleDateString() : '未知')}
+                                    </div>
+                                    <div style="font-size: 0.75rem; color: var(--accent); margin-top: 4px;">
+                                        📖 一级:${archives.length} | 📦 二级:${level2Archives.length} | 📚 三级:${level3Archives.length}
+                                    </div>
+                                </div>
+                                <div style="display: flex; gap: 6px;">
+                                    <button class="btn btn-secondary" onclick="exportArchive('${a.id}')" style="font-size: 0.75rem; padding: 6px 10px;">📤</button>
+                                    <button class="btn btn-secondary" onclick="deleteArchive('${a.id}')" style="font-size: 0.75rem; padding: 6px 10px;">🗑️</button>
                                 </div>
                             </div>
-                            <div style="display: flex; gap: 6px;">
-                                <button class="btn btn-secondary" onclick="resumeArchive('${a.id}')" style="font-size: 0.75rem; padding: 6px 12px;">▶ 继续</button>
-                                <button class="btn btn-secondary" onclick="exportArchive('${a.id}')" style="font-size: 0.75rem; padding: 6px 10px;">📤</button>
-                                <button class="btn btn-secondary" onclick="deleteArchive('${a.id}')" style="font-size: 0.75rem; padding: 6px 10px;">🗑️</button>
-                            </div>
                         </div>
-                    </div>
-                `).join('')}
+                    `;
+                }).join('')}
             </div>
-            
-            ${level2.length > 0 ? `
-                <div class="setting-section">
-                    <h4>📦 二级存储 - 前10幕摘要 (${level2.length})</h4>
-                    ${level2.map(a => `
-                        <div class="card" style="margin-bottom: 12px;">
-                            <div style="display: flex; justify-content: space-between; align-items: flex-start;">
-                                <div style="flex: 1;">
-                                    <div style="font-weight: 500;">${a.title}</div>
-                                    <div style="font-size: 0.8rem; color: var(--text-dim); margin-top: 4px;">
-                                        ${a.sceneCount}幕 · ${new Date(a.startTime).toLocaleDateString()}
-                                    </div>
-                                </div>
-                                <div style="display: flex; gap: 6px;">
-                                    <button class="btn btn-secondary" onclick="viewLevel2Story('${a.id}')" style="font-size: 0.75rem; padding: 6px 12px;">查看</button>
-                                    <button class="btn btn-secondary" onclick="exportArchive('${a.id}')" style="font-size: 0.75rem; padding: 6px 10px;">📤</button>
-                                    <button class="btn btn-secondary" onclick="deleteLevel2Story('${a.id}')" style="font-size: 0.75rem; padding: 6px 10px;">🗑️</button>
-                                </div>
-                            </div>
-                        </div>
-                    `).join('')}
-                </div>
-            ` : `
-                <div class="setting-section">
-                    <h4>📦 二级存储 - 前10幕摘要 (0)</h4>
-                    <div class="empty">暂无二级存储内容</div>
-                </div>
-            `}
-            
-            ${level3.length > 0 ? `
-                <div class="setting-section">
-                    <h4>📚 三级存储 - 故事合集 (${level3.length})</h4>
-                    ${level3.map(a => `
-                        <div class="card" style="margin-bottom: 12px;">
-                            <div style="display: flex; justify-content: space-between; align-items: flex-start;">
-                                <div style="flex: 1;">
-                                    <div style="font-weight: 500;">${a.title}</div>
-                                    <div style="font-size: 0.8rem; color: var(--text-dim); margin-top: 4px;">
-                                        ${a.stories ? a.stories.length + '个故事' : ''} · ${new Date(a.archivedAt).toLocaleDateString()}
-                                    </div>
-                                </div>
-                                <div style="display: flex; gap: 6px;">
-                                    <button class="btn btn-secondary" onclick="viewLevel3Story('${a.id}')" style="font-size: 0.75rem; padding: 6px 12px;">查看</button>
-                                    <button class="btn btn-secondary" onclick="exportArchive('${a.id}')" style="font-size: 0.75rem; padding: 6px 10px;">📤</button>
-                                    <button class="btn btn-secondary" onclick="deleteLevel3Story('${a.id}')" style="font-size: 0.75rem; padding: 6px 10px;">🗑️</button>
-                                </div>
-                            </div>
-                        </div>
-                    `).join('')}
-                </div>
-            ` : `
-                <div class="setting-section">
-                    <h4>📚 三级存储 - 故事合集 (0)</h4>
-                    <div class="empty">暂无三级存储内容</div>
-                </div>
-            `}
         `;
     },
 
@@ -211,6 +299,8 @@ const Storage = {
             <div style="margin-bottom: 24px;">
                 <div style="display: flex; gap: 8px; margin-bottom: 16px;">
                     <button class="btn" onclick="Storage.showCreateGroup()" style="font-size: 0.85rem;">➕ 创建组合</button>
+                    <button class="btn btn-secondary" onclick="document.getElementById('importGroupInput').click()" style="font-size: 0.85rem;">📥 导入组合</button>
+                    <input type="file" id="importGroupInput" webkitdirectory directory multiple accept=".json" style="display: none;" onchange="Storage.importGroup(event)">
                 </div>
             </div>
             
@@ -536,8 +626,66 @@ const Storage = {
         const world = Data.getCurrentWorld();
         Data.deleteCharacter(world.id, charId);
         this.renderStorage(document.getElementById('mainContent'));
+    },
+
+    importGroup(event) {
+        const files = event.target.files;
+        if (!files || files.length === 0) return;
+        
+        const world = Data.getCurrentWorld();
+        let importedCount = 0;
+        let errorCount = 0;
+        const importedCharIds = [];
+        
+        // 处理每个文件
+        for (let i = 0; i < files.length; i++) {
+            const file = files[i];
+            if (file.type === 'application/json' || file.name.endsWith('.json')) {
+                const reader = new FileReader();
+                reader.onload = (e) => {
+                    try {
+                        const charData = JSON.parse(e.target.result);
+                        
+                        // 创建角色
+                        const char = Data.createCharacter(world.id, charData);
+                        importedCharIds.push(char.id);
+                        importedCount++;
+                    } catch (err) {
+                        console.error('导入角色失败:', err);
+                        errorCount++;
+                    }
+                };
+                reader.readAsText(file);
+            }
+        }
+        
+        // 当所有文件处理完成后
+        setTimeout(() => {
+            if (importedCount > 0) {
+                // 创建组合
+                const group = Data.createGroup(world.id, {
+                    name: '导入的组合',
+                    description: '从文件夹导入的角色组合',
+                    characterIds: importedCharIds
+                });
+                
+                alert(`导入成功！共导入 ${importedCount} 个角色，创建了组合 "导入的组合"`);
+            } else if (errorCount > 0) {
+                alert(`导入失败，有 ${errorCount} 个文件解析错误`);
+            } else {
+                alert('未找到有效的JSON文件');
+            }
+            this.renderStorage(document.getElementById('mainContent'));
+        }, 1000);
+        
+        event.target.value = '';
     }
 };
 
 Storage.init();
+window.showCharInfo = function(charId) {
+    if (typeof Pages !== 'undefined' && Pages.showCharInfo) {
+        Pages.showCharInfo(charId);
+    }
+};
 window.Storage = Storage;

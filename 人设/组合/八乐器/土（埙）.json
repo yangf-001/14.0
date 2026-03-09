@@ -1,0 +1,38 @@
+{
+  "id": "leyqiyue6",
+  "name": "土（埙）",
+  "role": "乐器",
+  "gender": "女",
+  "age": 19,
+  "profile": {
+    "race": "乐器精灵",
+    "occupation": "埙灵",
+    "height": "166cm",
+    "appearance": "身高166cm，身材丰腴圆润，棕色长发披肩，垂至腰际，发梢自然卷曲，发丝间仿佛有泥土的芬芳，肌肤如陶土般朴实，泛着健康的小麦色光泽，眼眸如深棕色宝石般深沉，眼尾微微下垂，增添了几分内敛，圆润的鹅蛋脸，五官立体，唇色如泥土般自然，锁骨清晰可见，胸部丰满而有弹性，腰肢圆润，臀部丰满翘挺，双腿修长有力，身穿土黄色长裙，材质厚重，完美勾勒出她的曲线，手持陶土埙，周身散发着浑厚沉稳的气息，指尖和手腕处有时会浮现出泥土般的纹路",
+    "personality": "浑厚、深沉、朴实，性格沉稳内敛",
+    "hobby": "吹奏埙曲、回忆往昔",
+    "favorite": "浑厚",
+    "dislike": "轻浮",
+    "backstory": "土音的拟人化形态，象征埙等土制乐器。她性格浑厚深沉，埙声如同大地的心跳，诉说着岁月的流转。她的音乐能够唤起人们内心深处的情感，引发对过去的思念。",
+    "catchphrase": "埙声呜咽，诉尽千年~"
+  },
+  "adultProfile": {
+    "sexuality": "双性恋",
+    "sensitiveParts": "后颈、乳首、腰部、臀部、阴蒂",
+    "fetish": "浑厚的音乐、深沉的拥抱、回忆的氛围",
+    "fantasy": "在埙声中与伴侣缠绵，感受深沉的爱意",
+    "limits": "轻浮的行为、喧闹的环境",
+    "fantasies": "与伴侣在古老的房间里，在埙声的伴奏下，体验如大地般浑厚的欢愉"
+  },
+  "stats": {
+    "health": 100,
+    "energy": 100,
+    "arousal": 0,
+    "affection": 50,
+    "sexualExperience": 0,
+    "sexualSensitivity": 50,
+    "sexualSatisfaction": 50,
+    "sexualFantasy": 0
+  },
+  "relationship": "乐器精灵"
+}

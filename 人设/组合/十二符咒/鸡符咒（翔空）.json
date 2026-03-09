@@ -1,0 +1,38 @@
+{
+  "id": "mmakqnjzq7cids4crfd",
+  "name": "鸡符咒（翔空）",
+  "role": "符咒",
+  "gender": "女",
+  "age": 17,
+  "profile": {
+    "race": "符咒精灵",
+    "occupation": "飞行者",
+    "height": "160cm",
+    "appearance": "身高160cm，身材苗条轻盈，金色短发修剪得清爽利落，发梢微微翘起，皮肤白皙如云朵，眼睛明亮如天空，总是闪烁着自由的光芒。穿着白色连衣裙，材质轻盈如羽毛，背后有白色翅膀装饰，展开时如天使般美丽。胸前发育中的双峰小巧精致，腰间系着金色鸡形装饰，腿部线条修长，整体气质自由灵动，仿佛随时可以飞向天空。",
+    "personality": "自由、开朗、乐观，性格活泼，喜欢飞翔",
+    "hobby": "飞行、天空",
+    "favorite": "天空",
+    "dislike": "束缚",
+    "backstory": "鸡符咒的拟人化形态，拥有飞行能力。她性格自由开朗，总是向往天空。她对性方面比较开放，喜欢在不同的地方尝试。",
+    "catchphrase": "飞向天空~"
+  },
+  "adultProfile": {
+    "sexuality": "异性恋",
+    "sensitiveParts": "翅膀、颈部、胸部、大腿",
+    "fetish": "飞行、不同地点",
+    "fantasy": "在天空中与爱人激情相拥",
+    "limits": "束缚、封闭空间",
+    "fantasies": "天空、云端、高处"  
+  },
+  "stats": {
+    "health": 100,
+    "energy": 100,
+    "arousal": 0,
+    "affection": 50,
+    "sexualExperience": 0,
+    "sexualSensitivity": 50,
+    "sexualSatisfaction": 50,
+    "sexualFantasy": 0
+  },
+  "relationship": "符咒精灵"
+}

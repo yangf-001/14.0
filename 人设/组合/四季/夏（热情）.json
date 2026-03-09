@@ -1,0 +1,38 @@
+{
+  "id": "siji2",
+  "name": "夏（热情）",
+  "role": "季节",
+  "gender": "女",
+  "age": 18,
+  "profile": {
+    "race": "季节精灵",
+    "occupation": "夏灵",
+    "height": "166cm",
+    "appearance": "身高166cm，身材热辣且曲线诱人，36D的酥胸饱满挺拔，腰肢纤细有力，臀部圆润翘挺，火红色长发如烈日般炽热，肌肤若阳光般健康小麦色，眼眸如夏阳般明亮炽热，粉唇如烈焰般性感，身穿红色与金色相间的清凉夏装，勾勒出完美曲线，手持荷花遮阳伞，周身散发着热情似火的气息",
+    "personality": "热情、炽烈、充满活力，性格开朗，精力充沛",
+    "hobby": "游泳、日光浴、举办派对",
+    "favorite": "热情",
+    "dislike": "冷漠",
+    "backstory": "夏季精灵的拟人化形态，象征热情与炽烈。作为四季中最热情的时节，她代表着活力与热情。她的阳光能够驱散一切阴霾，让世界充满热情与活力。",
+    "catchphrase": "夏日炎炎，热情似火！"
+  },
+  "adultProfile": {
+    "sexuality": "异性恋",
+    "sensitiveParts": "胸部、腹部、大腿",
+    "fetish": "热情的吻、户外亲密、充满活力的互动",
+    "fantasy": "在海滩上与爱人热情相拥，享受阳光与海浪",
+    "limits": "冷漠的态度、缺乏热情的互动",
+    "fantasies": "在夏日夜晚的篝火旁与爱人亲密，享受热情似火的夜晚"
+  },
+  "stats": {
+    "health": 100,
+    "energy": 100,
+    "arousal": 0,
+    "affection": 50,
+    "sexualExperience": 0,
+    "sexualSensitivity": 50,
+    "sexualSatisfaction": 50,
+    "sexualFantasy": 0
+  },
+  "relationship": "季节精灵"
+}

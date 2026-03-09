@@ -13,6 +13,7 @@ const NavSystem = {
                     <button class="nav-btn ${activePage === 'character-editor' ? 'active' : ''}" onclick="NavSystem.navigate('character-editor')">🧩 角色插件</button>
                     <button class="nav-btn ${activePage === 'inventory' ? 'active' : ''}" onclick="NavSystem.navigate('inventory')">🎒 物品</button>
                     <button class="nav-btn ${activePage === 'achievement' ? 'active' : ''}" onclick="NavSystem.navigate('achievement')">🏆 成就</button>
+                    <button class="nav-btn ${activePage === 'age-plugin' ? 'active' : ''}" onclick="NavSystem.navigate('time-plugin')">⏰ 时间</button>
                     <button class="nav-btn ${activePage === 'intimate' ? 'active' : ''}" onclick="NavSystem.navigate('intimate')">💕 亲密互动</button>
                     <button class="nav-btn ${activePage === 'story' ? 'active' : ''}" onclick="NavSystem.navigate('story')">📖 故事</button>
                     <button class="nav-btn ${activePage === 'settings' ? 'active' : ''}" onclick="NavSystem.navigate('settings')">⚙️ 设置</button>
@@ -42,6 +43,10 @@ const NavSystem = {
                 break;
             case 'achievement':
                 window.location.href = 'achievement/index.html';
+                break;
+            case 'age-plugin':
+            case 'time-plugin':
+                window.location.href = 'time-plugin/index.html';
                 break;
             case 'intimate':
                 window.location.href = 'intimate/index.html';

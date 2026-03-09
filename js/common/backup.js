@@ -2,6 +2,19 @@ const BackupManager = {
     _version: '1.0',
     _exportKeys: ['worlds', 'currentWorldId', 'settings', 'pluginData'],
 
+    formatDateTime(timestamp) {
+        if (!timestamp) return '未知';
+        const date = new Date(timestamp);
+        const year = date.getFullYear();
+        const month = String(date.getMonth() + 1).padStart(2, '0');
+        const day = String(date.getDate()).padStart(2, '0');
+        const hours = String(date.getHours()).padStart(2, '0');
+        const minutes = String(date.getMinutes()).padStart(2, '0');
+        const weekDays = ['日', '一', '二', '三', '四', '五', '六'];
+        const weekDay = weekDays[date.getDay()];
+        return `${year}年${month}月${day}日 ${hours}:${minutes} 星期${weekDay}`;
+    },
+
     exportAll() {
         const backup = {
             version: this._version,
@@ -115,7 +128,7 @@ const BackupManager = {
         const info = {
             version: backup.version,
             timestamp: backup.timestamp,
-            date: new Date(backup.timestamp).toLocaleString(),
+            date: this.formatDateTime(backup.timestamp),
             worldCount: 0,
             archiveCount: 0,
             size: JSON.stringify(backup).length

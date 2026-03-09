@@ -1,0 +1,38 @@
+{
+  "id": "mmakqnjzam0rvbcp2u",
+  "name": "马符咒（治愈）",
+  "role": "符咒",
+  "gender": "女",
+  "age": 17,
+  "profile": {
+    "race": "符咒精灵",
+    "occupation": "治愈者",
+    "height": "162cm",
+    "appearance": "身高162cm，身材苗条修长，白色长发如瀑布般披肩，发梢自然卷曲，皮肤白皙如凝脂，眼睛温柔如泉水，总是带着温暖的笑意。穿着淡绿色连衣裙，材质轻盈透气，领口设计优雅，露出精致的锁骨，胸前发育中的双峰小巧精致，腰间系着金色马形装饰，裙摆随着步伐轻轻摆动，整体气质清新脱俗，仿佛春天的微风。",
+    "personality": "温柔、善良、有爱心，性格温和，喜欢帮助别人",
+    "hobby": "帮助他人、照顾",
+    "favorite": "治愈",
+    "dislike": "伤害",
+    "backstory": "马符咒的拟人化形态，拥有治愈能力。她性格温柔善良，总是关心别人的健康。她对性方面比较保守，但在爱人面前会表现出温柔的一面。",
+    "catchphrase": "让我来帮你~"
+  },
+  "adultProfile": {
+    "sexuality": "异性恋",
+    "sensitiveParts": "颈部、耳朵、胸部、腰部",
+    "fetish": "温柔、治愈",
+    "fantasy": "在治愈他人后与爱人温柔相拥",
+    "limits": "粗暴、伤害",
+    "fantasies": "温柔爱抚、治愈之吻、浪漫之夜"
+  },
+  "stats": {
+    "health": 100,
+    "energy": 100,
+    "arousal": 0,
+    "affection": 50,
+    "sexualExperience": 0,
+    "sexualSensitivity": 50,
+    "sexualSatisfaction": 50,
+    "sexualFantasy": 0
+  },
+  "relationship": "符咒精灵"
+}

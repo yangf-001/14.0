@@ -13,9 +13,9 @@ const Keyboard = {
         const isInput = target.tagName === 'TEXTAREA' || target.tagName === 'INPUT';
         
         if (isInput) {
-            if (e.key === 'Enter' && (e.ctrlKey || e.metaKey)) {
+            if (e.key === 'Enter') {
                 e.preventDefault();
-                this._triggerShortcut('ctrlEnter', target);
+                this._triggerShortcut('enter', target);
                 return;
             }
             if (e.key === 's' && (e.ctrlKey || e.metaKey)) {
@@ -88,7 +88,7 @@ const Keyboard = {
 
     showHint() {
         const hints = [
-            { key: 'Ctrl + Enter', action: '发送消息' },
+            { key: 'Enter', action: '发送消息' },
             { key: 'Ctrl + S', action: '保存' },
             { key: 'Ctrl + Z', action: '撤销' },
             { key: 'Ctrl + Shift + Z', action: '重做' },
@@ -108,7 +108,7 @@ Keyboard.register('escape', function() {
     }
 });
 
-Keyboard.register('ctrlEnter', function(target) {
+Keyboard.register('enter', function(target) {
     if (target && target.id === 'customChoiceText') {
         const text = target.value.trim();
         if (text) {

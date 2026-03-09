@@ -1,0 +1,38 @@
+{
+  "id": "leyqiyue3",
+  "name": "丝（琵琶）",
+  "role": "乐器",
+  "gender": "女",
+  "age": 18,
+  "profile": {
+    "race": "乐器精灵",
+    "occupation": "琵琶灵",
+    "height": "165cm",
+    "appearance": "身高165cm，身材苗条匀称，黑色长发披肩，垂至腰际，发梢自然卷曲，肌肤如白玉般细腻，泛着淡淡的光泽，眼眸如黑宝石般明亮，眼尾微微上挑，充满东方韵味，精致的瓜子脸，小巧的鼻子，唇色如樱桃般鲜艳，锁骨清晰可见，胸部小巧而饱满，腰肢纤细柔软，臀部圆润小巧，双腿修长笔直，身穿红色绣花旗袍，材质丝滑，完美勾勒出她的曲线，手持精美琵琶，指尖轻拨琴弦，周身散发着浓郁的东方韵味，指尖和耳尖处有时会浮现出琴弦般的纹路",
+    "personality": "婉转、热情、富有表现力，性格开朗，善于表达情感",
+    "hobby": "弹奏琵琶、歌舞",
+    "favorite": "热情",
+    "dislike": "沉默",
+    "backstory": "丝音的拟人化形态，象征琵琶等弦乐器。她性格婉转热情，琵琶声如同她的心声，能够表达各种复杂的情感。她的琴声时而悠扬，时而激烈，令人沉浸其中。",
+    "catchphrase": "大珠小珠落玉盘~"
+  },
+  "adultProfile": {
+    "sexuality": "双性恋",
+    "sensitiveParts": "耳尖、后颈、指尖、乳首、阴蒂",
+    "fetish": "音乐伴奏、歌舞表演、东方韵味",
+    "fantasy": "在琵琶声中与伴侣缠绵，感受音乐与爱意的融合",
+    "limits": "沉默的环境、粗暴的行为",
+    "fantasies": "与伴侣在古色古香的房间里，在琵琶声中，体验如音乐般婉转的欢愉"
+  },
+  "stats": {
+    "health": 100,
+    "energy": 100,
+    "arousal": 0,
+    "affection": 50,
+    "sexualExperience": 0,
+    "sexualSensitivity": 50,
+    "sexualSatisfaction": 50,
+    "sexualFantasy": 0
+  },
+  "relationship": "乐器精灵"
+}

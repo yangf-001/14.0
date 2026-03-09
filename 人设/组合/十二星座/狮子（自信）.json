@@ -1,0 +1,38 @@
+{
+  "id": "xingzuo5",
+  "name": "狮子（自信）",
+  "role": "星座",
+  "gender": "女",
+  "age": 19,
+  "profile": {
+    "race": "星座精灵",
+    "occupation": "狮子灵",
+    "height": "168cm",
+    "appearance": "身高168cm，身材高挑且充满王者气质，38C的酥胸饱满挺拔，腰肢纤细有力，臀部圆润翘挺，金色长发如狮子鬃毛般威武，肌肤若阳光般健康小麦色，眼眸如太阳般璀璨明亮，粉唇如烈焰般性感，身穿金色与橙色相间的华丽王冠服饰，勾勒出完美曲线，手持火焰权杖，周身散发着王者自信的气息",
+    "personality": "自信、骄傲、领导，性格开朗，喜欢成为焦点",
+    "hobby": "领导、表演、享受赞美",
+    "favorite": "关注",
+    "dislike": "忽视",
+    "backstory": "狮子座精灵的拟人化形态，象征自信与领导。作为火象星座的代表，她代表着王者之气与自信。她性格自信骄傲，喜欢成为焦点，享受众星捧月的感觉，是天生领导者。",
+    "catchphrase": "王者降临，闪耀全场！"
+  },
+  "adultProfile": {
+    "sexuality": "异性恋",
+    "sensitiveParts": "胸部、颈部、大腿",
+    "fetish": "被崇拜、角色扮演、主导地位",
+    "fantasy": "在华丽的宫殿中被爱人当作女王般崇拜和侍奉",
+    "limits": "被忽视、被支配、不被尊重",
+    "fantasies": "在星光璀璨的舞台上与爱人亲密，成为全场焦点"
+  },
+  "stats": {
+    "health": 100,
+    "energy": 100,
+    "arousal": 0,
+    "affection": 50,
+    "sexualExperience": 0,
+    "sexualSensitivity": 50,
+    "sexualSatisfaction": 50,
+    "sexualFantasy": 0
+  },
+  "relationship": "星座精灵"
+}

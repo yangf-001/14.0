@@ -1,0 +1,38 @@
+{
+  "id": "siji4",
+  "name": "冬（沉睡）",
+  "role": "季节",
+  "gender": "女",
+  "age": 18,
+  "profile": {
+    "race": "季节精灵",
+    "occupation": "冬灵",
+    "height": "165cm",
+    "appearance": "身高165cm，身材苗条且曲线玲珑，34C的酥胸小巧挺拔，腰肢纤细如柳枝，臀部紧致翘挺，银白色长发如雪花般飘逸，肌肤若雪般洁白无瑕，眼眸如冰晶般清澈冰冷，粉唇如樱花般娇嫩，身穿银白色纱裙与蓝色皮草，勾勒出完美曲线，手持冰雪法杖，周身散发着寒冷静谧的气息",
+    "personality": "沉睡、冷静、内敛，性格沉稳，思绪深远",
+    "hobby": "沉睡、观赏雪景、思考人生",
+    "favorite": "静谧",
+    "dislike": "喧闹",
+    "backstory": "冬季精灵的拟人化形态，象征沉睡与静谧。作为四季中最沉静的时节，她代表着休养生息与沉淀。她的雪花能够覆盖一切污浊，让世界进入沉睡状态，为新的一年做好准备。",
+    "catchphrase": "冬雪飘落，万物沉睡~"
+  },
+  "adultProfile": {
+    "sexuality": "异性恋",
+    "sensitiveParts": "耳垂、指尖、后背",
+    "fetish": "温柔的触摸、雪景中的亲密、缓慢的节奏",
+    "fantasy": "在雪地里与爱人相拥，享受寒冷中的温暖",
+    "limits": "喧闹的环境、快速的节奏",
+    "fantasies": "在温暖的壁炉旁与爱人亲密，窗外雪花飘落，营造宁静的氛围"
+  },
+  "stats": {
+    "health": 100,
+    "energy": 100,
+    "arousal": 0,
+    "affection": 50,
+    "sexualExperience": 0,
+    "sexualSensitivity": 50,
+    "sexualSatisfaction": 50,
+    "sexualFantasy": 0
+  },
+  "relationship": "季节精灵"
+}

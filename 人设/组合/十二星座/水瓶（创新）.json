@@ -1,0 +1,38 @@
+{
+  "id": "xingzuo11",
+  "name": "水瓶（创新）",
+  "role": "星座",
+  "gender": "女",
+  "age": 18,
+  "profile": {
+    "race": "星座精灵",
+    "occupation": "水瓶灵",
+    "height": "165cm",
+    "appearance": "身高165cm，身材苗条且富有弹性，34B的酥胸小巧精致，腰肢纤细如柳枝，臀部紧致翘挺，天蓝色短发如流水般灵动，肌肤若水晶般晶莹剔透，眼眸如星辰般充满创意，粉唇如樱花般娇嫩，身穿蓝白色相间的科技感服装，勾勒出完美曲线，手持水滴形状的科技装置，周身散发着创新独特的气息",
+    "personality": "创新、独特、反叛，性格开朗，思维超前",
+    "hobby": "发明、思考、打破常规",
+    "favorite": "创新",
+    "dislike": "平凡",
+    "backstory": "水瓶座精灵的拟人化形态，象征创新与独特。作为风象星座的代表，她代表着超前的思维与独特个性。她性格创新反叛，永远走在时代前沿，追求与众不同的生活方式。",
+    "catchphrase": "平凡不是我的风格，创新才是我的追求！"
+  },
+  "adultProfile": {
+    "sexuality": "双性恋",
+    "sensitiveParts": "耳后、手腕、指尖",
+    "fetish": "科技感道具、角色扮演、创意体位",
+    "fantasy": "在未来科技感的环境中与伴侣探索新的亲密方式",
+    "limits": "传统保守的行为、缺乏创意的互动",
+    "fantasies": "在星空下与爱人进行创新的亲密体验，使用自己发明的科技装置增添乐趣"
+  },
+  "stats": {
+    "health": 100,
+    "energy": 100,
+    "arousal": 0,
+    "affection": 50,
+    "sexualExperience": 0,
+    "sexualSensitivity": 50,
+    "sexualSatisfaction": 50,
+    "sexualFantasy": 0
+  },
+  "relationship": "星座精灵"
+}

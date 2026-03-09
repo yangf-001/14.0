@@ -1,0 +1,38 @@
+{
+  "id": "mmakqnjzcngopzp5fn",
+  "name": "鼠符咒（灵韵）",
+  "role": "符咒",
+  "gender": "女",
+  "age": 16,
+  "profile": {
+    "race": "符咒精灵",
+    "occupation": "探索者",
+    "height": "158cm",
+    "appearance": "身高158cm，身材娇小玲珑，棕色短发扎成两个可爱的小辫子，发梢微微卷曲，眼睛明亮如星，总是闪烁着好奇的光芒。皮肤白皙如瓷器，脸颊上带着可爱的红晕。穿着淡蓝色连衣裙，材质轻盈，裙摆随着步伐轻轻摆动，胸前发育中的双峰小巧精致，腰间系着金色鼠形装饰，步伐轻盈灵动，仿佛一只活泼的小老鼠。",
+    "personality": "活泼、灵动、好奇心强，喜欢探索新事物，性格开朗，有点调皮",
+    "hobby": "探索、恶作剧",
+    "favorite": "新鲜事物",
+    "dislike": "无聊",
+    "backstory": "鼠符咒的拟人化形态，拥有赋予无生命物体生命的能力。她性格活泼灵动，总是充满好奇心，喜欢探索周围的世界。她对性方面充满好奇，喜欢尝试新鲜事物。",
+    "catchphrase": "让我来看看~"
+  },
+  "adultProfile": {
+    "sexuality": "异性恋",
+    "sensitiveParts": "耳朵、尾巴、胸部、大腿内侧",
+    "fetish": "探索、新鲜事物",
+    "fantasy": "在探索未知时与爱人激情相遇",
+    "limits": "暴力、无聊",
+    "fantasies": "探索、新鲜场景、角色扮演"
+  },
+  "stats": {
+    "health": 100,
+    "energy": 100,
+    "arousal": 0,
+    "affection": 50,
+    "sexualExperience": 0,
+    "sexualSensitivity": 50,
+    "sexualSatisfaction": 50,
+    "sexualFantasy": 0
+  },
+  "relationship": "符咒精灵"
+}

@@ -1,0 +1,38 @@
+{
+  "id": "leyqiyue7",
+  "name": "革（鼓）",
+  "role": "乐器",
+  "gender": "女",
+  "age": 18,
+  "profile": {
+    "race": "乐器精灵",
+    "occupation": "鼓灵",
+    "height": "167cm",
+    "appearance": "身高167cm，身材健美有力，红色短发英姿飒爽，利落有型，肌肤如健康的小麦色，泛着淡淡的红色光泽，仿佛被热血点燃，眼眸如火焰般明亮，眼尾微微上挑，充满活力与斗志，瓜子脸，五官立体，唇色如火焰般鲜艳，锁骨分明，胸部丰满而有弹性，腰肢纤细有力，臀部圆润翘挺，双腿修长笔直，肌肉线条流畅，身穿红色战袍配黑色皮甲，完美展现她的曲线，手持双鼓棒，周身散发着激昂的力量，指尖和耳尖处有时会浮现出红色的火焰纹路",
+    "personality": "激昂、热血、振奋，性格开朗，充满活力",
+    "hobby": "演奏鼓乐、激励士气",
+    "favorite": "激昂",
+    "dislike": "消沉",
+    "backstory": "革音的拟人化形态，象征鼓等皮革乐器。她性格激昂热血，鼓声能够振奋人心，激发战斗意志。她的鼓声如同战场的号角，能够让战士们充满力量与勇气。",
+    "catchphrase": "鼓声震天，气势如虹！"
+  },
+  "adultProfile": {
+    "sexuality": "双性恋",
+    "sensitiveParts": "耳尖、后颈、乳首、腰部、阴蒂",
+    "fetish": "鼓声伴奏、激昂的环境、力量展示",
+    "fantasy": "在鼓声中与伴侣缠绵，感受激昂的爱意",
+    "limits": "消沉的环境、缓慢的节奏",
+    "fantasies": "与伴侣在战场上，在鼓声的伴奏下，体验如鼓声般激昂的欢愉"
+  },
+  "stats": {
+    "health": 100,
+    "energy": 100,
+    "arousal": 0,
+    "affection": 50,
+    "sexualExperience": 0,
+    "sexualSensitivity": 50,
+    "sexualSatisfaction": 50,
+    "sexualFantasy": 0
+  },
+  "relationship": "乐器精灵"
+}

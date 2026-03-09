@@ -1,0 +1,54 @@
+.chat-session-item:hover {
+    background: var(--accent-dim) !important;
+}
+
+.chat-session-item.selected {
+    border-color: var(--accent) !important;
+    background: var(--accent-dim) !important;
+}
+
+#chatMessages {
+    scroll-behavior: smooth;
+}
+
+#chatInput:focus {
+    outline: none;
+    border-color: var(--accent);
+}
+
+.char-select-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.char-select-card.selected {
+    border-color: var(--accent);
+    background: var(--accent-dim);
+}
+
+@keyframes messageAppear {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+#chatMessages > div {
+    animation: messageAppear 0.3s ease-out;
+}
+
+.chat-action-text {
+    font-style: italic;
+    color: var(--text-dim);
+    font-size: 0.9em;
+}
+
+.chat-timestamp {
+    font-size: 0.7rem;
+    color: var(--text-dim);
+    margin-top: 4px;
+}

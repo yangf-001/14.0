@@ -201,8 +201,14 @@ ViewCallbacks.inventory = {
         
         let effects = {};
         try {
-            effects = JSON.parse(document.getElementById('itemEffects').value || '{}');
-        } catch {}
+            const effectsStr = document.getElementById('itemEffects').value;
+            if (effectsStr && effectsStr.trim()) {
+                effects = JSON.parse(effectsStr);
+            }
+        } catch (e) {
+            console.warn('物品效果JSON解析失败:', e);
+            return;
+        }
         
         const plugin = PluginSystem.get('inventory');
         plugin?.addItem(world.id, characterId, {
@@ -235,8 +241,14 @@ ViewCallbacks.inventory = {
         
         let effects = {};
         try {
-            effects = JSON.parse(document.getElementById('libItemEffects').value || '{}');
-        } catch {}
+            const effectsStr = document.getElementById('libItemEffects').value;
+            if (effectsStr && effectsStr.trim()) {
+                effects = JSON.parse(effectsStr);
+            }
+        } catch (e) {
+            console.warn('物品效果JSON解析失败:', e);
+            return;
+        }
         
         const plugin = PluginSystem.get('inventory');
         plugin?.addToLibrary({
@@ -260,8 +272,14 @@ ViewCallbacks.inventory = {
         
         let effects = {};
         try {
-            effects = JSON.parse(document.getElementById('editLibItemEffects').value || '{}');
-        } catch {}
+            const effectsStr = document.getElementById('editLibItemEffects').value;
+            if (effectsStr && effectsStr.trim()) {
+                effects = JSON.parse(effectsStr);
+            }
+        } catch (e) {
+            console.warn('物品效果JSON解析失败:', e);
+            return;
+        }
         
         const plugin = PluginSystem.get('inventory');
         plugin?.updateLibraryItem(itemId, {
@@ -328,8 +346,14 @@ ViewCallbacks.inventory = {
         
         let effects = {};
         try {
-            effects = JSON.parse(document.getElementById('itemEffects')?.value || '{}');
-        } catch {}
+            const effectsStr = document.getElementById('itemEffects')?.value;
+            if (effectsStr && effectsStr.trim()) {
+                effects = JSON.parse(effectsStr);
+            }
+        } catch (e) {
+            console.warn('物品效果JSON解析失败:', e);
+            return;
+        }
         
         const plugin = PluginSystem.get('inventory');
         plugin?.addItem(world.id, characterId, {
@@ -438,6 +462,3 @@ ViewCallbacks.inventory = {
         }
     }
 };
-
-window.ViewCallbacks = window.ViewCallbacks || {};
-Object.assign(window.ViewCallbacks, ViewCallbacks);

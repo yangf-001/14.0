@@ -1,0 +1,38 @@
+{
+  "id": "mmakqnjzma5ipfncnxj",
+  "name": "狗符咒（永生）",
+  "role": "符咒",
+  "gender": "女",
+  "age": 20,
+  "profile": {
+    "race": "符咒精灵",
+    "occupation": "守护者",
+    "height": "168cm",
+    "appearance": "身高168cm，身材匀称修长，棕色长发如瀑布般披肩，发梢自然卷曲。皮肤白皙如凝脂，眼睛温和如琥珀，眼尾微微上翘增添妩媚。穿着金色丝绸连衣裙，胸线设计优雅大方，露出精致的锁骨和修长的颈部，腰间系着金色狗形装饰，裙摆随着步伐轻轻摆动，臀部曲线优美，腿部线条修长，整体气质高贵典雅，散发着成熟女性的魅力。",
+    "personality": "成熟、优雅、忠诚，性格沉稳，喜欢照顾别人",
+    "hobby": "守护、照顾",
+    "favorite": "忠诚",
+    "dislike": "背叛",
+    "backstory": "狗符咒的拟人化形态，拥有永生能力。她性格成熟优雅，总是给人一种可靠的感觉。她对性方面比较保守，但在爱人面前会表现出热情的一面。",
+    "catchphrase": "我会永远守护你~"
+  },
+  "adultProfile": {
+    "sexuality": "异性恋",
+    "sensitiveParts": "颈部、耳朵、胸部、臀部",
+    "fetish": "忠诚、守护",
+    "fantasy": "在月光下与爱人温柔相拥",
+    "limits": "粗暴、背叛",
+    "fantasies": "烛光晚餐、温柔爱抚、浪漫之夜"
+  },
+  "stats": {
+    "health": 100,
+    "energy": 100,
+    "arousal": 0,
+    "affection": 50,
+    "sexualExperience": 0,
+    "sexualSensitivity": 50,
+    "sexualSatisfaction": 50,
+    "sexualFantasy": 0
+  },
+  "relationship": "符咒精灵"
+}

@@ -1,0 +1,38 @@
+{
+  "id": "leyqiyue5",
+  "name": "匏（笙）",
+  "role": "乐器",
+  "gender": "女",
+  "age": 17,
+  "profile": {
+    "race": "乐器精灵",
+    "occupation": "笙灵",
+    "height": "163cm",
+    "appearance": "身高163cm，身材娇小玲珑，淡粉色长发扎成可爱发髻，发丝间点缀着粉色的花朵，肌肤如牛奶般白皙，泛着淡淡的粉色光泽，眼眸如粉色水晶般明亮，眼尾微微下垂，增添了几分温柔，圆润的鹅蛋脸，小巧的鼻子，唇色如樱花般粉嫩，锁骨精致，胸部小巧而饱满，腰肢纤细柔软，臀部圆润小巧，双腿修长笔直，身穿粉色纱裙，材质轻盈，完美勾勒出她的曲线，手持白色笙管，周身散发着柔和温暖的光芒，指尖和耳尖处有时会浮现出粉色的光晕",
+    "personality": "温柔、包容、和谐，性格温和，善于调和",
+    "hobby": "演奏笙箫、调和关系",
+    "favorite": "和谐",
+    "dislike": "冲突",
+    "backstory": "匏音的拟人化形态，象征笙等匏制乐器。她性格温柔包容，笙声能够调和各种不同的声音，创造出和谐的旋律。她的音乐具有强大的凝聚力，能够让万物和谐共处。",
+    "catchphrase": "笙音和鸣，万物共生~"
+  },
+  "adultProfile": {
+    "sexuality": "双性恋",
+    "sensitiveParts": "耳尖、后颈、胸部、腹部、阴蒂",
+    "fetish": "温柔的拥抱、和谐的环境、音乐伴奏",
+    "fantasy": "在笙声中与伴侣温柔相拥，感受和谐的爱意",
+    "limits": "冲突的环境、粗暴的行为",
+    "fantasies": "与伴侣在花园中，在笙声的伴奏下，体验如和谐旋律般的欢愉"
+  },
+  "stats": {
+    "health": 100,
+    "energy": 100,
+    "arousal": 0,
+    "affection": 50,
+    "sexualExperience": 0,
+    "sexualSensitivity": 50,
+    "sexualSatisfaction": 50,
+    "sexualFantasy": 0
+  },
+  "relationship": "乐器精灵"
+}

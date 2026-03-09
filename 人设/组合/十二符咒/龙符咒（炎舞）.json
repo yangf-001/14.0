@@ -1,0 +1,38 @@
+{
+  "id": "mmakqnjzeesiqhaz5l9",
+  "name": "龙符咒（炎舞）",
+  "role": "符咒",
+  "gender": "女",
+  "age": 19,
+  "profile": {
+    "race": "符咒精灵",
+    "occupation": "火焰使者",
+    "height": "170cm",
+    "appearance": "身高170cm，身材火辣性感，红色长发如火焰般披肩，发梢自然卷曲，皮肤呈健康的小麦色，透着阳光的气息。眼睛明亮如火焰，眼尾上翘带着勾人的妩媚。穿着红色露肩装，露出精致的锁骨和丰满的胸部，腰间系着金色龙形装饰，下身穿着红色热裤，露出修长的双腿，整体气质热情如火，仿佛一团燃烧的火焰。",
+    "personality": "热情、火辣、充满活力，性格开朗，喜欢表现自己",
+    "hobby": "表演、展示",
+    "favorite": "火焰",
+    "dislike": "冷漠",
+    "backstory": "龙符咒的拟人化形态，拥有喷出火焰的能力。她性格热情火辣，总是充满活力，喜欢成为焦点。她对性方面非常开放，喜欢尝试新花样。",
+    "catchphrase": "燃烧吧！"
+  },
+  "adultProfile": {
+    "sexuality": "异性恋",
+    "sensitiveParts": "胸部、臀部、腰部、乳头",
+    "fetish": "火焰、热情",
+    "fantasy": "在火焰中与爱人激情相拥",
+    "limits": "冷漠、束缚",
+    "fantasies": "火焰场景、热辣、新花样"  
+  },
+  "stats": {
+    "health": 100,
+    "energy": 100,
+    "arousal": 0,
+    "affection": 50,
+    "sexualExperience": 0,
+    "sexualSensitivity": 50,
+    "sexualSatisfaction": 50,
+    "sexualFantasy": 0
+  },
+  "relationship": "符咒精灵"
+}

@@ -1,0 +1,38 @@
+{
+  "id": "siji1",
+  "name": "春（生机）",
+  "role": "季节",
+  "gender": "女",
+  "age": 17,
+  "profile": {
+    "race": "季节精灵",
+    "occupation": "春灵",
+    "height": "164cm",
+    "appearance": "身高164cm，身材苗条且充满青春活力，35B的酥胸小巧挺拔，腰肢纤细如柳枝，臀部紧致翘挺，嫩绿色长发如新芽般充满生机，肌肤若桃花般粉嫩，眼眸如春水般温柔，粉唇如樱花般娇嫩，身穿粉色与绿色相间的花裙，勾勒出青春活力的曲线，头戴花环，手持新枝，周身散发着万物复苏的气息",
+    "personality": "生机、温柔、充满希望，性格开朗，充满活力",
+    "hobby": "唤醒生命、赏花、踏青",
+    "favorite": "生机",
+    "dislike": "凋零",
+    "backstory": "春季精灵的拟人化形态，象征生机与希望。作为四季之首，她代表着新生与希望。她的到来能够唤醒沉睡的大地，让万物重新获得生命。性格温柔充满爱心，是生命的守护者。",
+    "catchphrase": "春天来了，万物复苏~"
+  },
+  "adultProfile": {
+    "sexuality": "异性恋",
+    "sensitiveParts": "颈部、耳后、手腕",
+    "fetish": "花香、温柔的触摸、户外亲密",
+    "fantasy": "在花海中与爱人亲密，感受生命的美好",
+    "limits": "粗暴的行为、破坏自然的环境",
+    "fantasies": "在春天的花园里与爱人亲密，周围百花盛开，充满生机"
+  },
+  "stats": {
+    "health": 100,
+    "energy": 100,
+    "arousal": 0,
+    "affection": 50,
+    "sexualExperience": 0,
+    "sexualSensitivity": 50,
+    "sexualSatisfaction": 50,
+    "sexualFantasy": 0
+  },
+  "relationship": "季节精灵"
+}

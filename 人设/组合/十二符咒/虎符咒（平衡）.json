@@ -1,0 +1,38 @@
+{
+  "id": "mmakqnjz4opsg70eswq",
+  "name": "虎符咒（平衡）",
+  "role": "符咒",
+  "gender": "女",
+  "age": 18,
+  "profile": {
+    "race": "符咒精灵",
+    "occupation": "平衡者",
+    "height": "168cm",
+    "appearance": "身高168cm，身材匀称修长，橙色长发如火焰般披肩，发梢自然卷曲，皮肤白皙如凝脂，眼睛深邃如琥珀，眼尾微微上翘增添妩媚。穿着黄色丝绸旗袍，旗袍剪裁合身，完美勾勒出她的曲线，胸部丰满挺拔，腰部纤细，臀部圆润，双腿修长，腰间系着金色虎形装饰，整体气质优雅高贵，散发着成熟女性的魅力。",
+    "personality": "冷静、公正、平衡，性格沉稳，善于分析问题",
+    "hobby": "分析、思考",
+    "favorite": "平衡",
+    "dislike": "偏颇",
+    "backstory": "虎符咒的拟人化形态，拥有平衡善恶的能力。她性格冷静公正，总是保持平衡的心态。她对性方面比较保守，但在爱人面前会表现出热情的一面。",
+    "catchphrase": "一切都需要平衡。"
+  },
+  "adultProfile": {
+    "sexuality": "异性恋",
+    "sensitiveParts": "颈部、耳朵、胸部、臀部",
+    "fetish": "平衡、控制",
+    "fantasy": "在平衡的状态下与爱人缠绵",
+    "limits": "粗暴、失衡",
+    "fantasies": "烛光晚餐、温柔爱抚、平衡之爱"
+  },
+  "stats": {
+    "health": 100,
+    "energy": 100,
+    "arousal": 0,
+    "affection": 50,
+    "sexualExperience": 0,
+    "sexualSensitivity": 50,
+    "sexualSatisfaction": 50,
+    "sexualFantasy": 0
+  },
+  "relationship": "符咒精灵"
+}

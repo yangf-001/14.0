@@ -1,4 +1,15 @@
 const Pages = {
+    async renderChat(main) {
+        if (PluginSystem && !PluginSystem.loaded) {
+            await PluginSystem.init();
+        }
+        if (typeof View !== 'undefined' && View.render) {
+            main.innerHTML = View.render('chat-plugin.main');
+        } else {
+            main.innerHTML = '<div class="empty">聊天插件未加载</div>';
+        }
+    },
+
     renderStoryConfig(main) {
         if (typeof View !== 'undefined' && View.render) {
             main.innerHTML = View.render('story-config.main');
@@ -187,11 +198,14 @@ const Pages = {
             
             ${story && story.status === 'ongoing' ? `
                 <div class="story-reader" style="margin-bottom: 20px; max-height: 50vh; overflow-y: auto;">
-                    ${story.scenes.map((s, i) => `
-                        <div class="scene" style="${s.choice ? 'border-left: 3px solid var(--accent); padding-left: 12px; margin-left: 12px;' : ''}">
+                    ${(() => {
+                        const scenesToShow = story.scenes;
+                        return scenesToShow.map((s, i) => `
+                        <div class="scene" style="margin-bottom: 24px; padding-bottom: 24px; border-bottom: 1px solid var(--border); ${s.choice ? 'border-left: 3px solid var(--accent); padding-left: 12px; margin-left: 12px;' : ''}">
+                            ${i > 0 ? `<div style="font-size: 0.7rem; color: var(--text-dim); margin-bottom: 12px;">📜 第${i + 1}幕</div>` : ''}
                             ${s.choice ? `<div style="font-size: 0.75rem; color: var(--accent); margin-bottom: 8px;">👉 你选择了：${s.choice}</div>` : ''}
                             <p style="line-height: 1.8;">${s.content}</p>
-                            ${s.choices && s.choices.length > 0 && i === story.scenes.length - 1 ? `
+                            ${s.choices && s.choices.length > 0 && i === scenesToShow.length - 1 ? `
                                 <div class="choices" style="margin-top: 16px;">
                                     <div style="font-size: 0.8rem; color: var(--text-dim); margin-bottom: 8px;">请选择剧情走向：</div>
                                     ${s.choices.map((c, j) => `
@@ -205,7 +219,8 @@ const Pages = {
                                 </div>
                             ` : ''}
                         </div>
-                    `).join('')}
+                        `).join('');
+                    })()}
                 </div>
                 
                 ${mobileStatsHtml}
@@ -235,6 +250,23 @@ const Pages = {
                             </label>
                         `).join('')}
                     </div>
+                    <div style="margin-top: 12px; padding-top: 12px; border-top: 1px solid var(--border);">
+                        <div style="font-size: 0.8rem; color: var(--text-dim); margin-bottom: 8px;">🎯 角色占比设置</div>
+                        <div style="display: flex; align-items: center; gap: 12px;">
+                            <span style="font-size: 0.75rem;">选中角色占比：</span>
+                            <select id="charRatio" style="padding: 4px 8px; font-size: 0.75rem; border-radius: 4px;">
+                                <option value="100">100% (仅选中角色)</option>
+                                <option value="90">90%</option>
+                                <option value="80" selected>80%</option>
+                                <option value="70">70%</option>
+                                <option value="60">60%</option>
+                                <option value="50">50% (均等)</option>
+                            </select>
+                        </div>
+                        <div style="font-size: 0.7rem; color: var(--text-dim); margin-top: 6px;">
+                            例如选择1、2，占比80%，则1、2、3、4、5都会出场，但1、2的剧情占比约80%
+                        </div>
+                    </div>
                     <div style="display: flex; gap: 8px; margin-top: 12px;">
                         <button class="btn" onclick="refreshChoicesWithNewChars()" style="flex: 1;">🔄 刷新选项</button>
                         <button class="btn btn-secondary" onclick="continueStoryWithNewChars()" style="flex: 1;">▶️ 继续剧情</button>
@@ -253,6 +285,23 @@ const Pages = {
                             `).join('')}
                         </div>
                     </div>
+                    <div style="margin-top: 12px; padding: 12px; background: var(--card); border-radius: 6px;">
+                        <div style="font-size: 0.8rem; color: var(--text-dim); margin-bottom: 8px;">🎯 角色占比设置</div>
+                        <div style="display: flex; align-items: center; gap: 12px;">
+                            <span style="font-size: 0.75rem;">选中角色占比：</span>
+                            <select id="charRatioStart" style="padding: 4px 8px; font-size: 0.75rem; border-radius: 4px;">
+                                <option value="100">100% (仅选中角色)</option>
+                                <option value="90">90%</option>
+                                <option value="80" selected>80%</option>
+                                <option value="70">70%</option>
+                                <option value="60">60%</option>
+                                <option value="50">50% (均等)</option>
+                            </select>
+                        </div>
+                        <div style="font-size: 0.7rem; color: var(--text-dim); margin-top: 6px;">
+                            例如选择1、2，占比80%，则1、2、3、4、5都会出场，但1、2的剧情占比约80%
+                        </div>
+                    </div>
                     <div class="form-group">
                         <label>你扮演的角色</label>
                         <select id="playerCharSelect" onchange="onPlayerCharChange()">
@@ -269,51 +318,10 @@ const Pages = {
                         <label>场景设定（可选）</label>
                         <input type="text" id="sceneInput" placeholder="例如：浪漫的烛光晚餐、雨中的相遇...">
                     </div>
-                    <div class="card" id="timeConfigCard" style="background: var(--border); margin-top: 16px;">
-                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
-                            <span style="font-weight: 500;">⏰ 故事时间设置</span>
-                            <button type="button" class="btn btn-secondary" onclick="toggleTimeConfig()" style="padding: 4px 8px; font-size: 0.75rem;">展开/收起</button>
-                        </div>
-                        <div id="timeConfigContent" style="display: none;">
-                            <div class="form-group">
-                                <label>主角开始年龄</label>
-                                <select id="protagonistStartAge" onchange="autoCalcAgeRelations()">
-                                    ${[...Array(19)].map((_, i) => `<option value="${i + 1}" ${i + 1 === 18 ? 'selected' : ''}>${i + 1}岁</option>`).join('')}
-                                </select>
-                                <small style="color: var(--text-dim); font-size: 0.75rem;">选择故事从主角几岁时开始</small>
-                            </div>
-                            <div class="form-group">
-                                <label>故事开始年份</label>
-                                <input type="number" id="storyStartYear" value="2024" min="1900" max="2100">
-                                <small style="color: var(--text-dim); font-size: 0.75rem;">虚拟世界的起始年份</small>
-                            </div>
-                            <div class="form-group">
-                                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
-                                    <label style="margin: 0;">其他角色年龄关系</label>
-                                    <button type="button" class="btn btn-secondary" onclick="autoCalcAgeRelations()" style="padding: 4px 8px; font-size: 0.7rem;">🔄 自动计算</button>
-                                </div>
-                                <div style="font-size: 0.75rem; color: var(--text-dim); margin-bottom: 8px;">根据主角年龄自动计算年龄差（点击"自动计算"按钮）</div>
-                                <div id="charAgeRelations" style="max-height: 200px; overflow-y: auto;">
-                                    ${(() => {
-                                        const protagonist = chars.find(c => c.role === '主角' || c.role === '女主');
-                                        const defaultAge = protagonist?.age || 18;
-                                        return chars.filter(c => c.role !== '主角' && c.role !== '女主').map(c => {
-                                            const autoDiff = c.age - defaultAge;
-                                            return `
-                                                <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 8px; padding: 6px; background: var(--card-bg); border-radius: 4px;">
-                                                    <span style="flex: 1; font-size: 0.85rem;">${c.name} (基础: ${c.age}岁)</span>
-                                                    <input type="number" id="ageRelation_${c.id}" value="${autoDiff}" style="width: 60px;" placeholder="差值">
-                                                    <span style="font-size: 0.75rem; color: var(--text-dim);">岁</span>
-                                                </div>
-                                            `;
-                                        }).join('');
-                                    })()}
-                                    ${chars.filter(c => c.role !== '主角' && c.role !== '女主').length === 0 ? '<div style="font-size: 0.8rem; color: var(--text-dim);">暂无其他角色</div>' : ''}
-                                </div>
-                            </div>
-                        </div>
+                    <div style="display: flex; gap: 8px; margin-top: 16px;">
+                        <button class="btn" onclick="startStory()" style="flex: 1;">🎬 开始故事</button>
+                        <button class="btn btn-secondary" onclick="continueLastStory()" style="flex: 1;">🔄 继续故事</button>
                     </div>
-                    <button class="btn" onclick="startStory()">🎬 开始故事</button>
                 </div>
                 
                 <div style="margin-top: 24px; text-align: center;">
@@ -378,12 +386,13 @@ const Pages = {
         
         let html = `
             ${timeDisplay}
-            <h4 style="font-size: 0.8rem; color: var(--text-dim); margin-bottom: 12px;">📈 本次变化</h4>
         `;
         
         if (!story || story.status !== 'ongoing') {
             html += `<div class="empty" style="font-size: 0.8rem; padding: 12px;">开始故事后可查看属性变化</div>`;
         } else {
+            html += `<h4 style="font-size: 0.8rem; color: var(--text-dim); margin-bottom: 12px;">📈 本次变化</h4>`;
+            
             const lastScene = story.scenes[story.scenes.length - 1];
             const statChanges = lastScene?.statChanges || {};
             
@@ -409,6 +418,8 @@ const Pages = {
                     </div>
                 `}).join('');
             }
+            
+
         }
         
         right.innerHTML = html;
@@ -544,6 +555,18 @@ const Pages = {
                     <div class="plugin-desc">创建和跟踪成就</div>
                 </button>
                 
+                <button class="plugin-btn" onclick="window.location.href='js/plugins/time-plugin/index.html'">
+                    <div class="plugin-icon">⏰</div>
+                    <div class="plugin-name">时间插件</div>
+                    <div class="plugin-desc">故事时间与角色年龄管理</div>
+                </button>
+                
+                <button class="plugin-btn" onclick="window.location.href='js/plugins/adult-tags/index.html'">
+                    <div class="plugin-icon">🏷️</div>
+                    <div class="plugin-name">成人标签</div>
+                    <div class="plugin-desc">管理兴奋值、尺度和标签库</div>
+                </button>
+                
                 <button class="plugin-btn" onclick="window.location.href='js/plugins/adult-library/index.html'">
                     <div class="plugin-icon">🎀</div>
                     <div class="plugin-name">色色库</div>
@@ -569,7 +592,11 @@ const Pages = {
                 <div class="char-info">
                     <p><strong>性别：</strong>${char.gender}</p>
                     <p><strong>角色定位：</strong>${char.role}</p>
-                    <p><strong>年龄：</strong>${char.age}岁</p>
+                    <p><strong>年龄：</strong>${(() => {
+                        const world = Data.getCurrentWorld();
+                        const dynamicAge = world && window.WorldTimePlugin ? window.WorldTimePlugin.getCharacterAge(char, world.id) : char.age;
+                        return dynamicAge || char.age;
+                    })()}岁</p>
                     ${p.race ? `<p><strong>种族：</strong>${p.race}</p>` : ''}
                     ${p.occupation ? `<p><strong>职业：</strong>${p.occupation}</p>` : ''}
                     ${p.height ? `<p><strong>身高：</strong>${p.height}</p>` : ''}
@@ -585,12 +612,23 @@ const Pages = {
         `;
         
         if (Object.keys(stats).length > 0) {
+            const world = Data.getCurrentWorld();
+            let excitementValue = 0;
+            if (world && window.AdultTagsPlugin) {
+                excitementValue = window.AdultTagsPlugin.getExcitement(world.id, char.id) || 0;
+            }
+            
             infoHtml += `
                 <div class="card" style="margin-top: 16px;">
                     <h4>属性状态</h4>
                     <div class="char-info">
                         <p><strong>生命：</strong>${stats.health || 0} | <strong>体力：</strong>${stats.energy || 0} | <strong>魅力：</strong>${stats.charm || 0}</p>
                         <p><strong>智力：</strong>${stats.intelligence || 0} | <strong>力量：</strong>${stats.strength || 0} | <strong>敏捷：</strong>${stats.agility || 0}</p>
+                        <p><strong>兴奋值：</strong>${excitementValue} 
+                            <button onclick="window.adjustExcitement('${char.id}', 15)" style="margin-left:8px;padding:2px 8px;cursor:pointer;">+15</button>
+                            <button onclick="window.adjustExcitement('${char.id}', -15)" style="margin-left:4px;padding:2px 8px;cursor:pointer;">-15</button>
+                            <button onclick="window.adjustExcitement('${char.id}', 0)" style="margin-left:4px;padding:2px 8px;cursor:pointer;">重置</button>
+                        </p>
                         <p><strong>欲望：</strong>${stats.sexArousal || 0} | <strong>性欲：</strong>${stats.sexLibido || 0} | <strong>敏感：</strong>${stats.sexSensitivity || 0}</p>
                         <p><strong>好感：</strong>${stats.affection || 0} | <strong>信任：</strong>${stats.trust || 0} | <strong>亲密：</strong>${stats.intimacy || 0}</p>
                     </div>
@@ -613,5 +651,57 @@ const Pages = {
     }
 };
 
+window.adjustExcitement = function(charId, amount) {
+    const world = Data.getCurrentWorld();
+    if (!world || !window.AdultTagsPlugin) {
+        alert('无法调整兴奋值');
+        return;
+    }
+    const current = window.AdultTagsPlugin.getExcitement(world.id, charId);
+    const newValue = Math.max(0, Math.min(100, current + amount));
+    window.AdultTagsPlugin.setExcitement(world.id, charId, newValue);
+    console.log(`[兴奋值] 调整为 ${newValue}`);
+    
+    if (window.showCharInfo) {
+        const chars = Data.getCharacters(world.id);
+        const char = chars.find(c => c.id === charId);
+        if (char) {
+            window.showCharInfo(char);
+        }
+    }
+};
+
 Pages.showCharInfo = Pages.showCharInfo.bind(Pages);
+window.showCharInfo = Pages.showCharInfo;
 window.Pages = Pages;
+
+window.saveApiSettings = function() {
+    const apiKey = document.getElementById('apiKey')?.value;
+    const apiEndpoint = document.getElementById('apiEndpoint')?.value;
+    
+    ai.saveConfig({ apiKey, endpoint: apiEndpoint });
+    alert('API设置已保存');
+};
+
+window.saveContentSettings = function() {
+    const world = Data.getCurrentWorld();
+    const contentTone = document.getElementById('contentTone')?.value;
+    const detailLevel = document.getElementById('detailLevel')?.value;
+    const outputStyle = document.getElementById('outputStyle')?.value;
+    
+    Settings.set(world?.id, { content: { tone: contentTone, detailLevel, outputStyle: outputStyle } });
+    alert('内容设置已保存');
+};
+
+window.saveAdultSettings = function() {
+    const world = Data.getCurrentWorld();
+    const adultEnabled = document.getElementById('adultEnabled')?.checked;
+    const intimacyLevel = document.getElementById('intimacyLevel')?.value;
+    
+    Settings.set(world?.id, { adult: { enabled: adultEnabled }, content: { intimacy: parseInt(intimacyLevel) } });
+    alert('成人设置已保存');
+};
+
+window.changeAutoSaveInterval = function(value) {
+    Data.setAutoSaveInterval(parseInt(value));
+};

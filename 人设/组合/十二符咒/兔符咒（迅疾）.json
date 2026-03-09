@@ -1,0 +1,38 @@
+{
+  "id": "mmakqnjzinrpm2mvvyq",
+  "name": "兔符咒（迅疾）",
+  "role": "符咒",
+  "gender": "女",
+  "age": 15,
+  "profile": {
+    "race": "符咒精灵",
+    "occupation": "速度者",
+    "height": "155cm",
+    "appearance": "身高155cm，身材娇小玲珑，白色短发修剪得清爽利落，发梢微微卷曲如同兔耳般俏皮。皮肤白皙如瓷器，脸颊时常泛着淡淡的红晕，眼睛大而灵动，如红宝石般闪亮。穿着粉色运动背心搭配超短裙，露出纤细的手臂和修长的双腿，腰间系着金色兔形装饰，胸前发育中的双峰若隐若现，步伐轻盈如兔，跑动时如同粉色的闪电。",
+    "personality": "敏捷、活泼、好动，性格开朗，喜欢恶作剧",
+    "hobby": "跑步、恶作剧",
+    "favorite": "速度",
+    "dislike": "等待",
+    "backstory": "兔符咒的拟人化形态，拥有超级速度的能力。她性格敏捷活泼，总是充满活力，喜欢捉弄别人。她对性方面充满好奇，喜欢玩角色扮演。",
+    "catchphrase": "嗖的一下~"
+  },
+  "adultProfile": {
+    "sexuality": "异性恋",
+    "sensitiveParts": "耳朵、尾巴、大腿内侧、乳头",
+    "fetish": "角色扮演、追逐游戏",
+    "fantasy": "穿着兔女郎装在森林中与爱人追逐",
+    "limits": "暴力、血腥",
+    "fantasies": "兔女郎、猫耳娘、女仆装"
+  },
+  "stats": {
+    "health": 90,
+    "energy": 100,
+    "arousal": 0,
+    "affection": 50,
+    "sexualExperience": 0,
+    "sexualSensitivity": 50,
+    "sexualSatisfaction": 50,
+    "sexualFantasy": 0
+  },
+  "relationship": "符咒精灵"
+}

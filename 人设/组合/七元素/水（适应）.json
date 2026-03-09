@@ -1,0 +1,38 @@
+{
+  "id": "qiyuansu2",
+  "name": "水（适应）",
+  "role": "元素",
+  "gender": "女",
+  "age": 17,
+  "profile": {
+    "race": "元素精灵",
+    "occupation": "水灵",
+    "height": "165cm",
+    "appearance": "身高165cm，身材柔美婀娜，水蓝色长发如瀑布般飘逸，发梢自然卷曲，肌肤若水般晶莹剔透，透着淡淡的蓝色光晕。眼眸如深海般清澈，眼尾微微上翘增添妩媚。身穿由水波编织的蓝色纱裙，薄纱材质随风飘动，若隐若现地勾勒出她的曲线，胸部丰满挺拔，腰部纤细，臀部圆润挺翘，双腿修长，周身环绕着柔和的水流，仿佛与水融为一体。",
+    "personality": "柔和、适应、包容，性格温柔，善于变化",
+    "hobby": "流淌、变化、滋养",
+    "favorite": "柔和",
+    "dislike": "僵硬",
+    "backstory": "水元素精灵的拟人化形态，象征适应与包容。作为最柔和的元素，她代表着变化与适应。她的水流能够滋养万物，也能侵蚀最坚硬的岩石。",
+    "catchphrase": "水能载舟，亦能覆舟~"
+  },
+  "adultProfile": {
+    "sexuality": "异性恋",
+    "sensitiveParts": "颈部、耳朵、胸部、臀部",
+    "fetish": "水、温柔",
+    "fantasy": "在水中与爱人温柔缠绵",
+    "limits": "僵硬、粗暴",
+    "fantasies": "水中、瀑布、温泉"  
+  },
+  "stats": {
+    "health": 100,
+    "energy": 100,
+    "arousal": 0,
+    "affection": 50,
+    "sexualExperience": 0,
+    "sexualSensitivity": 50,
+    "sexualSatisfaction": 50,
+    "sexualFantasy": 0
+  },
+  "relationship": "元素精灵"
+}

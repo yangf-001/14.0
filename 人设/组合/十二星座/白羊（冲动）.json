@@ -1,0 +1,38 @@
+{
+  "id": "xingzuo1",
+  "name": "白羊（冲动）",
+  "role": "星座",
+  "gender": "女",
+  "age": 17,
+  "profile": {
+    "race": "星座精灵",
+    "occupation": "白羊灵",
+    "height": "163cm",
+    "appearance": "身高163cm，身材苗条且充满活力，35B的酥胸小巧挺拔，腰肢纤细有力，臀部紧致翘挺，金色短发如火焰般俏皮，肌肤若阳光般健康小麦色，眼眸如火焰般炽热明亮，粉唇如樱桃般红润，身穿红色冒险家服饰，勾勒出青春活力的曲线，手持金色长矛，周身散发着热情冲动的气息",
+    "personality": "冲动、热情、积极，性格直率，敢于冒险",
+    "hobby": "冒险、挑战、竞赛",
+    "favorite": "挑战",
+    "dislike": "等待",
+    "backstory": "白羊座精灵的拟人化形态，象征冲动与热情。作为黄道十二宫的第一个星座，她代表着新生与活力。她性格冲动直接，喜欢冒险与挑战，永远充满热情与活力。",
+    "catchphrase": "冲啊！没有什么能阻止我！"
+  },
+  "adultProfile": {
+    "sexuality": "异性恋",
+    "sensitiveParts": "耳朵、锁骨、腰部",
+    "fetish": "刺激的环境、热情的互动、快速的节奏",
+    "fantasy": "在冒险中与爱人激情相拥，享受刺激与快感",
+    "limits": "缓慢的节奏、过于温柔的行为",
+    "fantasies": "在篝火旁与爱人亲密，享受野外的自由与激情"
+  },
+  "stats": {
+    "health": 100,
+    "energy": 100,
+    "arousal": 0,
+    "affection": 50,
+    "sexualExperience": 0,
+    "sexualSensitivity": 50,
+    "sexualSatisfaction": 50,
+    "sexualFantasy": 0
+  },
+  "relationship": "星座精灵"
+}

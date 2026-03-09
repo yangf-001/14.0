@@ -427,17 +427,25 @@
                     </div>
                     
                     <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 16px;">
-                        ${chars.map(c => `
+                        ${chars.map(c => {
+                            const dynamicAge = (() => {
+                                const world = Data.getCurrentWorld();
+                                if (world && window.WorldTimePlugin) {
+                                    return window.WorldTimePlugin.getCharacterAge(c, world.id) || c.age;
+                                }
+                                return c.age;
+                            })();
+                            return `
                             <div class="card">
                                 <div class="title">${c.name}</div>
-                                <div class="meta">${c.role} · ${c.gender} · ${c.age}岁</div>
+                                <div class="meta">${c.role} · ${c.gender} · ${dynamicAge}岁</div>
                                 ${c.appearance ? `<p style="font-size: 0.85rem; color: var(--text-dim); margin-top: 8px;">${c.appearance.substring(0, 60)}...</p>` : ''}
                                 <div style="margin-top: 12px; display: flex; gap: 8px; flex-wrap: wrap;">
                                     <button class="btn btn-secondary" onclick="editCharacter('${c.id}')" style="padding: 6px 12px; font-size: 0.8rem;">详细编辑</button>
                                     <button class="btn btn-secondary" onclick="deleteCharacter('${c.id}')" style="padding: 6px 12px; font-size: 0.8rem;">删除</button>
                                 </div>
                             </div>
-                        `).join('')}
+                        `;}).join('')}
                         ${chars.length === 0 ? '<div class="empty">暂无角色，点击上方创建</div>' : ''}
                     </div>
                 `;

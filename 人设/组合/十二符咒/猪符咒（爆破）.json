@@ -1,0 +1,38 @@
+{
+  "id": "mmakqnjz7jr8x0li3mx",
+  "name": "猪符咒（爆破）",
+  "role": "符咒",
+  "gender": "女",
+  "age": 16,
+  "profile": {
+    "race": "符咒精灵",
+    "occupation": "爆破者",
+    "height": "158cm",
+    "appearance": "身高158cm，身材圆润可爱，微胖的体型更显少女的青春活力。粉色短发修剪成可爱的波波头，发梢微微向外翘。皮肤白皙粉嫩，脸颊上总是带着可爱的红晕。眼睛明亮如星星，笑起来弯成月牙形。穿着粉色运动背心和短裤，露出圆润的手臂和大腿，胸前发育中的双峰圆润可爱，腰间系着金色猪形装饰，跑动时身体微微晃动，显得格外可爱动人。",
+    "personality": "活泼、开朗、大胆，性格直率，喜欢刺激",
+    "hobby": "冒险、刺激",
+    "favorite": "爆炸",
+    "dislike": "平静",
+    "backstory": "猪符咒的拟人化形态，拥有爆破能力。她性格活泼开朗，总是喜欢刺激的事物。她对性方面比较开放，喜欢尝试新花样。",
+    "catchphrase": "Boom！"
+  },
+  "adultProfile": {
+    "sexuality": "异性恋",
+    "sensitiveParts": "胸部、臀部、大腿、耳朵",
+    "fetish": "刺激、新花样",
+    "fantasy": "在爆破后的废墟中与爱人激情相拥",
+    "limits": "疼痛、伤害",
+    "fantasies": "角色扮演、情趣内衣、户外"
+  },
+  "stats": {
+    "health": 100,
+    "energy": 100,
+    "arousal": 0,
+    "affection": 50,
+    "sexualExperience": 0,
+    "sexualSensitivity": 50,
+    "sexualSatisfaction": 50,
+    "sexualFantasy": 0
+  },
+  "relationship": "符咒精灵"
+}

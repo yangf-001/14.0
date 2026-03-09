@@ -1,0 +1,38 @@
+{
+  "id": "baguayy9",
+  "name": "兑（泽）",
+  "role": "卦象",
+  "gender": "女",
+  "age": 17,
+  "profile": {
+    "race": "卦象精灵",
+    "occupation": "泽灵",
+    "height": "163cm",
+    "appearance": "身高163cm，身材娇小玲珑，金色短发俏皮可爱，利落有型，肌肤如牛奶般白皙，泛着淡淡的金色光泽，眼眸如湖水般清澈明亮，眼尾微微上挑，充满活力与笑意，圆润的鹅蛋脸，小巧的鼻子，唇色如樱花般粉嫩，锁骨精致，胸部小巧而饱满，腰肢纤细柔软，臀部圆润小巧，双腿修长笔直，身穿淡金色纱裙，材质轻盈，完美勾勒出她的曲线，手持莲花，周身散发着愉悦的气息，指尖和耳尖处有时会浮现出金色的光晕",
+    "personality": "快乐、愉悦、亲和，性格开朗，善于交际",
+    "hobby": "游玩、歌舞",
+    "favorite": "快乐",
+    "dislike": "悲伤",
+    "backstory": "兑卦的拟人化形态，象征泽、阴、悦乐。作为泽灵的化身，她代表着快乐与愉悦。她性格开朗亲和，像湖水一样清澈纯净，能够给人带来欢乐与温暖。她的笑声如同天籁。",
+    "catchphrase": "今天也要开心度过~"
+  },
+  "adultProfile": {
+    "sexuality": "双性恋",
+    "sensitiveParts": "耳尖、后颈、胸部、腹部、阴蒂",
+    "fetish": "快乐氛围、歌舞表演、莲花象征",
+    "fantasy": "在欢乐的氛围中与伴侣缠绵，感受愉悦的爱意",
+    "limits": "悲伤的环境、粗暴的行为",
+    "fantasies": "与伴侣在湖边，在莲花的环绕下，体验如湖水般清澈的欢愉"
+  },
+  "stats": {
+    "health": 100,
+    "energy": 100,
+    "arousal": 0,
+    "affection": 50,
+    "sexualExperience": 0,
+    "sexualSensitivity": 50,
+    "sexualSatisfaction": 50,
+    "sexualFantasy": 0
+  },
+  "relationship": "卦象精灵"
+}

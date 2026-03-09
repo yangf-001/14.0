@@ -1,0 +1,38 @@
+{
+  "id": "xingzuo10",
+  "name": "摩羯（野心）",
+  "role": "星座",
+  "gender": "女",
+  "age": 20,
+  "profile": {
+    "race": "星座精灵",
+    "occupation": "摩羯灵",
+    "height": "166cm",
+    "appearance": "身高166cm，身材匀称且富有成熟魅力，37B的酥胸挺拔有型，腰肢纤细有力，臀部紧致翘挺，深棕色长发如岩石般坚硬，肌肤若玉石般温润，眼眸如高山般沉稳坚定，粉唇微抿，自带威严感，身穿深蓝色与灰色相间的职业装，勾勒出完美曲线，手持岩石权杖，周身散发着稳重野心的气息",
+    "personality": "野心、稳重、踏实，性格沉稳，目标明确",
+    "hobby": "工作、规划、实现目标",
+    "favorite": "成就",
+    "dislike": "懒惰",
+    "backstory": "摩羯座精灵的拟人化形态，象征野心与稳重。作为土象星座的代表，她代表着坚韧与野心。她性格稳重踏实，对目标执着追求，是最可靠的实干家。",
+    "catchphrase": "只有努力才能达到顶峰！"
+  },
+  "adultProfile": {
+    "sexuality": "异性恋",
+    "sensitiveParts": "颈部、耳垂、后背",
+    "fetish": "控制与被控制、职场角色扮演、有计划的亲密",
+    "fantasy": "在成功达成目标后与爱人庆祝，享受征服后的满足感",
+    "limits": "无意义的胡闹、缺乏计划的行为",
+    "fantasies": "在高级酒店的套房中与爱人共度夜晚，讨论未来的计划"
+  },
+  "stats": {
+    "health": 100,
+    "energy": 100,
+    "arousal": 0,
+    "affection": 50,
+    "sexualExperience": 0,
+    "sexualSensitivity": 50,
+    "sexualSatisfaction": 50,
+    "sexualFantasy": 0
+  },
+  "relationship": "星座精灵"
+}

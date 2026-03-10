@@ -29,116 +29,122 @@ PluginSystem.register('adult-tags', {
     },
 
     async _loadTagsFromFile() {
-        const allTags = [];
-        const loadedPaths = [];
+        // 标记是否正在加载
+        this._isLoadingTags = true;
         
-        const getUserContentPath = () => {
-            // 尝试多种方法获取路径
-            // 方法1: 使用document.currentScript
-            const script = document.currentScript;
-            if (script && script.src) {
-                const scriptUrl = new URL(script.src);
-                const pluginDir = scriptUrl.pathname.replace(/[^/]*$/, '');
-                return pluginDir + 'user-content/';
+        // 监听页面卸载事件，避免在加载过程中离开页面导致刷新
+        const handleBeforeUnload = () => {
+            if (this._isLoadingTags) {
+                // 取消所有未完成的fetch请求
+                if (this._abortController) {
+                    this._abortController.abort();
+                }
             }
+        };
+        
+        window.addEventListener('beforeunload', handleBeforeUnload);
+        
+        try {
+            // 创建AbortController用于取消请求
+            this._abortController = new AbortController();
+            const signal = this._abortController.signal;
             
-            // 方法2: 查找包含adult-tags的脚本
-            const scripts = document.getElementsByTagName('script');
-            for (let s of scripts) {
-                if (s.src && s.src.includes('adult-tags')) {
-                    const scriptUrl = new URL(s.src);
+            const allTags = [];
+            const loadedPaths = [];
+            
+            const getUserContentPath = () => {
+                // 尝试多种方法获取路径
+                // 方法1: 使用document.currentScript
+                const script = document.currentScript;
+                if (script && script.src) {
+                    const scriptUrl = new URL(script.src);
                     const pluginDir = scriptUrl.pathname.replace(/[^/]*$/, '');
                     return pluginDir + 'user-content/';
                 }
-            }
-            
-            // 方法3: 使用相对路径（最可靠）
-            return 'js/plugins/adult-tags/user-content/';
-        };
-        
-        const userContentPath = getUserContentPath();
-        
-        const tagLibraryPaths = [
-            userContentPath + '剧情_公共场所-1.txt',
-            userContentPath + '剧情_公共场所_2.txt',
-            userContentPath + '剧情_公共场所_3.txt',
-            userContentPath + '剧情_公共场所_4.txt',
-            userContentPath + '剧情_公共场所_5.txt',
-            userContentPath + '剧情_公共场所_6.txt',
-            userContentPath + '剧情_公共场所_7.txt',
-            userContentPath + '剧情_公共场所_8.txt',
-            userContentPath + '剧情_公共场所_9.txt',
-            userContentPath + '剧情_公共场所_10.txt',
-            userContentPath + '剧情_公共场所_11.txt',
-            userContentPath + '剧情_公共场所_12.txt',
-            userContentPath + '剧情_体质特性-1.txt',
-            userContentPath + '剧情_体质特性_2.txt',
-            userContentPath + '剧情_体质特性_3.txt',
-            userContentPath + '剧情_体质特性_4.txt',
-            userContentPath + '剧情_体质特性_5.txt',
-            userContentPath + '剧情_体质特性_6.txt',
-            userContentPath + '剧情_体质特性_7.txt',
-            userContentPath + '剧情_体质特性_8.txt',
-            userContentPath + '剧情_室内场景_1.txt',
-            userContentPath + '剧情_室内场景_2.txt',
-            userContentPath + '剧情_室内场景_3.txt',
-            userContentPath + '剧情_室内场景_4.txt',
-            userContentPath + '剧情_日常生活-1.txt',
-            userContentPath + '剧情_日常生活_2.txt',
-            userContentPath + '剧情_特殊玩法-1.txt',
-            userContentPath + '剧情_特殊玩法_2.txt',
-            userContentPath + '剧情_特殊玩法_3.txt',
-            userContentPath + '剧情_特殊玩法_4.txt',
-            userContentPath + '剧情_特殊玩法_5.txt'
-        ];
-
-        for (const path of tagLibraryPaths) {
-            try {
-                const response = await fetch(path);
-                if (response && response.ok) {
-                    const text = await response.text();
-                    try {
-                        const data = JSON.parse(text);
-                        let tags = [];
-                        if (data.tags && Array.isArray(data.tags)) {
-                            tags = data.tags;
-                        } else if (Array.isArray(data)) {
-                            tags = data;
-                        }
-                        
-                        if (tags.length > 0) {
-                            allTags.push(...tags);
-                            loadedPaths.push(path);
-                            console.log('Adult tags loaded from:', path, 'count:', tags.length);
-                        }
-                    } catch (parseErr) {
-                        console.warn('Failed to parse JSON from', path, parseErr);
+                
+                // 方法2: 查找包含adult-tags的脚本
+                const scripts = document.getElementsByTagName('script');
+                for (let s of scripts) {
+                    if (s.src && s.src.includes('adult-tags')) {
+                        const scriptUrl = new URL(s.src);
+                        const pluginDir = scriptUrl.pathname.replace(/[^/]*$/, '');
+                        return pluginDir + 'user-content/';
                     }
                 }
-            } catch (e) {
-                console.warn('Failed to load tags from', path, e);
+                
+                // 方法3: 使用相对路径（最可靠）
+                return 'js/plugins/adult-tags/user-content/';
+            };
+            
+            const userContentPath = getUserContentPath();
+            
+            const tagLibraryPaths = [];
+            for (let i = 1; i <= 32; i++) {
+                tagLibraryPaths.push(userContentPath + i + '.txt');
             }
-        }
 
-        if (allTags.length > 0) {
-            this._tags = allTags;
-            console.log('Total adult tags loaded:', allTags.length, 'from', loadedPaths.length, 'files');
-            return;
-        }
+            for (const path of tagLibraryPaths) {
+                // 检查是否已被取消
+                if (signal.aborted) break;
+                
+                try {
+                    const response = await fetch(path, { signal });
+                    if (response && response.ok) {
+                        const text = await response.text();
+                        try {
+                            const data = JSON.parse(text);
+                            let tags = [];
+                            if (data.tags && Array.isArray(data.tags)) {
+                                tags = data.tags;
+                            } else if (Array.isArray(data)) {
+                                tags = data;
+                            }
+                            
+                            if (tags.length > 0) {
+                                allTags.push(...tags);
+                                loadedPaths.push(path);
+                                console.log('Adult tags loaded from:', path, 'count:', tags.length);
+                            }
+                        } catch (parseErr) {
+                            console.warn('Failed to parse JSON from', path, parseErr);
+                        }
+                    }
+                } catch (e) {
+                    if (e.name !== 'AbortError') {
+                        console.warn('Failed to load tags from', path, e);
+                    }
+                }
+            }
 
-        const stored = localStorage.getItem('adult_tags_library');
-        if (stored) {
-            try {
-                this._tags = JSON.parse(stored);
-                console.log('Adult tags loaded from storage, count:', this._tags.length);
+            if (allTags.length > 0) {
+                this._tags = allTags;
+                // 保存到localStorage，以便下次快速加载
+                this._saveTagsToStorage();
+                console.log('Total adult tags loaded:', allTags.length, 'from', loadedPaths.length, 'files');
                 return;
-            } catch (e) {
-                console.warn('Failed to parse stored tags', e);
             }
-        }
 
-        this._tags = [];
-        console.log('Adult tags library empty, waiting for manual addition');
+            const stored = localStorage.getItem('adult_tags_library');
+            if (stored) {
+                try {
+                    this._tags = JSON.parse(stored);
+                    console.log('Adult tags loaded from storage, count:', this._tags.length);
+                    return;
+                } catch (e) {
+                    console.warn('Failed to parse stored tags', e);
+                }
+            }
+
+            this._tags = [];
+            console.log('Adult tags library empty, waiting for manual addition');
+        } finally {
+            // 标记加载完成
+            this._isLoadingTags = false;
+            // 移除事件监听器
+            window.removeEventListener('beforeunload', handleBeforeUnload);
+            // 清理AbortController
+            this._abortController = null;
+        }
     },
 
     getSettings() {
@@ -204,14 +210,14 @@ PluginSystem.register('adult-tags', {
             
             let targetChar;
             if (charId) {
-                targetChar = characters.find(c => c.id === charId);
+                targetChar = characters.find(c => String(c.id) === String(charId));
             } else {
                 targetChar = characters.find(c => c.isPlayer) || characters[0];
             }
             
             if (!targetChar || !targetChar.stats) return 0;
             
-            return targetChar.stats.sexExcitement || 0;
+            return targetChar.stats.sexArousal || targetChar.stats.sexExcitement || 0;
         } catch (e) {
             console.warn('[兴奋值] 读取失败', e);
             return 0;
@@ -232,11 +238,12 @@ PluginSystem.register('adult-tags', {
             const characters = Data.getCharacters(worldId);
             if (!characters || characters.length === 0) return 0;
             
-            const targetChar = characters.find(c => c.id === charId);
+            const targetChar = characters.find(c => String(c.id) === String(charId));
             if (!targetChar || !targetChar.stats) return 0;
             
             const clampedValue = Math.max(0, Math.min(100, value));
             targetChar.stats.sexExcitement = clampedValue;
+            targetChar.stats.sexArousal = clampedValue;
             
             Data.updateCharacter(worldId, targetChar.id, targetChar);
             console.log(`[兴奋值] 角色 ${targetChar.name} 兴奋值设为 ${clampedValue}`);
@@ -257,6 +264,7 @@ PluginSystem.register('adult-tags', {
             
             const clampedValue = Math.max(0, Math.min(100, value));
             playerChar.stats.sexExcitement = clampedValue;
+            playerChar.stats.sexArousal = clampedValue;
             
             Data.updateCharacter(worldId, playerChar.id, playerChar);
             console.log(`[兴奋值] 主角 ${playerChar.name} 兴奋值设为 ${clampedValue}`);
@@ -367,9 +375,10 @@ PluginSystem.register('adult-tags', {
 
         const filteredTags = tags.filter(tag => {
             if (tag.阶段 > stageNum) return false;
-            if (tag.尺度 && tag.尺度 !== scaleValue && tag.尺度 !== '轻') {
-                if (scaleValue === '轻') return false;
+            if (tag.尺度) {
+                if (scaleValue === '轻' && tag.尺度 !== '轻') return false;
                 if (scaleValue === '中' && ['重', '极限'].includes(tag.尺度)) return false;
+                if (scaleValue === '重' && tag.尺度 === '极限') return false;
             }
             if (cooldown.includes(tag.内容)) return false;
             return true;
@@ -465,6 +474,7 @@ PluginSystem.register('adult-tags', {
             
             if (tag.尺度 && scaleValue === '轻' && tag.尺度 !== '轻') continue;
             if (scaleValue === '中' && ['重', '极限'].includes(tag.尺度)) continue;
+            if (scaleValue === '重' && tag.尺度 === '极限') continue;
 
             const triggers = tag.触发条件 || [];
             const isMatched = triggers.some(t => 
@@ -494,6 +504,27 @@ PluginSystem.register('adult-tags', {
         
         if (!hasMatch) {
             console.log('[成人标签] 场景未匹配到任何关键词');
+            return false;
+        }
+        
+        if (charId && typeof charId === 'object' && Array.isArray(charId)) {
+            const charIds = charId;
+            for (const id of charIds) {
+                const excitement = this.getExcitement(worldId, id);
+                if (stage === 1 && excitement >= 10) {
+                    console.log(`[成人标签] 角色ID ${id} 兴奋值符合要求（${excitement}），准备触发`);
+                    return true;
+                }
+                if (stage === 2 && excitement >= 30) {
+                    console.log(`[成人标签] 角色ID ${id} 兴奋值符合要求（${excitement}），准备触发`);
+                    return true;
+                }
+                if (stage === 3) {
+                    console.log(`[成人标签] 角色ID ${id} 兴奋值（${excitement}），阶段3可直接触发`);
+                    return true;
+                }
+            }
+            console.log(`[成人标签] 所有角色兴奋值不足（阶段${stage}需要：${stage === 1 ? '≥10' : '≥30'}）`);
             return false;
         }
         
@@ -599,8 +630,12 @@ PluginSystem.register('adult-tags', {
         const cooldown = this.getCooldownList(world?.id);
 
         const stageDescriptions = {
-            1: '只能使用暗示性的描写，如眼神接触、身体接触、暧昧气氛等，不能有直接的性行为描写',
-            2: '可以使用试探性的描写，轻微的亲密接触和暗示',
+            1: scale === '极限' || scale === '重' 
+                ? '可以使用直接的性行为描写，但要避免过于极端的内容，允许身体接触、亲密互动、性器官描写' 
+                : '只能使用暗示性的描写，如眼神接触、身体接触、暧昧气氛等，不能有直接的性行为描写',
+            2: scale === '极限' || scale === '重'
+                ? '可以使用直接的性行为描写，允许插入、抽动、高潮等详细描写'
+                : '可以使用试探性的描写，轻微的亲密接触和暗示',
             3: '可以使用直接的性行为描写，但要注意尺度限制'
         };
 
@@ -659,8 +694,12 @@ ${cooldown.length > 0 ? cooldown.join('、') : '暂无'}
         const cooldown = this.getCooldownList(world?.id);
 
         const stageDescriptions = {
-            1: '只能使用暗示性的描写，如眼神接触、身体接触、暧昧气氛等，不能有直接的性行为描写',
-            2: '可以使用试探性的描写，轻微的亲密接触和暗示',
+            1: scale === '极限' || scale === '重' 
+                ? '可以使用直接的性行为描写，但要避免过于极端的内容，允许身体接触、亲密互动、性器官描写' 
+                : '只能使用暗示性的描写，如眼神接触、身体接触、暧昧气氛等，不能有直接的性行为描写',
+            2: scale === '极限' || scale === '重'
+                ? '可以使用直接的性行为描写，允许插入、抽动、高潮等详细描写'
+                : '可以使用试探性的描写，轻微的亲密接触和暗示',
             3: '可以使用直接的性行为描写，但要注意尺度限制'
         };
 
@@ -687,5 +726,101 @@ ${cooldown.length > 0 ? cooldown.join('、') : '暂无'}
 `;
 
         return template;
+    },
+
+    identifyCharactersFromScene(sceneContent, characters) {
+        if (!sceneContent || !characters || characters.length === 0) {
+            return [];
+        }
+
+        const charNames = characters.map(c => c.name);
+        const mentionedChars = [];
+
+        for (const char of characters) {
+            const name = char.name;
+            if (sceneContent.includes(name)) {
+                mentionedChars.push({
+                    id: char.id,
+                    name: char.name,
+                    isPlayer: char.isPlayer || false
+                });
+            }
+        }
+
+        console.log('[成人标签] 从场景中识别的角色:', mentionedChars.map(c => c.name).join(', '));
+        return mentionedChars;
+    },
+
+    getCharactersForAdultAction(characters, sceneContent) {
+        if (!characters || characters.length === 0) {
+            return [];
+        }
+
+        const mentionedChars = this.identifyCharactersFromScene(sceneContent, characters);
+
+        if (mentionedChars.length === 0) {
+            const playerChar = characters.find(c => c.isPlayer) || characters[0];
+            if (playerChar) {
+                return [{ id: playerChar.id, name: playerChar.name, isPlayer: true }];
+            }
+            return [];
+        }
+
+        return mentionedChars;
+    },
+
+    parseExcitementChanges(storyContent, characters) {
+        if (!storyContent || !characters || characters.length === 0) {
+            return [];
+        }
+
+        const changes = [];
+        const regex = /【(\S+)的兴奋值变化】\+(\d+)/g;
+        let match;
+
+        while ((match = regex.exec(storyContent)) !== null) {
+            const charName = match[1];
+            const changeAmount = parseInt(match[2], 10);
+            const char = characters.find(c => c.name === charName);
+            
+            if (char) {
+                changes.push({
+                    charId: char.id,
+                    charName: char.name,
+                    change: changeAmount
+                });
+                console.log(`[兴奋值解析] 角色 ${charName} 兴奋值变化: +${changeAmount}`);
+            }
+        }
+
+        if (changes.length === 0) {
+            const defaultMatch = storyContent.match(/【兴奋值变化】\+(\d+)/);
+            if (defaultMatch) {
+                const changeAmount = parseInt(defaultMatch[1], 10);
+                const playerChar = characters.find(c => c.isPlayer) || characters[0];
+                if (playerChar) {
+                    changes.push({
+                        charId: playerChar.id,
+                        charName: playerChar.name,
+                        change: changeAmount
+                    });
+                    console.log(`[兴奋值解析] 默认角色 ${playerChar.name} 兴奋值变化: +${changeAmount}`);
+                }
+            }
+        }
+
+        return changes;
+    },
+
+    applyExcitementChanges(worldId, changes) {
+        if (!worldId || !changes || changes.length === 0) {
+            return;
+        }
+
+        for (const change of changes) {
+            const current = this.getExcitement(worldId, change.charId);
+            this.setExcitement(worldId, change.charId, current + change.change);
+            console.log(`[兴奋值更新] 角色 ${change.charName} 兴奋值: ${current} -> ${current + change.change}`);
+        }
     }
 });

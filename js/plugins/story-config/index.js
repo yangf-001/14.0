@@ -393,8 +393,26 @@ PluginSystem.register('story-config', {
             
             const updates = JSON.parse(jsonStr);
             
+            const findMatchingCharUpdates = (charName) => {
+                if (updates[charName]) {
+                    return updates[charName];
+                }
+                const lowerCharName = charName.toLowerCase();
+                for (const key of Object.keys(updates)) {
+                    if (key.toLowerCase() === lowerCharName) {
+                        return updates[key];
+                    }
+                }
+                for (const key of Object.keys(updates)) {
+                    if (lowerCharName.includes(key.toLowerCase()) || key.toLowerCase().includes(lowerCharName)) {
+                        return updates[key];
+                    }
+                }
+                return null;
+            };
+            
             for (const char of characters) {
-                const charUpdates = updates[char.name];
+                const charUpdates = findMatchingCharUpdates(char.name);
                 if (!charUpdates || Object.keys(charUpdates).length === 0) continue;
                 
                 const dbChar = Data.getCharacter(worldId, char.id);
@@ -729,7 +747,23 @@ PluginSystem.register('story-config', {
             updateStats: {
                 title: '更新角色属性',
                 enabled: true,
-                template: `根据以下故事内容，分析角色在剧情中的数值属性变化。\n\n故事内容：\n[内容]\n\n角色：[角色列表]\n\n可用属性：\n- health (生命 0-200)\n- energy (体力 0-200)\n- charm (魅力 0-200)\n- intelligence (智力 0-200)\n- strength (力量 0-200)\n- agility (敏捷 0-200)\n- sexArousal (欲望 0-200)\n- sexLibido (性欲 0-200)\n- sexSensitivity (敏感 0-200)\n- affection (好感 0-200)\n- trust (信任 0-200)\n- intimacy (亲密 0-200)\n\n请分析故事情节，判断每个角色的数值属性应该有什么变化。返回JSON格式：\n{\n  "角色名": {\n    "属性名": 变化值\n  }\n}\n\n注意：\n1. 根据剧情合理设置变化值，一般单次变化在-20到+20之间\n2. 如果某个属性没有变化，不要在JSON中列出\n3. 如果所有属性都没变化，返回空对象 {}`,
+                template: `根据以下故事内容，分析角色在剧情中的数值属性变化。\n\n故事内容：\n[内容]\n\n角色：[角色列表]\n\n可用属性：\n- health (生命 0-200)\n- energy (体力 0-200)\n- charm (魅力 0-200)\n- intelligence (智力 0-200)\n- strength (力量 0-200)\n- agility (敏捷 0-200)
+- stamina (耐力 0-200)
+
+【色色属性】
+- sexArousal (欲望 0-200)
+- sexExcitement (兴奋 0-200)
+- sexExperience (经验 0-200)
+- sexSkill (技巧 0-200)
+- sexLibido (性欲 0-200)
+- sexSensitivity (敏感 0-200)
+
+【状态属性】
+- affection (好感 0-200)
+- trust (信任 0-200)
+- intimacy (亲密 0-200)
+- corruption (堕落 0-200)
+- shame (羞耻 0-200)\n\n请分析故事情节，判断每个角色的数值属性应该有什么变化。返回JSON格式：\n{\n  "角色名": {\n    "属性名": 变化值\n  }\n}\n\n注意：\n1. 根据剧情合理设置变化值，一般单次变化在-20到+20之间\n2. 如果某个属性没有变化，不要在JSON中列出\n3. 如果所有属性都没变化，返回空对象 {}`,
                 temperature: 0.3,
                 customPrompt: ''
             },
@@ -777,38 +811,67 @@ PluginSystem.register('story-config', {
             level1Summary: {
                 title: '一级故事摘要（每个剧情结束时生成）',
                 enabled: true,
-                template: `请用约500字总结以下故事内容，生成一个简短但包含关键信息的概况摘要：
+                template: `请将以下故事内容**精简改写**成一个简短的小说章节。
+
+【改写要求】
+1. 用第三人称叙述，写作小说章节的风格
+2. 精简内容，只保留关键情节、人物对话和情感互动
+3. 将碎片化的场景描述整合成连贯的叙事
+4. 篇幅：300-500字左右
+5. 只输出改写后的小说内容，不要包含原始的场景标记
+
+【原始故事内容】
+[故事内容]
+
+请直接输出精简后的小说章节：`,
+                maxTokens: 1000,
+                customPrompt: ''
+            },
+            corePlot: {
+                title: '核心情节（一句话概括）',
+                enabled: true,
+                template: `请用一句话概括以下故事的核心情节，要求简洁明了，最多50字：
 
 [故事内容]
 
-要求：
-- 严格按照故事中的时间背景和场景设定进行总结
-- 保留主要人物、场景和关键剧情
-- 描述故事的核心发展和结局
-- 简洁明了，概括性强
-- 确保摘要与原故事的时间背景、场景设定完全一致，不要添加故事中没有的时间背景或场景元素`,
-                maxTokens: 1000,
+一句话概括：`,
+                maxTokens: 100,
                 customPrompt: ''
             },
             level2Summary: {
                 title: '二级综合摘要（每次总结10个一级）',
                 enabled: true,
-                template: `请用约2000字将以下10个一级故事摘要**合并总结为1个综合摘要**，描述从开始到结束期间的完整剧情主线：\n\n[10个一级摘要]\n\n要求：\n- 不要列出每个一级摘要的单独内容\n- 而是按时间顺序，用连贯的叙述描述整个故事的主要发展\n- 整合所有人物关系和剧情线索，保留核心剧情和关键转折点`,
-                maxTokens: 3000,
+                template: `请将以下多个小说章节**整合改写**成一个完整的故事线叙述。
+
+【改写要求】
+1. 用第三人称叙述，写作连贯的故事风格
+2. 整合所有章节的主要剧情，按时间顺序叙述
+3. 保留关键人物关系、情感发展和重要情节
+4. 篇幅：800-1000字左右
+
+【原始章节内容】
+[10个一级摘要]
+
+请直接输出整合后的故事叙述：`,
+                maxTokens: 1500,
                 customPrompt: ''
             },
             level3Summary: {
                 title: '三级终极摘要（每次总结10个二级）',
                 enabled: true,
-                template: `请用约3000字将以下10个二级故事摘要**合并总结为1个终极摘要**，描述从故事开始到结束的完整宏大叙事：
+                template: `请将以下多个故事线**整合改写**成一个宏大的故事叙事。
 
+【改写要求】
+1. 用第三人称叙述，写作宏大的故事风格
+2. 整合所有故事线的主要剧情，按时间顺序叙述
+3. 展现完整的人物命运、剧情发展和最终结局
+4. 篇幅：1500-2000字左右
+
+【原始故事内容】
 [10个二级摘要]
 
-要求：
-- 不要列出每个二级摘要的单独内容
-- 而是统合所有剧情线，用宏大的叙述描述整个故事的来龙去脉
-- 包含所有重要人物命运、剧情走向和最终结局`,
-                maxTokens: 4000,
+请直接输出整合后的宏大故事叙事：`,
+                maxTokens: 2500,
                 customPrompt: ''
             },
             adultContinue: {
@@ -1186,6 +1249,10 @@ ${choice ? `[用户选择了：${choice}]` : ''}
         try {
             const aiSetting = this.getAISetting('level1Summary', worldId);
             
+            if (!story || !story.scenes || story.scenes.length === 0) {
+                return '这是一个简短的故事。';
+            }
+            
             if (!aiSetting?.enabled) {
                 return this.generateSimpleSummary(story);
             }
@@ -1198,10 +1265,10 @@ ${choice ? `[用户选择了：${choice}]` : ''}
             const content = scenes.map((s, i) => {
                 let text = s.content;
                 if (s.choice) {
-                    text += `\n[用户选择了：${s.choice}]`;
+                    text += `\n\n用户选择：${s.choice}`;
                 }
-                return `[场景${i + 1}]\n${text}`;
-            }).join('\n\n');
+                return text;
+            }).join('\n\n---分隔线---\n\n');
             
             let template = aiSetting.template || '';
             template = template.replace('[故事内容]', content);
@@ -1230,11 +1297,61 @@ ${choice ? `[用户选择了：${choice}]` : ''}
         }
     },
 
-    generateSimpleSummary(story) {
+    async generateCorePlot(worldId, story) {
+        try {
+            const aiSetting = this.getAISetting('corePlot', worldId);
+            
+            if (!story || !story.scenes || story.scenes.length === 0) {
+                return this.getSimpleCorePlot(story);
+            }
+            
+            if (!aiSetting?.enabled) {
+                return this.getSimpleCorePlot(story);
+            }
+            
+            const scenes = story.scenes;
+            if (!scenes || scenes.length === 0) {
+                return '故事正在进行中';
+            }
+            
+            const content = scenes.map((s, i) => {
+                let text = s.content;
+                if (s.choice) {
+                    text += `\n\n用户选择：${s.choice}`;
+                }
+                return text;
+            }).join('\n\n---分隔线---\n\n');
+            
+            let template = aiSetting.template || '';
+            template = template.replace('[故事内容]', content);
+            
+            const result = await ai.call(template, {
+                temperature: aiSetting.temperature || 0.3,
+                maxTokens: aiSetting.maxTokens || 100
+            });
+            
+            return result.trim();
+        } catch (e) {
+            console.error('生成核心情节失败:', e);
+            return this.getSimpleCorePlot(story);
+        }
+    },
+
+    getSimpleCorePlot(story) {
+        if (!story || !story.scenes || story.scenes.length === 0) {
+            return '故事正在进行中';
+        }
         const scenes = story.scenes;
-        if (!scenes || scenes.length === 0) {
+        const firstScene = scenes[0]?.content || '';
+        const lastScene = scenes[scenes.length - 1]?.content || '';
+        return (firstScene + lastScene).substring(0, 50) + '...';
+    },
+
+    generateSimpleSummary(story) {
+        if (!story || !story.scenes || story.scenes.length === 0) {
             return '这是一个简短的故事。';
         }
+        const scenes = story.scenes;
         
         return scenes.map((s, i) => {
             let text = s.content;

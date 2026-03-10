@@ -143,98 +143,6 @@ const Router = {
         }
     },
     
-    continueLastStory() {
-        const world = Data.getCurrentWorld();
-        if (!world) {
-            alert('请先选择一个世界');
-            return;
-        }
-        
-        try {
-            const archives = Story.getArchives(world.id);
-            if (archives.length === 0) {
-                alert('没有可继续的故事');
-                return;
-            }
-            
-            const archivesHtml = archives.map((archive, index) => {
-                const startDate = formatDateTime(archive.startTime);
-                const endDate = archive.endTime ? formatDateTime(archive.endTime) : '进行中';
-                
-                const storyCount = archive.stories ? archive.stories.length : (archive.sceneCount || 0);
-                const title = archive.title || '未命名故事';
-                
-                return `
-                    <div class="card archive-item" data-id="${archive.id}" style="margin-bottom: 12px; cursor: pointer; transition: all 0.2s; padding: 12px; border: 1px solid var(--border); border-radius: 8px;">
-                        <div style="font-weight: 600; margin-bottom: 4px;">${title}</div>
-                        <div style="font-size: 0.8rem; color: var(--text-dim); margin-bottom: 4px;">
-                            故事数：${storyCount}个 | 开始：${startDate}
-                        </div>
-                        <div style="font-size: 0.75rem; color: var(--text-dim);">
-                            结束：${endDate}
-                        </div>
-                    </div>
-                `;
-            }).join('');
-            
-            const modalContent = `
-                <div style="max-height: 60vh; overflow-y: auto;" id="archivesList">
-                    ${archivesHtml}
-                </div>
-                <button class="btn btn-secondary" onclick="App.namespace.modal.close()" style="margin-top: 16px; width: 100%;">取消</button>
-            `;
-            
-            App.namespace.modal.show('🔄 选择要继续的故事', modalContent);
-            
-            setTimeout(() => {
-                document.querySelectorAll('.archive-item').forEach(item => {
-                    item.addEventListener('click', function() {
-                        const id = this.getAttribute('data-id');
-                        App.namespace.router.resumeSelectedArchive(id);
-                    });
-                    item.addEventListener('mouseover', function() {
-                        this.style.borderColor = 'var(--accent)';
-                        this.style.background = 'var(--accent-dim)';
-                    });
-                    item.addEventListener('mouseout', function() {
-                        this.style.borderColor = 'var(--border)';
-                        this.style.background = 'var(--card)';
-                    });
-                });
-            }, 100);
-        } catch (err) {
-            alert('错误：' + err.message);
-        }
-    },
-    
-    resumeSelectedArchive(archiveId) {
-        try {
-            const resumedStoryPromise = Story.resumeArchive(archiveId);
-            
-            if (resumedStoryPromise && typeof resumedStoryPromise.then === 'function') {
-                resumedStoryPromise.then(resumedStory => {
-                    if (resumedStory) {
-                        App.namespace.modal.close();
-                        this.showPage('story');
-                        App.namespace.storyController.updateStoryRightPanel();
-                    } else {
-                        alert('继续故事失败');
-                    }
-                }).catch(err => {
-                    alert('错误：' + err.message);
-                });
-            } else if (resumedStory) {
-                App.namespace.modal.close();
-                this.showPage('story');
-                App.namespace.storyController.updateStoryRightPanel();
-            } else {
-                alert('继续故事失败');
-            }
-        } catch (err) {
-            alert('错误：' + err.message);
-        }
-    },
-    
     toggleCharSelection(charId) {
         const card = document.querySelector(`.char-select-card[data-char-id="${charId}"]`);
         if (card) {
@@ -364,6 +272,52 @@ const Router = {
     showStoryCharSelector() {
         const selector = document.getElementById('storyCharSelector');
         selector.style.display = selector.style.display === 'none' ? 'block' : 'none';
+    },
+
+    getRecommendedChars() {
+        const world = Data.getCurrentWorld();
+        if (!world) return;
+        
+        const characters = Data.getCharacters(world.id);
+        if (!characters || characters.length === 0) return;
+        
+        const story = window.Story?.current;
+        const lastContent = story?.scenes?.slice(-1)[0]?.content || '';
+        
+        let recommended = [];
+        
+        if (lastContent) {
+            const charNames = characters.map(c => c.name);
+            const mentionedChars = charNames.filter(name => 
+                lastContent.includes(name)
+            );
+            
+            if (mentionedChars.length > 0) {
+                recommended = characters.filter(c => mentionedChars.includes(c.name));
+            }
+        }
+        
+        if (recommended.length === 0 && story?.characters?.length > 0) {
+            const currentCharIds = story.characters.map(c => c.id || c);
+            recommended = characters.filter(c => currentCharIds.includes(c.id));
+        }
+        
+        if (recommended.length === 0) {
+            recommended = characters.slice(0, 3);
+        }
+        
+        const container = document.getElementById('recommendedChars');
+        const listContainer = document.getElementById('recommendedCharsList');
+        
+        if (container && listContainer) {
+            container.style.display = 'block';
+            listContainer.innerHTML = recommended.map(c => `
+                <label style="display: flex; align-items: center; gap: 4px; padding: 4px 8px; background: var(--bg); border-radius: 4px; cursor: pointer; font-size: 0.75rem;">
+                    <input type="checkbox" name="storyCharsContinue" value="${c.id}" ${story?.characters?.some(sc => (sc.id || sc) === c.id) ? 'checked' : ''}>
+                    ${c.name}
+                </label>
+            `).join('');
+        }
     }
 };
 
@@ -393,14 +347,6 @@ window.restartStory = function() {
 
 window.startNewStory = function() {
     Router.startNewStory();
-};
-
-window.continueLastStory = function() {
-    Router.continueLastStory();
-};
-
-window.resumeSelectedArchive = function(archiveId) {
-    Router.resumeSelectedArchive(archiveId);
 };
 
 window.toggleCharSelection = function(charId) {
@@ -453,4 +399,8 @@ window.onPlayerCharChange = function() {
 
 window.showStoryCharSelector = function() {
     Router.showStoryCharSelector();
+};
+
+window.getRecommendedChars = function() {
+    Router.getRecommendedChars();
 };

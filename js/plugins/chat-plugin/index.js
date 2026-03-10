@@ -258,6 +258,11 @@ PluginSystem.register('chat-plugin', {
             prompt += timeContext;
         }
 
+        const storyHistory = this._getStoryHistory(worldId);
+        if (storyHistory.length > 0) {
+            prompt += '\n\n【之前的故事剧情】\n' + storyHistory.join('\n\n---\n\n');
+        }
+
         if (historyContext) {
             prompt += historyContext;
         }
@@ -269,6 +274,40 @@ PluginSystem.register('chat-plugin', {
         }
 
         return prompt;
+    },
+
+    _getStoryHistory(worldId) {
+        const allStoryHistory = [];
+        
+        if (!window.Story) return allStoryHistory;
+        
+        try {
+            const level3Archives = window.Story.getLevel3Archives ? window.Story.getLevel3Archives(worldId) : [];
+            for (const l3 of level3Archives) {
+                if (l3.summary && l3.summary !== '[待生成综合摘要]') {
+                    allStoryHistory.push(`[三级储存]\n${l3.summary}`);
+                }
+            }
+            
+            const level2Archives = window.Story.getLevel2Archives ? window.Story.getLevel2Archives(worldId) : [];
+            for (const l2 of level2Archives) {
+                if (l2.summary && l2.summary !== '[待生成总结]') {
+                    allStoryHistory.push(`[二级储存]\n${l2.summary}`);
+                }
+            }
+            
+            const archives = window.Story.getArchives ? window.Story.getArchives(worldId) : [];
+            for (const archive of archives) {
+                const title = archive.title ? `[${archive.title}]` : '';
+                if (archive.fullSummary) {
+                    allStoryHistory.push(`${title}[一级储存]\n${archive.fullSummary}`);
+                }
+            }
+        } catch (e) {
+            console.error('获取故事历史失败:', e);
+        }
+        
+        return allStoryHistory;
     },
 
     _cleanChatResponse(content) {
@@ -342,7 +381,7 @@ PluginSystem.register('chat-plugin', {
                 role: 'assistant',
                 content: cleanResponse,
                 timestamp: Date.now(),
-                characterName: characters.length > 0 ? characters[0].name : '角色'
+                characterName: aiCharacters.length > 0 ? aiCharacters[0].name : '角色'
             });
 
             this.updateSessionMessages(world.id, sessionId, messages);

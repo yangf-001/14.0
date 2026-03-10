@@ -15,6 +15,13 @@ const PluginSystem = {
         console.log(`Plugin registered: ${name}`);
     },
 
+    on(eventName, callback) {
+        if (!this.eventListeners[eventName]) {
+            this.eventListeners[eventName] = [];
+        }
+        this.eventListeners[eventName].push(callback);
+    },
+
     unregister(name) {
         delete this.plugins[name];
     },

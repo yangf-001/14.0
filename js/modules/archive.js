@@ -196,19 +196,6 @@ const Archive = {
         `;
     },
     
-    resumeArchive(archiveId) {
-        try {
-            const story = Story.resumeArchive(archiveId);
-            if (story) {
-                App.namespace.router.showPage('story');
-            } else {
-                alert('无法继续此故事，可能缺少保存的剧情内容');
-            }
-        } catch (err) {
-            alert('错误：' + err.message);
-        }
-    },
-    
     exportArchive(archiveId) {
         try {
             Story.exportArchive(archiveId);
@@ -251,10 +238,6 @@ window.viewLevel2Story = function(archiveId) {
 
 window.viewLevel3Story = function(archiveId) {
     Archive.viewLevel3Story(archiveId);
-};
-
-window.resumeArchive = function(archiveId) {
-    Archive.resumeArchive(archiveId);
 };
 
 window.exportArchive = function(archiveId) {

@@ -114,7 +114,7 @@
 
             window.closeModal = function() {
                 document.getElementById('modal').classList.remove('active');
-                renderAdultTagsPage();
+                // 只隐藏模态框，不重新渲染页面，避免移动端刷新
             };
 
             window.showPage = function(page) {

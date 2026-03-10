@@ -3,6 +3,16 @@ const Storage = {
         window.renderStorage = this.renderStorage.bind(this);
     },
 
+    toggleElement(el) {
+        if (!el) return;
+        if (typeof el === 'string') {
+            el = document.getElementById(el);
+        }
+        if (el) {
+            el.style.display = el.style.display === 'none' ? 'block' : 'none';
+        }
+    },
+
     formatDateTime(timestamp) {
         if (!timestamp) return '未知';
         const date = new Date(timestamp);
@@ -23,14 +33,27 @@ const Storage = {
         }
     },
 
-    resumeArchiveFromStorage(id) {
-        if (!window.Story) {
-            alert('Story模块正在加载中，请稍后再试');
-            return;
+    toggleStoryContent(spanEl) {
+        const card = spanEl.closest('.story-card');
+        if (card) {
+            const content = card.querySelector('.story-content');
+            if (content) {
+                content.style.display = content.style.display === 'none' ? 'block' : 'none';
+            }
         }
-        const resumed = Story.resumeArchive(id);
-        if (resumed) {
-            showPage('story');
+    },
+
+    toggleCardContent(clickEl) {
+        if (typeof clickEl === 'string') {
+            clickEl = document.querySelector(clickEl);
+        }
+        if (!clickEl) return;
+        const card = clickEl.closest('.card');
+        if (card) {
+            const content = card.querySelector('.card-content');
+            if (content) {
+                content.style.display = content.style.display === 'none' ? 'block' : 'none';
+            }
         }
     },
 
@@ -65,7 +88,6 @@ const Storage = {
                 <h3 style="margin-bottom: 16px;">📖 ${archive.title}</h3>
                 <div style="font-size: 0.85rem; color: var(--text-dim); margin-bottom: 16px;">
                     <div>角色：${Array.isArray(archive.characters) ? archive.characters.map(c => c.name).join('、') : archive.characters || '未知'}</div>
-                    <div>幕数：${archive.sceneCount}幕</div>
                     <div>开始：${this.formatDateTime(archive.startTime)}</div>
                     <div>结束：${this.formatDateTime(archive.endTime) || this.formatDateTime(archive.startTime)}</div>
                 </div>
@@ -80,7 +102,7 @@ const Storage = {
                 <h4>📊 储存统计</h4>
                 <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-bottom: 20px;">
                     <div class="card" style="text-align: center;">
-                        <div style="font-size: 1.5rem; font-weight: bold; color: var(--accent);">${archives.length}</div>
+                        <div style="font-size: 1.5rem; font-weight: bold; color: var(--accent);">${archive.stories?.length || 0}</div>
                         <div style="font-size: 0.8rem; color: var(--text-dim);">一级储存</div>
                     </div>
                     <div class="card" style="text-align: center;">
@@ -95,15 +117,36 @@ const Storage = {
             </div>
             
             <div class="setting-section">
-                <h4>📖 一级储存</h4>
+                <h4>📖 一级储存 (共${archive.stories?.length || 0}章)</h4>
                 ${(() => {
-                    const displayContent = archive.fullSummary || (archive.stories && archive.stories.length > 0 ? archive.stories[archive.stories.length - 1].content : null);
-                    return `
-                <div class="card" style="margin-bottom: 12px;">
-                    <div style="font-size: 0.85rem; font-weight: 600; margin-bottom: 8px; color: var(--accent);">${archive.title}</div>
-                    <div style="font-size: 0.8rem; line-height: 1.6; white-space: pre-wrap;">${displayContent || '无内容'}</div>
+                    if (archive.stories && archive.stories.length > 0) {
+                        return archive.stories.map((story, index) => `
+                <div class="card story-card" style="margin-bottom: 16px; border-left: 3px solid var(--accent);">
+                    <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 8px;">
+                        <div style="flex: 1;">
+                            <div style="font-size: 0.85rem; font-weight: 600; color: var(--accent);">第${index + 1}章 ${story.title || ''}</div>
+                            <div style="font-size: 0.75rem; color: #10b981; margin-top: 4px;">📌 ${story.corePlot || '无核心情节'}</div>
+                            <div style="font-size: 0.75rem; color: var(--text-dim); margin-top: 4px;">${story.sceneCount || 0}幕 · <span style="cursor: pointer; color: var(--accent);" onclick="Storage.toggleStoryContent(this)">点击展开/折叠全文</span></div>
+                        </div>
+                        <div style="display: flex; gap: 4px;">
+                            <button class="btn btn-secondary" style="font-size: 0.7rem; padding: 4px 8px;" onclick="Storage.editStory('${archive.id}', ${index})">✏️</button>
+                            <button class="btn btn-secondary" style="font-size: 0.7rem; padding: 4px 8px;" onclick="if(confirm('确定删除这个故事?')){ Storage.deleteStory('${archive.id}', ${index}); }">🗑️</button>
+                        </div>
+                    </div>
+                    <div class="story-content" style="font-size: 0.8rem; line-height: 1.6; white-space: pre-wrap; display: none;">${story.content || '无内容'}</div>
                 </div>
-                    `;
+                        `).join('');
+                    } else if (archive.fullSummary) {
+                        return `
+                <div class="card" style="margin-bottom: 12px;">
+                    <div style="font-size: 0.85rem; font-weight: 600; margin-bottom: 8px; color: var(--accent); cursor: pointer;" onclick="Storage.toggleCardContent(this)">${archive.title}</div>
+                    <div style="font-size: 0.75rem; color: var(--text-dim); margin-bottom: 8px;">点击展开/折叠</div>
+                    <div class="card-content" style="font-size: 0.8rem; line-height: 1.6; white-space: pre-wrap; display: none;">${archive.fullSummary || '无内容'}</div>
+                </div>
+                        `;
+                    } else {
+                        return '<div class="empty">无内容</div>';
+                    }
                 })()}
             </div>
             
@@ -112,13 +155,13 @@ const Storage = {
                 <h4>📦 二级储存 (共${level2Archives.length}个)</h4>
                 ${level2Archives.map((l2, i) => `
                 <div class="card" style="margin-bottom: 12px; border-left: 3px solid #f59e0b;">
-                    <div style="font-size: 0.85rem; font-weight: 600; margin-bottom: 8px;">
+                    <div style="font-size: 0.85rem; font-weight: 600; margin-bottom: 8px; cursor: pointer;" onclick="Storage.toggleCardContent(this)">
                         ${l2.archive ? l2.archive.title : '二级储存 #' + (i + 1)}
                     </div>
                     <div style="font-size: 0.75rem; color: var(--text-dim); margin-bottom: 8px;">
-                        ${l2.archive ? '角色: ' + (Array.isArray(l2.archive.characters) ? l2.archive.characters.map(c => c.name).join('、') : '未知') + ' | ' + l2.archive.sceneCount + '幕' : ''}
+                        ${l2.archive ? '角色: ' + (Array.isArray(l2.archive.characters) ? l2.archive.characters.map(c => c.name).join('、') : '未知') + ' | ' + l2.archive.sceneCount + '幕' : ''} · 点击展开/折叠
                     </div>
-                    <div style="font-size: 0.8rem; line-height: 1.6; white-space: pre-wrap;">${l2.summary || '无内容'}</div>
+                    <div class="card-content" style="font-size: 0.8rem; line-height: 1.6; white-space: pre-wrap; display: none;">${l2.summary || '无内容'}</div>
                 </div>
                 `).join('')}
             </div>
@@ -129,8 +172,9 @@ const Storage = {
                 <h4>📚 三级储存 (共${level3Archives.length}个)</h4>
                 ${level3Archives.map((l3, i) => `
                 <div class="card" style="margin-bottom: 12px; border-left: 3px solid #8b5cf6;">
-                    <div style="font-size: 0.85rem; font-weight: 600; margin-bottom: 8px;">三级储存 #${i + 1}</div>
-                    <div style="font-size: 0.8rem; line-height: 1.6; white-space: pre-wrap;">${l3.summary || '无内容'}</div>
+                    <div style="font-size: 0.85rem; font-weight: 600; margin-bottom: 8px; cursor: pointer;" onclick="Storage.toggleCardContent(this)">三级储存 #${i + 1}</div>
+                    <div style="font-size: 0.75rem; color: var(--text-dim); margin-bottom: 8px;">点击展开/折叠</div>
+                    <div class="card-content" style="font-size: 0.8rem; line-height: 1.6; white-space: pre-wrap; display: none;">${l3.summary || '无内容'}</div>
                 </div>
                 `).join('')}
             </div>
@@ -679,6 +723,77 @@ const Storage = {
         }, 1000);
         
         event.target.value = '';
+    },
+
+    editStory(archiveId, storyIndex) {
+        const world = Data.getCurrentWorld();
+        if (!world || !window.Story) return;
+        
+        const archives = Story.getArchives(world.id);
+        const archive = archives.find(a => a.id === archiveId);
+        if (!archive || !archive.stories) return;
+        
+        const story = archive.stories[storyIndex];
+        if (!story) return;
+        
+        document.getElementById('modalTitle').textContent = '编辑故事';
+        document.getElementById('modalBody').innerHTML = `
+            <div style="padding: 16px; max-height: 500px; overflow-y: auto;">
+                <div class="form-group">
+                    <label>标题</label>
+                    <input type="text" id="editStoryTitle" value="${(story.title || '').replace(/"/g, '&quot;')}" style="width: 100%; padding: 8px; border-radius: 6px; border: 1px solid var(--border); background: var(--bg); color: var(--text);">
+                </div>
+                <div class="form-group">
+                    <label>核心情节</label>
+                    <textarea id="editStoryCorePlot" rows="2" style="width: 100%; padding: 8px; border-radius: 6px; border: 1px solid var(--border); background: var(--bg); color: var(--text);">${(story.corePlot || '').replace(/</g, '&lt;').replace(/>/g, '&gt;')}</textarea>
+                </div>
+                <div class="form-group">
+                    <label>全文内容</label>
+                    <textarea id="editStoryContent" rows="10" style="width: 100%; padding: 8px; border-radius: 6px; border: 1px solid var(--border); background: var(--bg); color: var(--text);">${(story.content || '').replace(/</g, '&lt;').replace(/>/g, '&gt;')}</textarea>
+                </div>
+                <div style="display: flex; gap: 8px; margin-top: 16px;">
+                    <button class="btn" onclick="Storage.saveStory('${archiveId}', ${storyIndex})">保存</button>
+                    <button class="btn btn-secondary" onclick="closeModal()">取消</button>
+                </div>
+            </div>
+        `;
+        document.getElementById('modal').classList.add('active');
+    },
+
+    saveStory(archiveId, storyIndex) {
+        const world = Data.getCurrentWorld();
+        if (!world || !window.Story) return;
+        
+        const archives = Story.getArchives(world.id);
+        const archive = archives.find(a => a.id === archiveId);
+        if (!archive || !archive.stories) return;
+        
+        const story = archive.stories[storyIndex];
+        if (!story) return;
+        
+        story.title = document.getElementById('editStoryTitle').value.trim();
+        story.corePlot = document.getElementById('editStoryCorePlot').value.trim();
+        story.content = document.getElementById('editStoryContent').value.trim();
+        
+        localStorage.setItem(`story_archives_${world.id}`, JSON.stringify(archives));
+        
+        closeModal();
+        this.viewArchiveDetails(archiveId);
+    },
+
+    deleteStory(archiveId, storyIndex) {
+        const world = Data.getCurrentWorld();
+        if (!world || !window.Story) return;
+        
+        const archives = Story.getArchives(world.id);
+        const archive = archives.find(a => a.id === archiveId);
+        if (!archive || !archive.stories) return;
+        
+        archive.stories.splice(storyIndex, 1);
+        
+        localStorage.setItem(`story_archives_${world.id}`, JSON.stringify(archives));
+        
+        this.viewArchiveDetails(archiveId);
     }
 };
 

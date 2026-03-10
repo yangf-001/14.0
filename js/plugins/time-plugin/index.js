@@ -11,9 +11,28 @@ const TimePlugin = {
     async _loadRelationTypes() {
         if (this._relationLoaded) return;
         
+        const getUserContentPath = () => {
+            const script = document.currentScript;
+            if (script && script.src) {
+                const scriptUrl = new URL(script.src);
+                const pluginDir = scriptUrl.pathname.replace(/[^/]*$/, '');
+                return pluginDir + 'user-content/';
+            }
+            
+            const scripts = document.getElementsByTagName('script');
+            for (let s of scripts) {
+                if (s.src && s.src.includes('time-plugin')) {
+                    const scriptUrl = new URL(s.src);
+                    const pluginDir = scriptUrl.pathname.replace(/[^/]*$/, '');
+                    return pluginDir + 'user-content/';
+                }
+            }
+            
+            return 'js/plugins/time-plugin/user-content/';
+        };
+        
         const possiblePaths = [
-            './js/plugins/time-plugin/user-content/relationships.txt',
-            './user-content/relationships.txt'
+            getUserContentPath() + 'relationships.txt'
         ];
         
         for (const path of possiblePaths) {

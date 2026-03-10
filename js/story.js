@@ -20,6 +20,11 @@ const Story = {
         const characters = Data.getCharacters(world.id);
         if (characters.length === 0) throw new Error('请先添加角色');
         
+        const existingStory = Story.load(world.id);
+        if (existingStory && existingStory.status === 'ongoing') {
+            throw new Error('当前世界已有进行中的故事，请先结束或继续当前故事');
+        }
+        
         if (window.TimePlugin) {
             window.TimePlugin.initAllCharactersAge(world.id);
         }
@@ -45,11 +50,81 @@ const Story = {
             }
         }
         
-        let protagonistAge = 18;
-        
         const plugin = this._getPlugin();
         if (!plugin) throw new Error('故事配置插件未加载');
-        const prompt = plugin.getStoryGenerator().buildStartPrompt(selectedChars, config.scene, settings, playerCharInfo, config.charRatio);
+        
+        let prompt = '';
+        let isResume = false;
+        
+        const archives = plugin.getArchives(world.id);
+        const level3Archives = plugin.getLevel3Archives(world.id);
+        const level2Archives = plugin.getLevel2Archives(world.id);
+        
+        let historyContext = '';
+        if (level3Archives.length > 0) {
+            historyContext += '\n\n【很久以前的故事】\n';
+            for (const l3 of level3Archives) {
+                if (l3.summary) {
+                    historyContext += l3.summary + '\n\n';
+                }
+            }
+        }
+        
+        if (level2Archives.length > 0) {
+            historyContext += '\n【之前的故事】\n';
+            for (const l2 of level2Archives) {
+                if (l2.summary) {
+                    historyContext += l2.summary + '\n\n';
+                }
+            }
+        }
+        
+        let lastSummary = '';
+        for (let i = archives.length - 1; i >= 0; i--) {
+            if (archives[i].fullSummary) {
+                lastSummary = archives[i].fullSummary;
+                break;
+            }
+        }
+        
+        const manualSummary = localStorage.getItem(`story_manual_summary_${world.id}`);
+        if (manualSummary && manualSummary.trim()) {
+            if (lastSummary) {
+                historyContext += '\n【之前保存的剧情总结】\n' + manualSummary;
+            } else {
+                historyContext += '\n【上一个故事】\n' + manualSummary;
+            }
+            isResume = true;
+        } else if (lastSummary) {
+            historyContext += '\n【上一个故事】\n' + lastSummary;
+            isResume = true;
+        }
+        
+        if (isResume) {
+            const charNames = selectedChars.map(c => c.name).join('、');
+            prompt = `根据以下历史剧情，继续生成新的故事：
+
+【出场角色】${charNames}
+【故事背景】${world.name}
+
+${historyContext}
+
+请生成下一段故事内容（200-500字），自然地承接上面的剧情。注意：
+1. 响应用户的开始请求
+2. 根据角色设定发展故事
+3. 适当埋下后续剧情的伏笔
+4. 如果故事中有明确的时间推进（如几小时后、几天后等），请在故事结束后另起一行输出【时间变化：X天】或【时间变化：X月】。如果时间没有明显变化，输出【时间变化：0天】`;
+        } else {
+            prompt = plugin.getStoryGenerator().buildStartPrompt(selectedChars, config.scene, settings, playerCharInfo, config.charRatio);
+        }
+        const simpleStoryPlugin = PluginSystem.get('simple-story');
+        const simpleStoryMode = simpleStoryPlugin && simpleStoryPlugin.isSimpleStoryMode();
+        
+        // 触发故事生成前事件
+        PluginSystem.triggerPluginEvent('beforeStoryGenerate', {
+            prompt: prompt,
+            simpleStoryMode: simpleStoryMode
+        });
         
         const adultTriggeredStart = this._checkAndApplyAdultTagsToStart(world.id, prompt);
         
@@ -74,7 +149,13 @@ const Story = {
         this._showLoading('正在生成故事开头...');
         
         try {
-            const content = await ai.generateStory(prompt, settings);
+            let content = await ai.generateStory(prompt, settings);
+            
+            // 触发故事生成后事件
+            PluginSystem.triggerPluginEvent('afterStoryGenerate', {
+                content: content,
+                simpleStoryMode: simpleStoryMode
+            });
             
             const plugin = this._getPlugin();
             const timePlugin = window.WorldTimePlugin;
@@ -103,8 +184,8 @@ const Story = {
                     adultProfile: c.adultProfile || {},
                     stats: c.stats || {}
                 })),
-                playerChar: playerCharInfo,
-                scene: config.scene,
+                playerChar: playerCharInfo || this.current?.playerChar,
+                scene: config.scene || this.current?.scene,
                 settings: settings,
                 charRatio: config.charRatio || 80,
                 scenes: [{ 
@@ -116,7 +197,7 @@ const Story = {
                 }],
                 status: 'ongoing',
                 round: 1,
-                isResume: false
+                isResume: isResume
             };
             
             const firstSummary = await plugin.generateSceneSummary(cleanContent, null);
@@ -160,11 +241,17 @@ const Story = {
             
             await plugin.getStoryGenerator().updateCharacterRelationships(cleanContent, allChars, world.id);
             
+            let protagonistAgeValue = 18;
+            const displayTime = window.WorldTimePlugin?.getDisplayTime(world.id);
+            if (displayTime) {
+                protagonistAgeValue = displayTime.protagonistAge;
+            }
+            
             PluginSystem.triggerPluginEvent('storyStarted', {
                 worldId: world.id,
                 characters: selectedChars.map(c => c.name),
                 scene: config.scene,
-                protagonistAge: protagonistAge
+                protagonistAge: protagonistAgeValue
             });
             
             PluginSystem.triggerPluginEvent('sceneGenerated', {
@@ -302,6 +389,16 @@ const Story = {
             systemPrompt = context;
         }
         
+        // 检查是否启用小故事模式
+        const simpleStoryPlugin = PluginSystem.get('simple-story');
+        const simpleStoryMode = simpleStoryPlugin && simpleStoryPlugin.isSimpleStoryMode();
+        
+        // 触发故事生成前事件
+        PluginSystem.triggerPluginEvent('beforeStoryGenerate', {
+            prompt: prompt,
+            simpleStoryMode: simpleStoryMode
+        });
+        
         const adultTriggered = this._checkAndApplyAdultTags(world.id, prompt, systemPrompt);
         
         if (adultTriggered) {
@@ -325,7 +422,13 @@ const Story = {
         this._showLoading(isItemUse ? '正在生成物品使用剧情...' : '正在生成故事...');
         
         try {
-            const content = await ai.call(prompt, { system: systemPrompt });
+            let content = await ai.call(prompt, { system: systemPrompt });
+            
+            // 触发故事生成后事件
+            PluginSystem.triggerPluginEvent('afterStoryGenerate', {
+                content: content,
+                simpleStoryMode: simpleStoryMode
+            });
             
             const timePlugin = window.WorldTimePlugin;
             if (timePlugin && plugin) {
@@ -408,21 +511,8 @@ const Story = {
         const adultPlugin = window.AdultTagsPlugin;
         if (!adultPlugin || !adultPlugin.isEnabled()) return;
         
-        let increaseAmount = 15;
-        
-        if (storyContent) {
-            const match = storyContent.match(/【兴奋值变化】\+(\d+)/);
-            if (match) {
-                increaseAmount = parseInt(match[1], 10);
-                console.log(`[兴奋值] AI建议增加: +${increaseAmount}`);
-            } else {
-                increaseAmount = 15;
-                console.log(`[兴奋值] 未检测到兴奋值变化，使用默认值 +15`);
-            }
-        }
-        
-        adultPlugin.increaseExcitement(worldId, increaseAmount);
-        console.log(`[兴奋值] 故事继续后，兴奋值: ${adultPlugin.getExcitement(worldId)}`);
+        const currentExcitement = adultPlugin.getExcitement(worldId);
+        console.log(`[兴奋值] 当前兴奋值: ${currentExcitement}`);
     },
 
     _resetExcitementOnNewStory(worldId) {
@@ -437,8 +527,9 @@ const Story = {
             const playerChar = characters.find(c => c.isPlayer) || characters[0];
             if (playerChar && playerChar.stats) {
                 playerChar.stats.sexArousal = 0;
+                playerChar.stats.sexExcitement = 0;
                 Data.updateCharacter(worldId, playerChar.id, playerChar);
-                console.log(`[兴奋值] 新故事开始，角色 ${playerChar.name} 的 sexArousal 已重置为0`);
+                console.log(`[兴奋值] 新故事开始，角色 ${playerChar.name} 的 sexArousal 和 sexExcitement 已重置为0`);
             }
         }
         
@@ -518,6 +609,8 @@ ${contextNote}
         const world = Data.getCurrentWorld();
         if (!world || !this.current) throw new Error('没有进行中的故事');
 
+        this._showLoading('正在保存故事...');
+        
         let storySummary = summary;
         
         if (!storySummary) {
@@ -525,6 +618,7 @@ ${contextNote}
         }
         
         const fullSummary = await this._getPlugin()?.generateFullStorySummary(world.id, this.current);
+        const corePlot = await this._getPlugin()?.generateCorePlot(world.id, this.current);
         
         const archives = this.getArchives(world.id);
         
@@ -543,6 +637,7 @@ ${contextNote}
             activeArchive.stories.push({
                 title: storySummary,
                 content: fullSummary,
+                corePlot: corePlot,
                 endTime: Date.now(),
                 sceneCount: this.current.scenes.length,
                 characters: this.current.characters
@@ -569,6 +664,7 @@ ${contextNote}
                 stories: [{
                     title: storySummary,
                     content: fullSummary,
+                    corePlot: corePlot,
                     endTime: Date.now(),
                     sceneCount: this.current.scenes.length,
                     characters: this.current.characters
@@ -587,6 +683,8 @@ ${contextNote}
         
         Data.saveStory(world.id, null);
         this.current = null;
+        
+        this._hideLoading();
         
         return activeArchive || archives[0];
     },
@@ -727,7 +825,7 @@ ${historyContext}
 请生成200-500字的新的故事开头，自然地承接上面的剧情，并引出后续发展的可能性。`;
                 
                 const content = await ai.generateStory(prompt, settings);
-                const plugin = this._getPlugin();
+                const plugin = _this._getPlugin();
                 const cleanContent = plugin ? plugin.getStoryGenerator().cleanStoryContent(content) : content;
                 
                 const sceneSummary = plugin ? await plugin.generateSceneSummary(cleanContent, null) : '';
@@ -787,6 +885,8 @@ ${historyContext}
         
         let historySection = '';
         
+        const chatHistory = this._getChatHistory(world.id);
+        
         if (this.current.allHistoryContent && typeof this.current.allHistoryContent === 'string') {
             historySection = `\n\n【之前的故事剧情】\n${this.current.allHistoryContent}\n\n【当前故事最新剧情】`;
         } else if (this.current.allHistoryContent && Array.isArray(this.current.allHistoryContent) && this.current.allHistoryContent.length > 0) {
@@ -812,6 +912,10 @@ ${historyContext}
             if (currentHistory) {
                 historySection += `\n\n【当前故事最新剧情】\n${currentHistory}`;
             }
+        }
+        
+        if (chatHistory.length > 0) {
+            historySection += `\n\n【之前的聊天记录】\n${chatHistory.join('\n\n---\n\n')}`;
         }
         
         const charList = this.current.characters;
@@ -883,6 +987,40 @@ ${finalHistorySection}
         }
         
         return allScenes;
+    },
+    
+    _getChatHistory(worldId) {
+        const allChatHistory = [];
+        
+        try {
+            const sessionsData = localStorage.getItem(`chat_sessions_${worldId}`);
+            if (!sessionsData) return allChatHistory;
+            
+            const sessions = JSON.parse(sessionsData);
+            if (!Array.isArray(sessions) || sessions.length === 0) return allChatHistory;
+            
+            for (const session of sessions) {
+                if (session.messages && Array.isArray(session.messages) && session.messages.length > 0) {
+                    const chatLines = [];
+                    const sessionTitle = session.title ? `[${session.title}]` : '';
+                    
+                    for (const msg of session.messages) {
+                        if (msg.content) {
+                            const role = msg.role === 'user' ? (msg.playerName || '你') : (msg.characterName || '角色');
+                            chatLines.push(`${role}：${msg.content}`);
+                        }
+                    }
+                    
+                    if (chatLines.length > 0) {
+                        allChatHistory.push(`${sessionTitle}聊天记录：\n${chatLines.join('\n')}`);
+                    }
+                }
+            }
+        } catch (e) {
+            console.error('获取聊天历史失败:', e);
+        }
+        
+        return allChatHistory;
     },
 
     _checkAndApplyAdultTagsToStart(worldId, prompt) {
@@ -1007,12 +1145,6 @@ ${finalHistorySection}
         const adultData = adultPlugin.buildAdultPromptTemplate(worldId, lastContent);
 
         if (!adultData || !adultData.template) return;
-
-        const stageDescriptions = {
-            1: '只能使用暗示性的描写，如眼神接触、身体接触、暧昧气氛等，不能有直接的性行为描写',
-            2: '可以使用试探性的描写，轻微的亲密接触和暗示',
-            3: '可以使用直接的性行为描写，但要注意尺度限制'
-        };
 
         prompt += '\n\n' + adultPlugin.buildAdultPromptTemplate(worldId, lastContent).template;
     },

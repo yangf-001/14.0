@@ -885,23 +885,6 @@ ${finalHistorySection}
         return allScenes;
     },
 
-    _applyAdultTagsToStart(worldId, prompt) {
-        const adultPlugin = window.AdultTagsPlugin;
-        if (!adultPlugin || !adultPlugin.isEnabled()) return;
-
-        const shouldTrigger = adultPlugin.shouldTrigger('');
-        if (!shouldTrigger) {
-            console.log('[成人标签] 开头故事未触发关键词，跳过成人内容');
-            return;
-        }
-
-        const adultData = adultPlugin.buildAdultPromptTemplate(worldId, '');
-        if (!adultData || !adultData.template) return false;
-
-        prompt += '\n\n' + adultData.template;
-        return true;
-    },
-
     _checkAndApplyAdultTagsToStart(worldId, prompt) {
         const adultPlugin = window.AdultTagsPlugin;
         if (!adultPlugin || !adultPlugin.isEnabled()) return false;

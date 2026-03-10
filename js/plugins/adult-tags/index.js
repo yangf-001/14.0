@@ -33,13 +33,27 @@ PluginSystem.register('adult-tags', {
         const loadedPaths = [];
         
         const getUserContentPath = () => {
+            // 尝试多种方法获取路径
+            // 方法1: 使用document.currentScript
             const script = document.currentScript;
             if (script && script.src) {
                 const scriptUrl = new URL(script.src);
                 const pluginDir = scriptUrl.pathname.replace(/[^/]*$/, '');
                 return pluginDir + 'user-content/';
             }
-            return '/js/plugins/adult-tags/user-content/';
+            
+            // 方法2: 查找包含adult-tags的脚本
+            const scripts = document.getElementsByTagName('script');
+            for (let s of scripts) {
+                if (s.src && s.src.includes('adult-tags')) {
+                    const scriptUrl = new URL(s.src);
+                    const pluginDir = scriptUrl.pathname.replace(/[^/]*$/, '');
+                    return pluginDir + 'user-content/';
+                }
+            }
+            
+            // 方法3: 使用相对路径（最可靠）
+            return 'js/plugins/adult-tags/user-content/';
         };
         
         const userContentPath = getUserContentPath();

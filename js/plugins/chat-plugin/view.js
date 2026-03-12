@@ -312,8 +312,14 @@ ViewCallbacks.chat._renderCharacterPanel = function(character, isPlayer = false)
             <div style="padding: 6px; border-bottom: 1px solid #e9ecef; font-size: 0.65rem; color: #999;">性格: ${profile.personality ? profile.personality.substring(0, 8) + (profile.personality.length > 8 ? '...' : '') : '未知'}</div>
             
             <div style="padding: 6px; flex: 1; overflow-y: auto;">
+<<<<<<< HEAD
                 ${this._renderProgressBar('💕', stats.intimacy, 100, '#ff6b6b')}
                 ${this._renderProgressBar('🔥', stats.arousal, 100, '#ff9f43')}
+=======
+                ${this._renderProgressBar('❤️', stats.affection, 100, '#ff6b6b')}
+                ${this._renderProgressBar('💕', stats.intimacy, 100, '#feca57')}
+                ${this._renderProgressBar('🔥', stats.desire, 100, '#ff9f43')}
+>>>>>>> 6d274afa3f732818cdcc2d1805c6e6452a248cad
                 ${this._renderProgressBar('✨', stats.sensitivity, 100, '#48dbfb')}
                 ${this._renderProgressBar('💝', stats.willingness, 100, '#1dd1a1')}
                 ${this._renderProgressBar('📚', stats.experience, 100, '#a29bfe')}

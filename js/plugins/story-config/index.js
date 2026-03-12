@@ -946,6 +946,7 @@ PluginSystem.register('story-config', {
             updateStats: {
                 title: '更新角色属性',
                 enabled: true,
+<<<<<<< HEAD
                 template: `根据以下故事内容，分析角色在剧情中的数值属性变化。
 
 故事内容：
@@ -985,6 +986,25 @@ PluginSystem.register('story-config', {
 1. 根据剧情合理设置变化值，一般单次变化在-10到+10之间
 2. 如果某个属性没有变化，不要在JSON中列出
 3. 如果所有属性都没变化，返回空对象 {}`,
+=======
+                template: `根据以下故事内容，分析角色在剧情中的数值属性变化。\n\n故事内容：\n[内容]\n\n角色：[角色列表]\n\n可用属性：\n- health (生命 0-200)\n- energy (体力 0-200)\n- charm (魅力 0-200)\n- intelligence (智力 0-200)\n- strength (力量 0-200)\n- agility (敏捷 0-200)
+- stamina (耐力 0-200)
+
+【色色属性】
+- sexArousal (欲望 0-200)
+- sexExcitement (兴奋 0-200)
+- sexExperience (经验 0-200)
+- sexSkill (技巧 0-200)
+- sexLibido (性欲 0-200)
+- sexSensitivity (敏感 0-200)
+
+【状态属性】
+- affection (好感 0-200)
+- trust (信任 0-200)
+- intimacy (亲密 0-200)
+- corruption (堕落 0-200)
+- shame (羞耻 0-200)\n\n请分析故事情节，判断每个角色的数值属性应该有什么变化。返回JSON格式：\n{\n  "角色名": {\n    "属性名": 变化值\n  }\n}\n\n注意：\n1. 根据剧情合理设置变化值，一般单次变化在-20到+20之间\n2. 如果某个属性没有变化，不要在JSON中列出\n3. 如果所有属性都没变化，返回空对象 {}`,
+>>>>>>> 6d274afa3f732818cdcc2d1805c6e6452a248cad
                 temperature: 0.3,
                 customPrompt: ''
             },
@@ -1032,6 +1052,7 @@ PluginSystem.register('story-config', {
             level1Summary: {
                 title: '一级故事摘要（每个故事的完整总结）',
                 enabled: true,
+<<<<<<< HEAD
                 template: `请用约500字总结以下完整的故事内容，要求：
 1. 专注于总结剧情内容和故事情节
 2. 保留关键剧情、人物和结局
@@ -1039,11 +1060,39 @@ PluginSystem.register('story-config', {
 
 [完整故事内容]`,
                 maxTokens: 1000,
+=======
+                template: `请将以下故事内容**精简改写**成一个简短的小说章节。
+
+【改写要求】
+1. 用第三人称叙述，写作小说章节的风格
+2. 精简内容，只保留关键情节、人物对话和情感互动
+3. 将碎片化的场景描述整合成连贯的叙事
+4. 篇幅：300-500字左右
+5. 只输出改写后的小说内容，不要包含原始的场景标记
+
+【原始故事内容】
+[故事内容]
+
+请直接输出精简后的小说章节：`,
+                maxTokens: 1000,
                 customPrompt: ''
             },
             corePlot: {
                 title: '核心情节（一句话概括）',
                 enabled: true,
+                template: `请用一句话概括以下故事的核心情节，要求简洁明了，最多50字：
+
+[故事内容]
+
+一句话概括：`,
+                maxTokens: 100,
+>>>>>>> 6d274afa3f732818cdcc2d1805c6e6452a248cad
+                customPrompt: ''
+            },
+            corePlot: {
+                title: '核心情节（一句话概括）',
+                enabled: true,
+<<<<<<< HEAD
                 template: `请用一句话概括以下故事的核心情节，要求简洁明了，最多50字：
 
 [故事内容]
@@ -1062,11 +1111,27 @@ PluginSystem.register('story-config', {
 
 [所有场景内容]`,
                 maxTokens: 2000,
+=======
+                template: `请将以下多个小说章节**整合改写**成一个完整的故事线叙述。
+
+【改写要求】
+1. 用第三人称叙述，写作连贯的故事风格
+2. 整合所有章节的主要剧情，按时间顺序叙述
+3. 保留关键人物关系、情感发展和重要情节
+4. 篇幅：800-1000字左右
+
+【原始章节内容】
+[10个一级摘要]
+
+请直接输出整合后的故事叙述：`,
+                maxTokens: 1500,
+>>>>>>> 6d274afa3f732818cdcc2d1805c6e6452a248cad
                 customPrompt: ''
             },
             level3Summary: {
                 title: '三级综合摘要（每次总结10个二级）',
                 enabled: true,
+<<<<<<< HEAD
                 template: `请用约2000字总结以下10个二级故事摘要，要求：
 1. 专注于总结每个故事的剧情内容
 2. 保留每个故事的核心剧情和人物关系
@@ -1074,6 +1139,21 @@ PluginSystem.register('story-config', {
 
 [10个故事的摘要]`,
                 maxTokens: 3000,
+=======
+                template: `请将以下多个故事线**整合改写**成一个宏大的故事叙事。
+
+【改写要求】
+1. 用第三人称叙述，写作宏大的故事风格
+2. 整合所有故事线的主要剧情，按时间顺序叙述
+3. 展现完整的人物命运、剧情发展和最终结局
+4. 篇幅：1500-2000字左右
+
+【原始故事内容】
+[10个二级摘要]
+
+请直接输出整合后的宏大故事叙事：`,
+                maxTokens: 2500,
+>>>>>>> 6d274afa3f732818cdcc2d1805c6e6452a248cad
                 customPrompt: ''
             },
             adultContinue: {
@@ -1491,10 +1571,13 @@ ${choice ? `[用户选择了：${choice}]` : ''}
                 }
                 return text;
             }).join('\n\n---分隔线---\n\n');
+<<<<<<< HEAD
             
             if (!content || content.trim() === '') {
                 return '这是一个简短的故事。';
             }
+=======
+>>>>>>> 6d274afa3f732818cdcc2d1805c6e6452a248cad
             
             let template = aiSetting.template || '';
             template = template.replace('[完整故事内容]', content);
@@ -1549,6 +1632,7 @@ template = template.replace('[故事内容]', content);
                 return text;
             }).join('\n\n---分隔线---\n\n');
             
+<<<<<<< HEAD
             if (!content || content.trim() === '') {
                 return this.getSimpleCorePlot(story);
             }
@@ -1556,6 +1640,10 @@ template = template.replace('[故事内容]', content);
             let template = aiSetting.template || '';
             template = template.replace('[完整故事内容]', content);
 template = template.replace('[故事内容]', content);
+=======
+            let template = aiSetting.template || '';
+            template = template.replace('[故事内容]', content);
+>>>>>>> 6d274afa3f732818cdcc2d1805c6e6452a248cad
             
             const result = await ai.call(template, {
                 temperature: aiSetting.temperature || 0.3,

@@ -29,6 +29,7 @@ PluginSystem.register('adult-tags', {
         this._loadTagsFromFile();
     },
 
+<<<<<<< HEAD
     _initChoiceTemplates() {
         this._choiceTemplates = {
             '1': {
@@ -159,6 +160,21 @@ PluginSystem.register('adult-tags', {
                 }
             }
         };
+=======
+    async _loadTagsFromFile() {
+        // 标记是否正在加载
+        this._isLoadingTags = true;
+        
+        // 监听页面卸载事件，避免在加载过程中离开页面导致刷新
+        const handleBeforeUnload = () => {
+            if (this._isLoadingTags) {
+                // 取消所有未完成的fetch请求
+                if (this._abortController) {
+                    this._abortController.abort();
+                }
+            }
+        };
+>>>>>>> 6d274afa3f732818cdcc2d1805c6e6452a248cad
         
         window.addEventListener('beforeunload', handleBeforeUnload);
         
@@ -335,7 +351,11 @@ PluginSystem.register('adult-tags', {
             
             if (!targetChar || !targetChar.stats) return 0;
             
+<<<<<<< HEAD
             return targetChar.stats.arousal || 0;
+=======
+            return targetChar.stats.sexArousal || targetChar.stats.sexExcitement || 0;
+>>>>>>> 6d274afa3f732818cdcc2d1805c6e6452a248cad
         } catch (e) {
             console.warn('[兴奋值] 读取失败', e);
             return 0;
@@ -360,7 +380,12 @@ PluginSystem.register('adult-tags', {
             if (!targetChar || !targetChar.stats) return 0;
             
             const clampedValue = Math.max(0, Math.min(100, value));
+<<<<<<< HEAD
             targetChar.stats.arousal = clampedValue;
+=======
+            targetChar.stats.sexExcitement = clampedValue;
+            targetChar.stats.sexArousal = clampedValue;
+>>>>>>> 6d274afa3f732818cdcc2d1805c6e6452a248cad
             
             Data.updateCharacter(worldId, targetChar.id, targetChar);
             console.log(`[兴奋值] 角色 ${targetChar.name} 兴奋值设为 ${clampedValue}`);
@@ -380,7 +405,12 @@ PluginSystem.register('adult-tags', {
             if (!playerChar || !playerChar.stats) return 0;
             
             const clampedValue = Math.max(0, Math.min(100, value));
+<<<<<<< HEAD
             playerChar.stats.arousal = clampedValue;
+=======
+            playerChar.stats.sexExcitement = clampedValue;
+            playerChar.stats.sexArousal = clampedValue;
+>>>>>>> 6d274afa3f732818cdcc2d1805c6e6452a248cad
             
             Data.updateCharacter(worldId, playerChar.id, playerChar);
             console.log(`[兴奋值] 主角 ${playerChar.name} 兴奋值设为 ${clampedValue}`);
@@ -850,8 +880,33 @@ PluginSystem.register('adult-tags', {
             return false;
         }
         
+<<<<<<< HEAD
         const stats = this.getAllStats(worldId, charId);
         const { arousal, intimacy, experience, willingness } = stats;
+=======
+        if (charId && typeof charId === 'object' && Array.isArray(charId)) {
+            const charIds = charId;
+            for (const id of charIds) {
+                const excitement = this.getExcitement(worldId, id);
+                if (stage === 1 && excitement >= 10) {
+                    console.log(`[成人标签] 角色ID ${id} 兴奋值符合要求（${excitement}），准备触发`);
+                    return true;
+                }
+                if (stage === 2 && excitement >= 30) {
+                    console.log(`[成人标签] 角色ID ${id} 兴奋值符合要求（${excitement}），准备触发`);
+                    return true;
+                }
+                if (stage === 3) {
+                    console.log(`[成人标签] 角色ID ${id} 兴奋值（${excitement}），阶段3可直接触发`);
+                    return true;
+                }
+            }
+            console.log(`[成人标签] 所有角色兴奋值不足（阶段${stage}需要：${stage === 1 ? '≥10' : '≥30'}）`);
+            return false;
+        }
+        
+        const excitement = this.getExcitement(worldId, charId);
+>>>>>>> 6d274afa3f732818cdcc2d1805c6e6452a248cad
         
         const stageRequirements = {
             1: { arousal: 10, intimacy: 0, experience: 0, willingness: 0 },
@@ -967,10 +1022,14 @@ PluginSystem.register('adult-tags', {
             2: scale === '极限' || scale === '重'
                 ? '可以使用直接的性行为描写，允许插入、抽动、高潮等详细描写'
                 : '可以使用试探性的描写，轻微的亲密接触和暗示',
+<<<<<<< HEAD
             3: scale === '极限' || scale === '重'
                 ? '允许激烈性交、连续高潮、羞辱失控、下流语言、大量脏话'
                 : '可以使用直接的性行为描写，但要注意尺度限制',
             4: '允许极端、变态、成瘾式、超现实描写，完全放弃尊严与羞耻'
+=======
+            3: '可以使用直接的性行为描写，但要注意尺度限制'
+>>>>>>> 6d274afa3f732818cdcc2d1805c6e6452a248cad
         };
 
         // 获取story-config插件中的成人内容设置
@@ -1069,10 +1128,14 @@ ${cooldown.length > 0 ? cooldown.join('、') : '暂无'}
             2: scale === '极限' || scale === '重'
                 ? '可以使用直接的性行为描写，允许插入、抽动、高潮等详细描写'
                 : '可以使用试探性的描写，轻微的亲密接触和暗示',
+<<<<<<< HEAD
             3: scale === '极限' || scale === '重'
                 ? '允许激烈性交、连续高潮、羞辱失控、下流语言、大量脏话'
                 : '可以使用直接的性行为描写，但要注意尺度限制',
             4: '允许极端、变态、成瘾式、超现实描写，完全放弃尊严与羞耻'
+=======
+            3: '可以使用直接的性行为描写，但要注意尺度限制'
+>>>>>>> 6d274afa3f732818cdcc2d1805c6e6452a248cad
         };
 
         const template = `
@@ -1197,6 +1260,7 @@ ${cooldown.length > 0 ? cooldown.join('、') : '暂无'}
             this.setExcitement(worldId, change.charId, current + change.change);
             console.log(`[兴奋值更新] 角色 ${change.charName} 兴奋值: ${current} -> ${current + change.change}`);
         }
+<<<<<<< HEAD
     },
 
     parseAllStatChanges(storyContent, characters) {
@@ -1299,5 +1363,7 @@ ${cooldown.length > 0 ? cooldown.join('、') : '暂无'}
                 console.log(`[${statName}更新] 角色 ${change.charName}: ${current} -> ${current + change.change}`);
             }
         }
+=======
+>>>>>>> 6d274afa3f732818cdcc2d1805c6e6452a248cad
     }
 });

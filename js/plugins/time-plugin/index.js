@@ -178,7 +178,7 @@ const TimePlugin = {
                 }
             }
             
-            return 'js/plugins/time-plugin/user-content/';
+            return './js/plugins/time-plugin/user-content/';
         };
         
         const possiblePaths = [

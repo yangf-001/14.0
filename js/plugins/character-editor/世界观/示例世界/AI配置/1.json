@@ -1,0 +1,83 @@
+{
+  "aiSettings": {
+    "dataSources": {
+      "title": "数据源设置",
+      "enabled": true,
+      "charFields": [
+        "name",
+        "gender",
+        "age",
+        "appearance",
+        "personality",
+        "backstory",
+        "fetish",
+        "turnOns"
+      ],
+      "storyContentLength": 0,
+      "historyScenes": 0,
+      "charDescriptionLength": "medium",
+      "includeAdultProfile": true
+    },
+    "storyStart": {
+      "title": "故事开头生成",
+      "enabled": true,
+      "template": "【填入故事开头的AI提示词模板】",
+      "customPrompt": "",
+      "_expanded": false
+    },
+    "storyChoice": {
+      "title": "选择后继续故事",
+      "enabled": true,
+      "template": "【填入选择后继续故事的AI提示词模板】",
+      "customPrompt": "",
+      "_expanded": false
+    },
+    "storyFree": {
+      "title": "自由发展继续",
+      "enabled": true,
+      "template": "【填入自由发展继续的AI提示词模板】",
+      "customPrompt": "",
+      "_expanded": false
+    },
+    "storyContinue": {
+      "title": "继续故事",
+      "enabled": true,
+      "template": "【填入继续故事的AI提示词模板】",
+      "customPrompt": "",
+      "_expanded": false,
+      "temperature": 0.8
+    },
+    "intimateContinue": {
+      "title": "亲密互动继续",
+      "enabled": true,
+      "template": "【填入亲密互动继续的AI提示词模板】",
+      "customPrompt": "",
+      "_expanded": false,
+      "temperature": 0.8
+    },
+    "generateChoices": {
+      "title": "生成剧情选项",
+      "enabled": true,
+      "template": "【填入生成剧情选项的AI提示词模板】",
+      "customPrompt": "",
+      "_expanded": false,
+      "temperature": 0.9
+    },
+    "updateStats": {
+      "title": "更新角色属性",
+      "enabled": true,
+      "template": "【填入更新角色属性的AI提示词模板】",
+      "customPrompt": "",
+      "_expanded": false,
+      "temperature": 0.3
+    },
+    "adultChoices": {
+      "title": "生成成人选项（自动分级）",
+      "enabled": true,
+      "template": "【填入生成成人选项的AI提示词模板】",
+      "temperature": 0.8,
+      "customPrompt": "",
+      "_expanded": false
+    }
+  }
+}

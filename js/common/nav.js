@@ -67,7 +67,7 @@ const NavSystem = {
     generateFooter() {
         return `
             <div class="footer">
-                <p>AI故事 - 5.1 | 版权所有 © 2026</p>
+                <p>AI故事 - 5.2 | 版权所有 © 2026</p>
             </div>
         `;
     }

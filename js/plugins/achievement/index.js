@@ -29,7 +29,7 @@ PluginSystem.register('achievement', {
                 }
             }
             
-            return 'js/plugins/achievement/user-content/';
+            return './js/plugins/achievement/user-content/';
         };
         
         const possiblePaths = [

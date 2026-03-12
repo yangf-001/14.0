@@ -236,9 +236,18 @@ PluginSystem.register('chat-plugin', {
                     return `${playerCharacter ? playerCharacter.name : '你'}：${m.content}`;
                 } else {
                     const charName = m.characterName || (charList.length > 0 ? charList[0].name : '角色');
-                    return `${charName}：${m.content}`;
+                    let statusInfo = '';
+                    if (m.relation || m.affection !== undefined || m.arousal !== undefined || m.lewdStatus || m.innerThought) {
+                        statusInfo = '\n【状态】';
+                        if (m.relation) statusInfo += '\n- 关系: ' + m.relation;
+                        if (m.affection !== undefined) statusInfo += '\n- 好感度: ' + m.affection;
+                        if (m.arousal !== undefined) statusInfo += '\n- 兴奋值: ' + m.arousal;
+                        if (m.lewdStatus) statusInfo += '\n- 色色状态: ' + m.lewdStatus;
+                        if (m.innerThought) statusInfo += '\n- 内心: ' + m.innerThought;
+                    }
+                    return `${charName}：${m.content}${statusInfo}`;
                 }
-            }).join('\n');
+            }).join('\n\n');
         }
 
         let prompt = '';
@@ -279,7 +288,17 @@ PluginSystem.register('chat-plugin', {
         }
 
         if (charList.length > 1) {
-            prompt += '\n\n这是多人对话。你可以选择一个角色来回复，或者让多个角色进行互动。';
+            const charNames = charList.map(c => c.name).join('、');
+            prompt += `\n\n【重要】这是多人对话，参与者包括：${charNames}。请让多个角色分别发言，每行以"角色名："开头，例如：
+林诗雅：你好呀，今天有空吗？
+陈轩：嗯，我正好有时间。
+
+这样可以清晰区分不同角色的对话。`;
+        }
+        
+        const diaryContext = this._getDiaryContext(charList, worldId);
+        if (diaryContext) {
+            prompt += diaryContext;
         }
 
         return prompt;
@@ -339,6 +358,120 @@ PluginSystem.register('chat-plugin', {
         return cleaned;
     },
 
+    _parseMultiCharacterResponse(content, aiCharacters) {
+        const characterNames = aiCharacters.map(c => c.name);
+        
+        if (!content || !aiCharacters || aiCharacters.length <= 1) {
+            const timeLocationMatch = content.match(/【时间地点】([^\n【]+)/);
+            const relationMatch = content.match(/- 关系:\s*([^\n-]+)/);
+            const affectionMatch = content.match(/- 好感度:\s*(\d+)/);
+            const arousalMatch = content.match(/- 兴奋值:\s*(\d+)/);
+            const lewdStatusMatch = content.match(/- 色色状态:\s*([^\n-]+)/);
+            const innerMatch = content.match(/- 内心:\s*([^\n-]+)/);
+            
+            const cleanedContent = content
+                .replace(/【时间地点】[^\n]*/g, '')
+                .replace(/【状态】[^\n]*/g, '')
+                .replace(/- 关系:[^\n]*/g, '')
+                .replace(/- 好感度:[^\n]*/g, '')
+                .replace(/- 兴奋值:[^\n]*/g, '')
+                .replace(/- 色色状态:[^\n]*/g, '')
+                .replace(/- 内心:[^\n]*/g, '')
+                .trim();
+            
+            return [{
+                characterName: aiCharacters?.length > 0 ? aiCharacters[0].name : '角色',
+                content: this._cleanChatResponse(cleanedContent),
+                timeLocation: timeLocationMatch ? timeLocationMatch[1].trim() : '',
+                relation: relationMatch ? relationMatch[1].trim() : '',
+                affection: affectionMatch ? parseInt(affectionMatch[1]) : 50,
+                arousal: arousalMatch ? parseInt(arousalMatch[1]) : 30,
+                lewdStatus: lewdStatusMatch ? lewdStatusMatch[1].trim() : '正常',
+                innerThought: innerMatch ? innerMatch[1].trim() : ''
+            }];
+        }
+
+        const messages = [];
+        const blocks = content.split(/\n\n+/);
+        
+        for (const block of blocks) {
+            if (!block.trim()) continue;
+            
+            let speaker = null;
+            let remainingContent = block;
+            
+            for (const name of characterNames) {
+                if (block.startsWith(name)) {
+                    speaker = name;
+                    remainingContent = block.substring(name.length).trim();
+                    break;
+                }
+            }
+            
+            if (!speaker) continue;
+            
+            const timeLocationMatch = remainingContent.match(/【时间地点】([^\n【]+)/);
+            const relationMatch = remainingContent.match(/- 关系:\s*([^\n-]+)/);
+            const affectionMatch = remainingContent.match(/- 好感度:\s*(\d+)/);
+            const arousalMatch = remainingContent.match(/- 兴奋值:\s*(\d+)/);
+            const lewdStatusMatch = remainingContent.match(/- 色色状态:\s*([^\n-]+)/);
+            const innerMatch = remainingContent.match(/- 内心:\s*([^\n-]+)/);
+            
+            let cleanedDialogue = remainingContent
+                .replace(/【时间地点】[^\n]*/g, '')
+                .replace(/【状态】[^\n]*/g, '')
+                .replace(/- 关系:[^\n]*/g, '')
+                .replace(/- 好感度:[^\n]*/g, '')
+                .replace(/- 兴奋值:[^\n]*/g, '')
+                .replace(/- 色色状态:[^\n]*/g, '')
+                .replace(/- 内心:[^\n]*/g, '')
+                .trim();
+            
+            messages.push({
+                characterName: speaker,
+                content: this._cleanChatResponse(cleanedDialogue),
+                timeLocation: timeLocationMatch ? timeLocationMatch[1].trim() : '',
+                relation: relationMatch ? relationMatch[1].trim() : '',
+                affection: affectionMatch ? parseInt(affectionMatch[1]) : 50,
+                arousal: arousalMatch ? parseInt(arousalMatch[1]) : 30,
+                lewdStatus: lewdStatusMatch ? lewdStatusMatch[1].trim() : '正常',
+                innerThought: innerMatch ? innerMatch[1].trim() : ''
+            });
+        }
+        
+        if (messages.length === 0) {
+            const timeLocationMatch = content.match(/【时间地点】([^\n【]+)/);
+            const relationMatch = content.match(/- 关系:\s*([^\n-]+)/);
+            const affectionMatch = content.match(/- 好感度:\s*(\d+)/);
+            const arousalMatch = content.match(/- 兴奋值:\s*(\d+)/);
+            const lewdStatusMatch = content.match(/- 色色状态:\s*([^\n-]+)/);
+            const innerMatch = content.match(/- 内心:\s*([^\n-]+)/);
+            
+            const cleanedContent = content
+                .replace(/【时间地点】[^\n]*/g, '')
+                .replace(/【状态】[^\n]*/g, '')
+                .replace(/- 关系:[^\n]*/g, '')
+                .replace(/- 好感度:[^\n]*/g, '')
+                .replace(/- 兴奋值:[^\n]*/g, '')
+                .replace(/- 色色状态:[^\n]*/g, '')
+                .replace(/- 内心:[^\n]*/g, '')
+                .trim();
+            
+            messages.push({
+                characterName: aiCharacters[0].name,
+                content: this._cleanChatResponse(cleanedContent),
+                timeLocation: timeLocationMatch ? timeLocationMatch[1].trim() : '',
+                relation: relationMatch ? relationMatch[1].trim() : '',
+                affection: affectionMatch ? parseInt(affectionMatch[1]) : 50,
+                arousal: arousalMatch ? parseInt(arousalMatch[1]) : 30,
+                lewdStatus: lewdStatusMatch ? lewdStatusMatch[1].trim() : '正常',
+                innerThought: innerMatch ? innerMatch[1].trim() : ''
+            });
+        }
+        
+        return messages;
+    },
+
     async sendMessage(sessionId, userMessage) {
         if (this._callbacks?.showLoading) {
             this._callbacks.showLoading('正在回复...');
@@ -384,16 +517,27 @@ PluginSystem.register('chat-plugin', {
                 maxTokens: settings.maxTokens || 500
             });
 
-            const cleanResponse = this._cleanChatResponse(response);
+            const parsedMessages = this._parseMultiCharacterResponse(response, aiCharacters);
 
-            messages.push({
-                role: 'assistant',
-                content: cleanResponse,
-                timestamp: Date.now(),
-                characterName: aiCharacters.length > 0 ? aiCharacters[0].name : '角色'
-            });
+            for (const parsed of parsedMessages) {
+                messages.push({
+                    role: 'assistant',
+                    content: parsed.content,
+                    timestamp: Date.now(),
+                    characterName: parsed.characterName,
+                    timeLocation: parsed.timeLocation || '',
+                    relation: parsed.relation || '',
+                    affection: parsed.affection || 50,
+                    arousal: parsed.arousal || 30,
+                    lewdStatus: parsed.lewdStatus || '正常',
+                    innerThought: parsed.innerThought || ''
+                });
+            }
 
             this.updateSessionMessages(world.id, sessionId, messages);
+            
+            this._saveCharacterChatState(aiCharacters, parsedMessages, world.id);
+            this._saveCharacterDiaries(aiCharacters, messages, world.id);
 
             if (this._callbacks?.hideLoading) {
                 this._callbacks.hideLoading();
@@ -402,7 +546,7 @@ PluginSystem.register('chat-plugin', {
             }
 
             return {
-                message: cleanResponse,
+                messages: parsedMessages,
                 session: session
             };
         } catch (e) {
@@ -460,14 +604,22 @@ PluginSystem.register('chat-plugin', {
                 maxTokens: settings.maxTokens || 500
             });
 
-            const cleanGreeting = this._cleanChatResponse(greeting);
+            const parsedGreetings = this._parseMultiCharacterResponse(greeting, aiCharacters);
 
-            session.messages.push({
-                role: 'assistant',
-                content: cleanGreeting,
-                timestamp: Date.now(),
-                characterName: aiCharacters.length > 0 ? aiCharacters[0].name : '角色'
-            });
+            for (const parsed of parsedGreetings) {
+                session.messages.push({
+                    role: 'assistant',
+                    content: parsed.content,
+                    timestamp: Date.now(),
+                    characterName: parsed.characterName,
+                    timeLocation: parsed.timeLocation || '',
+                    relation: parsed.relation || '',
+                    affection: parsed.affection || 50,
+                    arousal: parsed.arousal || 30,
+                    lewdStatus: parsed.lewdStatus || '正常',
+                    innerThought: parsed.innerThought || ''
+                });
+            }
 
             this.updateSessionMessages(world.id, session.id, session.messages);
 
@@ -479,7 +631,7 @@ PluginSystem.register('chat-plugin', {
 
             return {
                 session: session,
-                greeting: cleanGreeting
+                greetings: parsedGreetings
             };
         } catch (e) {
             console.error('生成开场白失败:', e);
@@ -567,5 +719,67 @@ PluginSystem.register('chat-plugin', {
         } catch (e) {
             throw new Error('导入失败：' + e.message);
         }
+    },
+    
+    _saveCharacterChatState(aiCharacters, parsedMessages, worldId) {
+        if (!aiCharacters || !parsedMessages) return;
+        
+        for (const char of aiCharacters) {
+            const msg = parsedMessages.find(m => m.characterName === char.name);
+            if (!msg) continue;
+            
+            const stats = char.stats || {};
+            const currentAffection = stats.affection || stats.intimacy || 50;
+            const currentArousal = stats.arousal || stats.sexArousal || 30;
+            
+            const newAffection = msg.affection !== undefined ? msg.affection : currentAffection;
+            const newArousal = msg.arousal !== undefined ? msg.arousal : currentArousal;
+            
+            if (newAffection !== currentAffection || newArousal !== currentArousal) {
+                char.stats = {
+                    ...stats,
+                    affection: newAffection,
+                    intimacy: newAffection,
+                    arousal: newArousal,
+                    sexArousal: newArousal
+                };
+                Data.updateCharacter(worldId, char.id, { stats: char.stats });
+            }
+        }
+    },
+    
+    _saveCharacterDiaries(aiCharacters, messages, worldId) {
+        if (!aiCharacters || !messages || messages.length === 0) return;
+        
+        const diaryPlugin = window.ChatDiaryPlugin;
+        if (!diaryPlugin) return;
+        
+        const recentMessages = messages.slice(-6);
+        
+        for (const char of aiCharacters) {
+            const charMessages = recentMessages.filter(m => 
+                m.characterName === char.name || m.role === 'user'
+            );
+            
+            if (charMessages.length > 0) {
+                diaryPlugin.updateCharacterDiaryFromChat(char, charMessages, worldId).catch(e => {
+                    console.warn('保存日记失败:', e);
+                });
+            }
+        }
+    },
+    
+    _getDiaryContext(aiCharacters, worldId) {
+        const diaryPlugin = window.ChatDiaryPlugin;
+        if (!diaryPlugin || !aiCharacters) return '';
+        
+        let context = '';
+        for (const char of aiCharacters) {
+            const diaryContext = diaryPlugin.getDiaryContext(char.id, worldId, 2);
+            if (diaryContext) {
+                context += `\n\n【${char.name}的日记记录】${diaryContext}`;
+            }
+        }
+        return context;
     }
 });

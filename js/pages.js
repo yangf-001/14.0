@@ -203,6 +203,57 @@ const Pages = {
         }
         
         const story = Story.load(world.id);
+        const storyNodes = world.storyNodes || [];
+        const userSelectedNode = window._userSelectedStoryNode;
+        
+        const hasNodes = storyNodes.length > 0;
+        const hasOngoingStory = story && story.status === 'ongoing';
+        
+        if (hasNodes && !userSelectedNode && !hasOngoingStory) {
+            const unlockedNodes = storyNodes.filter(n => n && (n.unlocked === undefined || n.unlocked === true));
+            const storyNodesListHtml = unlockedNodes.length > 0 
+                ? unlockedNodes.map((node, index) => {
+                    const displayName = node.name.replace(/剧情节点|剧情/gi, '').trim() || node.name;
+                    const nodeName = node.name;
+                    return `
+                        <div class="story-node-card" style="padding: 16px 20px; background: var(--card); border-radius: 12px; margin-bottom: 12px; cursor: pointer; border: 2px solid transparent; transition: all 0.2s; text-align: left;"
+                            onclick="window.goToStoryNode('${nodeName}')"
+                            onmouseover="this.style.borderColor='var(--accent)';this.style.transform='translateY(-2px)';"
+                            onmouseout="this.style.borderColor='transparent';this.style.transform='translateY(0)';"
+                        >
+                            <div style="display: flex; align-items: center; justify-content: space-between;">
+                                <div>
+                                    <div style="font-size: 0.75rem; color: var(--text-dim); margin-bottom: 4px;">第 ${index + 1} 章</div>
+                                    <div style="font-size: 1.1rem; font-weight: 500;">${displayName}</div>
+                                </div>
+                                <div style="font-size: 1.5rem;">📖</div>
+                            </div>
+                        </div>
+                    `;
+                }).join('')
+                : '<p style="color: var(--text-dim);">暂无已解锁的节点</p>';
+            
+            const currentProgressNode = storyNodes.find(n => n.name === world.currentStoryNode);
+            const progressInfo = currentProgressNode ? `当前进度：${currentProgressNode.name}` : '刚开始故事';
+            
+            main.innerHTML = `
+                <div style="max-width: 500px; margin: 0 auto;">
+                    <h2 style="text-align: center; margin-bottom: 8px;">📖 选择章节</h2>
+                    <p class="desc" style="text-align: center; margin-bottom: 24px;">${progressInfo}</p>
+                    
+                    ${storyNodesListHtml}
+                    
+                    <div style="margin-top: 24px; text-align: center;">
+                        <button class="btn btn-secondary" onclick="showWorldEditModal()" style="font-size: 0.85rem;">⚙️ 管理节点</button>
+                    </div>
+                </div>
+            `;
+            return;
+        }
+        
+        const storyNodesHtml = '';
+        
+        window._currentStoryNode = userSelectedNode || world.currentStoryNode || (storyNodes[0]?.name || null);
         
         const isMobile = window.innerWidth < 900;
         
@@ -246,18 +297,23 @@ const Pages = {
             }
         }
         
+        const showStartForm = !hasOngoingStory;
+        
         main.innerHTML = `
             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
                 <div>
-                    <h2>${story && story.status === 'ongoing' ? '继续故事' : '开始故事'}</h2>
-                    <p class="desc">${world.name}${story && story.status === 'ongoing' ? ` · 第${story.round}轮` : ''}</p>
+                    <h2>${hasOngoingStory ? '继续故事' : '开始故事'}</h2>
+                    <p class="desc">${world.name}${hasOngoingStory ? ` · 第${story.round}轮` : ''}</p>
                 </div>
-                ${story && story.status === 'ongoing' ? `
-                    <button class="btn btn-secondary" onclick="showEndStoryModal()" style="font-size: 0.8rem;">🏁 结束故事</button>
-                ` : ''}
+                <div style="display: flex; gap: 8px;">
+                    ${userSelectedNode && !hasOngoingStory ? `<button class="btn btn-secondary" onclick="backToStoryNodes()" style="font-size: 0.8rem;">⬅️ 返回章节</button>` : ''}
+                    ${hasOngoingStory ? `<button class="btn btn-secondary" onclick="showEndStoryModal()" style="font-size: 0.8rem;">🏁 结束故事</button>` : ''}
+                </div>
             </div>
             
-            ${story && story.status === 'ongoing' ? `
+            ${storyNodesHtml}
+            
+            ${hasOngoingStory ? `
                 <div class="story-reader" style="margin-bottom: 20px; max-height: 50vh; overflow-y: auto;">
                     ${(() => {
                         const scenesToShow = story.scenes;
@@ -518,13 +574,17 @@ const Pages = {
                     </div>
                     <div class="form-group">
                         <label>API Key</label>
-                        <input type="password" id="apiKey" value="${ai.config.apiKey || ''}" placeholder="请输入API Key">
+                        <input type="password" id="apiKey" value="${ai.config.apiKey || ''}" placeholder="请输入API Key" autocomplete="off">
                     </div>
                     <div class="form-group">
                         <label>Endpoint</label>
                         <input type="text" id="apiEndpoint" value="${ai.config.endpoint || ''}" placeholder="https://api.deepseek.com">
                     </div>
-                    <button class="btn" onclick="saveApiSettings()">保存</button>
+                    <div style="display: flex; gap: 8px; flex-wrap: wrap;">
+                        <button class="btn" onclick="saveApiSettings()">保存</button>
+                        <button class="btn btn-secondary" id="testApiBtn" onclick="testApiConnection()">测试连接</button>
+                    </div>
+                    <div id="apiTestResult" class="api-test-result" style="display: none;"></div>
                 </div>
             </div>
             
@@ -747,12 +807,99 @@ Pages.showCharInfo = Pages.showCharInfo.bind(Pages);
 window.showCharInfo = Pages.showCharInfo;
 window.Pages = Pages;
 
-window.saveApiSettings = function() {
+window.saveApiSettings = async function() {
     const apiKey = document.getElementById('apiKey')?.value;
     const apiEndpoint = document.getElementById('apiEndpoint')?.value;
     
+    if (!apiKey) {
+        alert('请输入 API Key');
+        return;
+    }
+    
     ai.saveConfig({ apiKey, endpoint: apiEndpoint });
-    alert('API设置已保存');
+    
+    const testBtn = document.getElementById('testApiBtn');
+    const resultDiv = document.getElementById('apiTestResult');
+    
+    if (testBtn) {
+        testBtn.disabled = true;
+        testBtn.textContent = '测试中...';
+    }
+    
+    try {
+        const result = await ai.testConnection();
+        
+        if (resultDiv) {
+            if (result.success) {
+                resultDiv.className = 'api-test-result success';
+                resultDiv.textContent = result.message;
+            } else {
+                resultDiv.className = 'api-test-result error';
+                resultDiv.textContent = result.error;
+            }
+            resultDiv.style.display = 'block';
+        }
+        
+        if (result.success) {
+            alert('API设置已保存并测试成功！');
+        }
+    } catch (err) {
+        if (resultDiv) {
+            resultDiv.className = 'api-test-result error';
+            resultDiv.textContent = '测试失败: ' + err.message;
+            resultDiv.style.display = 'block';
+        }
+    } finally {
+        if (testBtn) {
+            testBtn.disabled = false;
+            testBtn.textContent = '测试连接';
+        }
+    }
+};
+
+window.testApiConnection = async function() {
+    const apiKey = document.getElementById('apiKey')?.value;
+    const apiEndpoint = document.getElementById('apiEndpoint')?.value;
+    const testBtn = document.getElementById('testApiBtn');
+    const resultDiv = document.getElementById('apiTestResult');
+    
+    if (!apiKey) {
+        alert('请先输入 API Key');
+        return;
+    }
+    
+    ai.saveConfig({ apiKey, endpoint: apiEndpoint });
+    
+    if (testBtn) {
+        testBtn.disabled = true;
+        testBtn.textContent = '测试中...';
+    }
+    
+    try {
+        const result = await ai.testConnection();
+        
+        if (resultDiv) {
+            if (result.success) {
+                resultDiv.className = 'api-test-result success';
+                resultDiv.textContent = result.message;
+            } else {
+                resultDiv.className = 'api-test-result error';
+                resultDiv.textContent = result.error;
+            }
+            resultDiv.style.display = 'block';
+        }
+    } catch (err) {
+        if (resultDiv) {
+            resultDiv.className = 'api-test-result error';
+            resultDiv.textContent = '测试失败: ' + err.message;
+            resultDiv.style.display = 'block';
+        }
+    } finally {
+        if (testBtn) {
+            testBtn.disabled = false;
+            testBtn.textContent = '测试连接';
+        }
+    }
 };
 
 window.saveContentSettings = function() {
@@ -791,4 +938,63 @@ window.getSimpleStoryMode = function() {
     const startCheckbox = document.getElementById('simpleStoryModeStart');
     const continueCheckbox = document.getElementById('simpleStoryModeContinue');
     return (startCheckbox && startCheckbox.checked) || (continueCheckbox && continueCheckbox.checked);
+};
+
+window.selectStoryNode = function(nodeName) {
+    const world = Data.getCurrentWorld();
+    if (!world || !world.storyNodes) return;
+    
+    const node = world.storyNodes.find(n => n.name === nodeName);
+    if (!node || !node.unlocked) {
+        alert('该剧情节点尚未解锁');
+        return;
+    }
+    
+    window._userSelectedStoryNode = nodeName;
+    
+    const main = document.getElementById('mainContent');
+    if (main) {
+        Pages.renderStory(main);
+    }
+};
+
+window.goToStoryNode = function(nodeName) {
+    window._userSelectedStoryNode = nodeName;
+    var main = document.getElementById('mainContent');
+    if (main) {
+        Pages.renderStory(main);
+    }
+};
+
+window.backToStoryNodes = function() {
+    window._userSelectedStoryNode = null;
+    
+    var main = document.getElementById('mainContent');
+    if (main) {
+        Pages.renderStory(main);
+    }
+};
+
+window.unlockNextStoryNode = function() {
+    const world = Data.getCurrentWorld();
+    if (!world || !world.storyNodes) return;
+    
+    const nodes = world.storyNodes;
+    const currentIndex = nodes.findIndex(n => n.name === world.currentStoryNode);
+    
+    if (currentIndex >= 0 && currentIndex < nodes.length - 1) {
+        const nextNode = nodes[currentIndex + 1];
+        if (!nextNode.unlocked) {
+            nextNode.unlocked = true;
+            Data.updateWorld(world.id, {
+                storyNodes: nodes
+            });
+            console.log(`[剧情节点] 已解锁：${nextNode.name}`);
+            
+            const main = document.getElementById('mainContent');
+            if (main) {
+                Pages.renderStory(main);
+            }
+        }
+    }
 };

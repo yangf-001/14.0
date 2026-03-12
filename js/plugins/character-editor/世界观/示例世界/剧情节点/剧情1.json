@@ -1,0 +1,22 @@
+{
+  "name": "【填入剧情名称】",
+  "startStage": "【填入剧情阶段，如：相遇/相识/暧昧/亲密】",
+  "customStartScene": "【填入开场剧情描述，故事将从这里开始】",
+  "initialStats": {
+    "health": "【填入生命值】",
+    "charm": "【填入魅力值】",
+    "intelligence": "【填入智力值】",
+    "strength": "【填入力量值】",
+    "agility": "【填入敏捷值】",
+    "stamina": "【填入体力值】",
+    "arousal": "【填入兴奋值】",
+    "experience": "【填入经验值】",
+    "sexSkill": "【填入技巧值】",
+    "sexSensitivity": "【填入敏感值】",
+    "intimacy": "【填入亲密值】",
+    "willingness": "【填入意愿值】",
+    "corruption": "【填入堕落值】",
+    "shame": "【填入羞耻值】"
+  },
+  "description": "【填入剧情描述】"
+}

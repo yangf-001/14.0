@@ -312,14 +312,9 @@ ViewCallbacks.chat._renderCharacterPanel = function(character, isPlayer = false)
             <div style="padding: 6px; border-bottom: 1px solid #e9ecef; font-size: 0.65rem; color: #999;">性格: ${profile.personality ? profile.personality.substring(0, 8) + (profile.personality.length > 8 ? '...' : '') : '未知'}</div>
             
             <div style="padding: 6px; flex: 1; overflow-y: auto;">
-<<<<<<< HEAD
-                ${this._renderProgressBar('💕', stats.intimacy, 100, '#ff6b6b')}
-                ${this._renderProgressBar('🔥', stats.arousal, 100, '#ff9f43')}
-=======
                 ${this._renderProgressBar('❤️', stats.affection, 100, '#ff6b6b')}
                 ${this._renderProgressBar('💕', stats.intimacy, 100, '#feca57')}
-                ${this._renderProgressBar('🔥', stats.desire, 100, '#ff9f43')}
->>>>>>> 6d274afa3f732818cdcc2d1805c6e6452a248cad
+                ${this._renderProgressBar('🔥', stats.arousal || stats.desire, 100, '#ff9f43')}
                 ${this._renderProgressBar('✨', stats.sensitivity, 100, '#48dbfb')}
                 ${this._renderProgressBar('💝', stats.willingness, 100, '#1dd1a1')}
                 ${this._renderProgressBar('📚', stats.experience, 100, '#a29bfe')}
@@ -342,6 +337,23 @@ ViewCallbacks.chat._renderChatArea = function(session, characters) {
     const messages = session.messages || [];
     const isMobile = window.innerWidth <= 900;
 
+    const timePlugin = window.WorldTimePlugin;
+    let timeLocationInfo = '';
+    if (timePlugin) {
+        const world = Data.getCurrentWorld();
+        if (world) {
+            const timeData = timePlugin.getDisplayTime(world.id);
+            if (timeData) {
+                let timeStr = timeData.formatted || '';
+                if (timeData.dayCount) {
+                    timeStr = `[第${timeData.dayCount}天，${timeStr}`;
+                }
+                const location = session.currentLocation || '未知地点';
+                timeLocationInfo = `${timeStr}|位置:${location}]`;
+            }
+        }
+    }
+
     return `
         <div style="display: flex; flex-direction: column; height: 100%; background: #fff;">
             <div style="padding: 8px 12px; border-bottom: 1px solid #e9ecef; display: flex; justify-content: space-between; align-items: center; background: #fff;">
@@ -356,64 +368,128 @@ ViewCallbacks.chat._renderChatArea = function(session, characters) {
                     </div>
                 </div>
                 <div style="display: flex; gap: 4px;">
+                    <button class="btn btn-secondary" onclick="ViewCallbacks.chatDiary && (ViewCallbacks.chatDiary.showDiaryPage ? ViewCallbacks.chatDiary.showDiaryPage() : (function(){const main=document.getElementById('mainContent');if(main)main.innerHTML=View.render('chat-diary.main');})())" title="日记" style="padding: 3px 6px; font-size: 0.75rem;">📔</button>
+                    <button class="btn btn-secondary" onclick="ViewCallbacks.chat.endChat()" title="结束聊天" style="padding: 3px 6px; font-size: 0.75rem;">❌</button>
                     <button class="btn btn-secondary" onclick="ViewCallbacks.chat.exportCurrentSession()" title="导出" style="padding: 3px 6px; font-size: 0.75rem;">📤</button>
                     <button class="btn btn-secondary" onclick="ViewCallbacks.chat.deleteCurrentSession()" title="删除" style="padding: 3px 6px; font-size: 0.75rem;">🗑️</button>
                 </div>
             </div>
             
-            <div style="flex: 1; display: flex; overflow: hidden;">
-                <div id="chatMessages" style="flex: 1; overflow-y: auto; padding: 8px; background: #fafafa;">
+            <div style="flex: 1; overflow: hidden;">
+                <div id="chatMessages" style="height: 100%; overflow-y: auto; padding: 12px; background: #f5f5f5;">
                     ${messages.length === 0 ? `
-                        <div style="text-align: center; padding: 20px; color: #999; font-size: 0.9rem;">
+                        <div style="text-align: center; padding: 40px 20px; color: #999; font-size: 0.9rem;">
                             开始你们的对话吧...
                         </div>
-                    ` : messages.map(m => ViewCallbacks.chat._renderMessage(m, aiCharacters, session.playerCharId)).join('')}
+                    ` : messages.map(m => ViewCallbacks.chat._renderMessage(m, aiCharacters, session.playerCharId, timeLocationInfo)).join('')}
                 </div>
-                
-                ${!isMobile ? (aiCharacters.length > 0 ? this._renderCharacterPanel(aiCharacters[0], false) : '') : ''}
-                ${!isMobile ? (playerCharacter ? this._renderCharacterPanel(playerCharacter, true) : '') : ''}
             </div>
             
-            <div style="padding: 8px 12px; border-top: 1px solid #e9ecef; background: #fff;">
+            <div style="padding: 12px; border-top: 1px solid #e9ecef; background: #fff;">
                 <div style="display: flex; gap: 8px;">
-                    <input type="text" id="chatInput" placeholder="输入消息..." style="flex: 1; padding: 8px 12px; border-radius: 18px; border: 1px solid #e9ecef; background: #f8f9fa; color: #333; outline: none; font-size: 0.85rem;" onkeypress="if(event.key==='Enter')ViewCallbacks.chat.sendMessage()">
-                    <button class="btn" onclick="ViewCallbacks.chat.sendMessage()" style="background: #6c5ce7; color: white; border: none; border-radius: 18px; padding: 8px 14px; font-size: 0.85rem;">发送</button>
+                    <input type="text" id="chatInput" placeholder="输入消息..." style="flex: 1; padding: 10px 14px; border-radius: 20px; border: 1px solid #e9ecef; background: #f8f9fa; color: #333; outline: none; font-size: 0.9rem;" onkeypress="if(event.key==='Enter')ViewCallbacks.chat.sendMessage()">
+                    <button class="btn" onclick="ViewCallbacks.chat.sendMessage()" style="background: #07c160; color: white; border: none; border-radius: 20px; padding: 10px 20px; font-size: 0.9rem;">发送</button>
                 </div>
             </div>
         </div>
     `;
 };
 
-ViewCallbacks.chat._renderMessage = function(message, aiCharacters, playerCharId) {
+ViewCallbacks.chat._renderMessage = function(message, aiCharacters, playerCharId, timeLocationInfo) {
     const isUser = message.role === 'user';
     const time = new Date(message.timestamp).toLocaleTimeString();
     
     const messageCharName = message.characterName || (isUser ? '你' : 'AI');
+    
+    let characterStatus = '';
+    if (!isUser) {
+        const character = aiCharacters?.find(c => c.name === messageCharName);
+        const relation = message.relation || (character?.profile?.relation || '');
+        const affection = message.affection !== undefined ? message.affection : (character?.stats?.affection || character?.stats?.intimacy || 50);
+        const arousal = message.arousal !== undefined ? message.arousal : (character?.stats?.arousal || character?.stats?.sexArousal || 30);
+        const lewdStatus = message.lewdStatus || message.sexStatus || (character?.stats?.lewdStatus || character?.stats?.sexStatus || '正常');
+        const innerThought = message.innerThought || '';
+        
+        const arousalPercent = Math.min(100, Math.max(0, arousal));
+        const arousalColor = arousalPercent < 30 ? '#48dbfb' : (arousalPercent < 60 ? '#feca57' : '#ff6b6b');
+        
+        characterStatus = `
+            <div style="margin-top: 6px; padding: 10px; background: linear-gradient(135deg, #ff7675, #d63031); border-radius: 10px; font-size: 0.7rem; box-shadow: 0 2px 4px rgba(0,0,0,0.1); color: white;">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px; padding-bottom: 6px; border-bottom: 1px solid rgba(255,255,255,0.2);">
+                    <span style="font-weight: 600;">▣ 角色状态</span>
+                </div>
+                ${relation ? `<div style="margin-bottom: 4px; display: flex; align-items: center; gap: 4px;"><span>💕</span> <span>关系: ${relation}</span></div>` : ''}
+                <div style="display: flex; align-items: center; gap: 4px; margin-bottom: 4px;">
+                    <span>❤️</span>
+                    <span>好感度:</span>
+                    <span style="font-weight: 600;">${affection}</span>
+                </div>
+                <div style="display: flex; align-items: center; gap: 4px; margin-bottom: 4px;">
+                    <span>🔥</span>
+                    <span>兴奋值:</span>
+                    <div style="flex: 1; height: 10px; background: rgba(255,255,255,0.2); border-radius: 5px; overflow: hidden;">
+                        <div style="height: 100%; width: ${arousalPercent}%; background: ${arousalColor}; border-radius: 5px;"></div>
+                    </div>
+                    <span style="font-weight: 600;">${arousal}</span>
+                </div>
+                <div style="display: flex; align-items: center; gap: 4px; margin-bottom: 4px;">
+                    <span>🔞</span>
+                    <span>色色状态:</span>
+                    <span style="font-weight: 600;">${lewdStatus}</span>
+                </div>
+                ${innerThought ? `<div style="font-style: italic; margin-top: 6px; padding-top: 6px; border-top: 1px solid rgba(255,255,255,0.2); display: flex; align-items: center; gap: 4px;"><span>💭</span> <span>${innerThought}</span></div>` : ''}
+            </div>
+        `;
+    }
 
     if (isUser) {
         return `
             <div style="display: flex; justify-content: flex-end; margin-bottom: 10px;">
-                <div style="max-width: 65%;">
-                    <div style="background: linear-gradient(135deg, #fdcb6e, #f39c12); color: white; padding: 8px 14px; border-radius: 14px 14px 4px 14px; word-break: break-word; font-size: 0.9rem;">
-                        ${message.content}
+                <div style="max-width: 75%; display: flex; gap: 8px; flex-direction: row-reverse;">
+                    <div style="width: 36px; height: 36px; border-radius: 4px; background: linear-gradient(135deg, #fdcb6e, #f39c12); display: flex; align-items: center; justify-content: center; flex-shrink: 0; color: white; font-size: 0.9rem;">👤</div>
+                    <div style="flex: 1; text-align: right;">
+                        <div style="font-weight: 600; font-size: 0.85rem; color: #2d3436; margin-bottom: 4px; text-align: right;">你</div>
+                        <div style="background: linear-gradient(135deg, #fdcb6e, #f39c12); color: white; padding: 10px 14px; border-radius: 14px 4px 14px 14px; word-break: break-word; font-size: 0.9rem; display: inline-block;">
+                            ${message.content}
+                        </div>
+                        <div style="font-size: 0.6rem; color: #bbb; text-align: right; margin-top: 2px;">${time}</div>
                     </div>
-                    <div style="font-size: 0.6rem; color: #bbb; text-align: right; margin-top: 2px;">${time}</div>
                 </div>
             </div>
         `;
     } else {
+        let timeDisplay = '';
+        let locationDisplay = '';
+        
+        if (message.timeLocation) {
+            const timeLocMatch = message.timeLocation.match(/(.+?)\|位置:(.+)/);
+            if (timeLocMatch) {
+                timeDisplay = timeLocMatch[1].trim();
+                locationDisplay = timeLocMatch[2].trim();
+            } else {
+                timeDisplay = message.timeLocation;
+            }
+        } else if (timeLocationInfo) {
+            const timeLocMatch = timeLocationInfo.match(/(.+?)\|位置:(.+)/);
+            if (timeLocMatch) {
+                timeDisplay = timeLocMatch[1].trim();
+                locationDisplay = timeLocMatch[2].trim();
+            } else {
+                timeDisplay = timeLocationInfo;
+            }
+        }
+        
         return `
-            <div style="display: flex; justify-content: flex-start; margin-bottom: 10px;">
-                <div style="max-width: 65%;">
-                    <div style="display: flex; align-items: flex-start; gap: 8px;">
-                        <div style="width: 28px; height: 28px; border-radius: 50%; background: linear-gradient(135deg, #a29bfe, #6c5ce7); display: flex; align-items: center; justify-content: center; flex-shrink: 0; color: white; font-size: 0.8rem;">🤖</div>
-                        <div>
-                            <div style="font-weight: 500; font-size: 0.75rem; color: #666; margin-bottom: 4px;">${messageCharName}</div>
-                            <div style="background: white; padding: 10px 14px; border-radius: 14px 14px 14px 4px; word-break: break-word; box-shadow: 0 1px 2px rgba(0,0,0,0.08); border: 1px solid #e9ecef; font-size: 0.9rem;">
-                                ${message.content}
-                            </div>
-                            <div style="font-size: 0.6rem; color: #bbb; margin-top: 2px;">${time}</div>
+            <div style="display: flex; justify-content: flex-start; margin-bottom: 12px;">
+                <div style="max-width: 75%; display: flex; gap: 10px;">
+                    <div style="width: 40px; height: 40px; border-radius: 6px; background: linear-gradient(135deg, #a29bfe, #6c5ce7); display: flex; align-items: center; justify-content: center; flex-shrink: 0; color: white; font-size: 1rem;">🤖</div>
+                    <div style="flex: 1;">
+                        <div style="font-weight: 600; font-size: 0.9rem; color: #2d3436; margin-bottom: 6px;">${messageCharName}</div>
+                        <div style="background: white; padding: 12px 16px; border-radius: 12px; word-break: break-word; box-shadow: 0 2px 4px rgba(0,0,0,0.1); border: 1px solid #e9ecef; font-size: 0.9rem; margin-bottom: 6px;">
+                            ${timeDisplay || locationDisplay ? `<div style="font-size: 0.75rem; color: #636e72; margin-bottom: 6px; padding-bottom: 6px; border-bottom: 1px solid #e9ecef;">⏰ ${timeDisplay}${locationDisplay ? ' | 📍 ' + locationDisplay : ''}</div>` : ''}
+                            ${message.content}
                         </div>
+                        ${characterStatus}
                     </div>
                 </div>
             </div>
@@ -548,12 +624,46 @@ ViewCallbacks.chat.sendMessage = async function() {
             aiCharacters = result.session.aiCharacters.map(id => characters.find(c => c.id === id)).filter(Boolean);
         }
 
-        const assistantMessageHtml = ViewCallbacks.chat._renderMessage(
-            result.session.messages[result.session.messages.length - 1],
-            aiCharacters,
-            result.session.playerCharId
-        );
-        chatMessages.insertAdjacentHTML('beforeend', assistantMessageHtml);
+        if (result.messages && result.messages.length > 0) {
+            for (const msg of result.messages) {
+                const assistantMsg = {
+                    role: 'assistant',
+                    content: msg.content,
+                    timestamp: Date.now(),
+                    characterName: msg.characterName,
+                    timeLocation: msg.timeLocation || '',
+                    relation: msg.relation || '',
+                    affection: msg.affection || 50,
+                    arousal: msg.arousal || 30,
+                    innerThought: msg.innerThought || ''
+                };
+                const assistantMessageHtml = ViewCallbacks.chat._renderMessage(
+                    assistantMsg,
+                    aiCharacters,
+                    result.session.playerCharId
+                );
+                chatMessages.insertAdjacentHTML('beforeend', assistantMessageHtml);
+            }
+        } else {
+            const latestMsg = result.session.messages[result.session.messages.length - 1];
+            const assistantMsg = {
+                role: 'assistant',
+                content: latestMsg.content,
+                timestamp: latestMsg.timestamp,
+                characterName: latestMsg.characterName,
+                timeLocation: latestMsg.timeLocation || '',
+                relation: latestMsg.relation || '',
+                affection: latestMsg.affection || 50,
+                arousal: latestMsg.arousal || 30,
+                innerThought: latestMsg.innerThought || ''
+            };
+            const assistantMessageHtml = ViewCallbacks.chat._renderMessage(
+                assistantMsg,
+                aiCharacters,
+                result.session.playerCharId
+            );
+            chatMessages.insertAdjacentHTML('beforeend', assistantMessageHtml);
+        }
         chatMessages.scrollTop = chatMessages.scrollHeight;
 
     } catch (e) {
@@ -579,6 +689,44 @@ ViewCallbacks.chat.deleteCurrentSession = function() {
         plugin.deleteSession(world.id, currentSession.id);
         showPage('chat');
     }
+};
+
+ViewCallbacks.chat.endChat = function() {
+    const world = Data.getCurrentWorld();
+    if (!world) return;
+
+    if (!confirm('确定要结束当前聊天吗？')) return;
+
+    const plugin = window.ChatPlugin;
+    const currentSession = plugin.getCurrentSession(world.id);
+
+    if (currentSession && currentSession.messages) {
+        const messages = currentSession.messages;
+        
+        for (let i = messages.length - 1; i >= 0; i--) {
+            const msg = messages[i];
+            if (msg.role === 'assistant' && msg.characterName) {
+                const characters = Data.getCharacters(world.id);
+                const character = characters.find(c => c.name === msg.characterName);
+                
+                if (character) {
+                    if (msg.affection !== undefined) {
+                        character.stats = character.stats || {};
+                        character.stats.affection = msg.affection;
+                        character.stats.intimacy = msg.affection;
+                    }
+                    if (msg.arousal !== undefined) {
+                        character.stats = character.stats || {};
+                        character.stats.arousal = msg.arousal;
+                        character.stats.sexArousal = msg.arousal;
+                    }
+                    Data.updateCharacter(world.id, character.id, { stats: character.stats });
+                }
+            }
+        }
+    }
+
+    showPage('chat');
 };
 
 ViewCallbacks.chat.exportCurrentSession = function() {

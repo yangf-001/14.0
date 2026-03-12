@@ -34,6 +34,46 @@ class AI {
         localStorage.setItem('ai_config', JSON.stringify(this.config));
     }
 
+    async testConnection() {
+        if (!this.config.apiKey) {
+            return { success: false, error: '请先配置 API Key' };
+        }
+
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 10000);
+
+        try {
+            const response = await fetch(this.getEndpoint(), {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': 'Bearer ' + this.config.apiKey
+                },
+                body: JSON.stringify({
+                    model: this.config.model || 'deepseek-chat',
+                    messages: [{ role: 'user', content: 'Hi' }],
+                    max_tokens: 10
+                }),
+                signal: controller.signal
+            });
+
+            clearTimeout(timeoutId);
+
+            if (response.ok) {
+                return { success: true, message: '连接成功！API 配置正确。' };
+            } else {
+                const error = await response.text();
+                return { success: false, error: `API 错误 (${response.status}): ${error.substring(0, 100)}` };
+            }
+        } catch (err) {
+            clearTimeout(timeoutId);
+            if (err.name === 'AbortError') {
+                return { success: false, error: '请求超时，请检查网络连接' };
+            }
+            return { success: false, error: err.message };
+        }
+    }
+
     getEndpoint() {
         let endpoint = this.config.endpoint;
         if (!endpoint) {

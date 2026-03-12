@@ -1,6 +1,7 @@
 PluginSystem.register('character-editor', {
     description: '角色详细编辑插件',
     features: ['角色详细编辑', '属性管理', '色色设定', '预设人物库'],
+    _storageKey: 'character_editor_presets',
     
     init() {
         console.log('Character editor plugin loaded');
@@ -8,13 +9,51 @@ PluginSystem.register('character-editor', {
 });
 
 const PresetCharacterLibrary = {
-    basePath: 'js/plugins/character-editor/世界观/',
+    basePath: './js/plugins/character-editor/世界观/',
     worlds: [],
     characters: {},
     aiSettings: {},
+    storyStarts: {},
+    _cacheData: null,
     
     init() {
         this.createModal();
+        this._loadFromStorage();
+    },
+    
+    _loadFromStorage() {
+        try {
+            const stored = localStorage.getItem('character_editor_presets');
+            if (stored) {
+                const data = JSON.parse(stored);
+                const now = Date.now();
+                if (data.timestamp && (now - data.timestamp < 7 * 24 * 60 * 60 * 1000)) {
+                    this.worlds = data.worlds || [];
+                    this.characters = data.characters || {};
+                    this.aiSettings = data.aiSettings || {};
+                    this.storyStarts = data.storyStarts || {};
+                    console.log('[角色编辑器] 从缓存加载了预设库');
+                    return true;
+                }
+            }
+        } catch (e) {
+            console.warn('[角色编辑器] 读取缓存失败:', e);
+        }
+        return false;
+    },
+    
+    _saveToStorage() {
+        try {
+            localStorage.setItem('character_editor_presets', JSON.stringify({
+                timestamp: Date.now(),
+                worlds: this.worlds,
+                characters: this.characters,
+                aiSettings: this.aiSettings,
+                storyStarts: this.storyStarts
+            }));
+        } catch (e) {
+            console.warn('[角色编辑器] 保存缓存失败:', e);
+        }
     },
     
     createModal() {
@@ -69,6 +108,7 @@ const PresetCharacterLibrary = {
             }
             
             console.log('Preset library scanned:', this.worlds.length, 'worlds');
+            this._saveToStorage();
         } catch (e) {
             console.error('Failed to scan preset library:', e);
             alert('加载预设库失败，请确保通过服务器访问（而非 file://）\n错误: ' + e.message);
@@ -84,7 +124,7 @@ const PresetCharacterLibrary = {
             return baseDir + '/js/plugins/character-editor/世界观/';
         }
         
-        return 'js/plugins/character-editor/世界观/';
+        return './js/plugins/character-editor/世界观/';
     },
     
     getWorldPath(worldName) {
@@ -101,38 +141,156 @@ const PresetCharacterLibrary = {
             
             this.characters[worldName] = [];
             this.aiSettings[worldName] = null;
+            this.storyStarts[worldName] = [];
+            
+            const links = doc.querySelectorAll('a');
+            const subFolders = {};
+            
+            links.forEach(link => {
+                const href = link.getAttribute('href');
+                if (href) {
+                    if (href.endsWith('/') && href !== '../') {
+                        let folderName = href.replace(/\/$/, '');
+                        try { folderName = decodeURIComponent(folderName); } catch (e) {}
+                        subFolders[folderName] = href;
+                    } else if (href.endsWith('.json')) {
+                        let fileName = href.replace('.json', '');
+                        try { fileName = decodeURIComponent(fileName); } catch (e) {}
+                        if (fileName.includes('提示词') || fileName.includes('settings') || fileName.includes('setting')) {
+                            this.aiSettings[worldName] = {
+                                name: fileName,
+                                path: worldPath + href
+                            };
+                        } else {
+                            this.characters[worldName].push({
+                                name: fileName,
+                                path: worldPath + href
+                            });
+                        }
+                    }
+                }
+            });
+            
+            if (subFolders['剧情节点']) {
+                await this.loadStoryStartsFromFolder(worldName, worldPath + subFolders['剧情节点']);
+            }
+            
+            if (subFolders['角色']) {
+                this.characters[worldName] = [];
+                await this.loadCharactersFromFolder(worldName, worldPath + subFolders['角色']);
+            }
+            
+            if (subFolders['AI配置']) {
+                await this.loadAISettingsFromFolder(worldName, worldPath + subFolders['AI配置']);
+            }
+            
+        } catch (e) {
+            console.warn('Failed to load characters for', worldName, e);
+        }
+    },
+    
+    async loadStoryStartsFromFolder(worldName, folderPath) {
+        try {
+            const response = await fetch(folderPath);
+            const html = await response.text();
+            const parser = new DOMParser();
+            const doc = parser.parseFromString(html, 'text/html');
             
             const links = doc.querySelectorAll('a');
             links.forEach(link => {
                 const href = link.getAttribute('href');
                 if (href && href.endsWith('.json')) {
                     let fileName = href.replace('.json', '');
-                    try {
-                        fileName = decodeURIComponent(fileName);
-                    } catch (e) {}
-                    if (fileName.includes('提示词') || fileName.includes('settings') || fileName.includes('setting')) {
-                        this.aiSettings[worldName] = {
-                            name: fileName,
-                            path: worldPath + href
-                        };
-                    } else {
-                        this.characters[worldName].push({
-                            name: fileName,
-                            path: worldPath + href
-                        });
-                    }
+                    try { fileName = decodeURIComponent(fileName); } catch (e) {}
+                    this.storyStarts[worldName].push({
+                        name: fileName,
+                        path: folderPath + href
+                    });
                 }
             });
         } catch (e) {
-            console.warn('Failed to load characters for', worldName, e);
+            console.warn('Failed to load story starts from folder:', folderPath, e);
+        }
+    },
+    
+    async loadCharactersFromFolder(worldName, folderPath) {
+        try {
+            const response = await fetch(folderPath);
+            const html = await response.text();
+            const parser = new DOMParser();
+            const doc = parser.parseFromString(html, 'text/html');
+            
+            const links = doc.querySelectorAll('a');
+            links.forEach(link => {
+                const href = link.getAttribute('href');
+                if (href && href.endsWith('.json')) {
+                    let fileName = href.replace('.json', '');
+                    try { fileName = decodeURIComponent(fileName); } catch (e) {}
+                    this.characters[worldName].push({
+                        name: fileName,
+                        path: folderPath + href
+                    });
+                }
+            });
+        } catch (e) {
+            console.warn('Failed to load characters from folder:', folderPath, e);
+        }
+    },
+    
+    async loadAISettingsFromFolder(worldName, folderPath) {
+        try {
+            const response = await fetch(folderPath);
+            const html = await response.text();
+            const parser = new DOMParser();
+            const doc = parser.parseFromString(html, 'text/html');
+            
+            const links = doc.querySelectorAll('a');
+            let firstSetting = null;
+            
+            links.forEach(link => {
+                const href = link.getAttribute('href');
+                if (href && href.endsWith('.json')) {
+                    let fileName = href.replace('.json', '');
+                    try { fileName = decodeURIComponent(fileName); } catch (e) {}
+                    if (!firstSetting) {
+                        firstSetting = {
+                            name: fileName,
+                            path: folderPath + href
+                        };
+                    }
+                }
+            });
+            
+            if (firstSetting) {
+                this.aiSettings[worldName] = firstSetting;
+            }
+        } catch (e) {
+            console.warn('Failed to load AI settings from folder:', folderPath, e);
         }
     },
     
     async loadCharacterFile(worldName, charFileName) {
         try {
+            const charList = this.characters[worldName];
+            const charInfo = charList?.find(c => c.name === charFileName);
+            
+            if (charInfo && charInfo.path) {
+                const response = await fetch(charInfo.path);
+                if (!response.ok) {
+                    console.warn('Character file not found:', charInfo.path, 'Status:', response.status);
+                    return null;
+                }
+                const data = await response.json();
+                return data;
+            }
+            
             const worldPath = this.getWorldPath(worldName);
-            const charPath = worldPath + encodeURIComponent(charFileName) + '.json';
+            const charPath = worldPath + '角色/' + encodeURIComponent(charFileName) + '.json';
             const response = await fetch(charPath);
+            if (!response.ok) {
+                console.warn('Character file not found:', charPath, 'Status:', response.status);
+                return null;
+            }
             const data = await response.json();
             return data;
         } catch (e) {
@@ -177,8 +335,9 @@ const PresetCharacterLibrary = {
         for (const worldName of this.worlds) {
             const charCount = this.characters[worldName]?.length || 0;
             const hasAI = this.aiSettings[worldName] ? ' 📝' : '';
+            const hasStoryStart = this.storyStarts[worldName]?.length > 0 ? ' 🎬' : '';
             const safeWorldName = worldName.replace(/'/g, "\\'");
-            html += `<button type="button" class="btn btn-secondary" onclick="PresetCharacterLibrary.importWorld('${safeWorldName}')" style="font-size:0.85rem;padding:8px 12px;margin-bottom:4px;">${worldName} (${charCount}个角色)${hasAI}</button>`;
+            html += `<button type="button" class="btn btn-secondary" onclick="PresetCharacterLibrary.selectStoryStart('${safeWorldName}')" style="font-size:0.85rem;padding:8px 12px;margin-bottom:4px;">${worldName} (${charCount}个角色)${hasAI}${hasStoryStart}</button>`;
         }
         
         html += '</div></div>';
@@ -188,8 +347,36 @@ const PresetCharacterLibrary = {
         document.getElementById('presetModal').classList.add('active');
     },
     
-    async importWorld(worldName) {
-        if (!confirm(`确定要导入世界观 "${worldName}" 吗？\n这将创建新世界并导入 ${this.characters[worldName]?.length || 0} 个角色和AI设置。`)) {
+    async selectStoryStart(worldName) {
+        const storyStarts = this.storyStarts[worldName] || [];
+        
+        if (storyStarts.length === 0) {
+            await this.importWorld(worldName, null);
+            return;
+        }
+        
+        let html = '<div style="max-height:400px;overflow-y:auto;">';
+        html += `<h4 style="margin:12px 0 8px;font-size:0.9rem;color:var(--accent);">选择剧情开始点</h4>`;
+        html += '<p style="font-size:0.8rem;color:var(--text-dim);margin-bottom:12px;">选择故事从什么剧情开始</p>';
+        html += '<div style="display:flex;flex-direction:column;gap:8px;">';
+        
+        html += `<button type="button" class="btn btn-secondary" onclick="PresetCharacterLibrary.importWorld('${worldName.replace(/'/g, "\\'")}', null)" style="font-size:0.85rem;padding:10px;">从头开始（默认）</button>`;
+        
+        for (const start of storyStarts) {
+            const startName = start.name.replace(/剧情开始|开局|start/gi, '').trim() || start.name;
+            html += `<button type="button" class="btn btn-primary" onclick="PresetCharacterLibrary.importWorld('${worldName.replace(/'/g, "\\'")}', '${start.name.replace(/'/g, "\\'")}')" style="font-size:0.85rem;padding:10px;">${startName}</button>`;
+        }
+        
+        html += '</div></div>';
+        
+        document.getElementById('presetModalTitle').textContent = '选择剧情开始点 - ' + worldName;
+        document.getElementById('presetModalBody').innerHTML = html;
+    },
+    
+    async importWorld(worldName, storyStartName) {
+        const charCount = this.characters[worldName]?.length || 0;
+        const startInfo = storyStartName ? `，剧情开始点: ${storyStartName}` : '';
+        if (!confirm(`确定要导入世界观 "${worldName}" 吗？\n这将创建新世界并导入 ${charCount} 个角色和AI设置${startInfo}。`)) {
             return;
         }
         
@@ -202,6 +389,11 @@ const PresetCharacterLibrary = {
         
         Data.setCurrentWorld(newWorld.id);
         
+        let storyStartData = null;
+        if (storyStartName) {
+            storyStartData = await this.loadStoryStart(worldName, storyStartName);
+        }
+        
         const chars = this.characters[worldName] || [];
         let successCount = 0;
         let errorCount = 0;
@@ -210,7 +402,7 @@ const PresetCharacterLibrary = {
             const charData = await this.loadCharacterFile(worldName, char.name);
             if (charData) {
                 try {
-                    this.createCharacterFromData(charData, newWorld.id);
+                    this.createCharacterFromData(charData, newWorld.id, storyStartData);
                     successCount++;
                 } catch (e) {
                     console.error('创建角色失败:', char.name, e);
@@ -224,11 +416,39 @@ const PresetCharacterLibrary = {
         if (this.aiSettings[worldName]) {
             const aiData = await this.loadAISettings(worldName);
             if (aiData && aiData.aiSettings) {
-                this.applyAISettings(aiData.aiSettings, newWorld.id);
+                this.applyAISettings(aiData.aiSettings, newWorld.id, storyStartData);
             }
         }
         
-        alert(`导入完成！\n世界: ${worldName}\n成功: ${successCount} 个角色\n失败: ${errorCount} 个角色`);
+        const allStoryStarts = this.storyStarts[worldName] || [];
+        const storyStartsData = [];
+        for (const start of allStoryStarts) {
+            try {
+                const response = await fetch(start.path);
+                const data = await response.json();
+                storyStartsData.push({
+                    name: start.name,
+                    data: data,
+                    unlocked: false
+                });
+            } catch (e) {
+                console.warn('Failed to load story start data:', start.name, e);
+            }
+        }
+        
+        if (storyStartsData.length > 0) {
+            storyStartsData[0].unlocked = true;
+        }
+        
+        const worldUpdates = {
+            storyStart: storyStartData,
+            storyNodes: storyStartsData,
+            currentStoryNode: storyStartData ? storyStartData.name : (storyStartsData[0]?.name || null)
+        };
+        
+        Data.updateWorld(newWorld.id, worldUpdates);
+        
+        alert(`导入完成！\n世界: ${worldName}\n剧情开始点: ${storyStartName || '默认（从头开始）'}\n成功: ${successCount} 个角色\n失败: ${errorCount} 个角色`);
         
         if (window.renderWorldsPage) {
             renderWorldsPage();
@@ -238,6 +458,25 @@ const PresetCharacterLibrary = {
         
         if (window.navigateTo) {
             navigateTo('characters');
+        }
+    },
+    
+    async loadStoryStart(worldName, storyStartName) {
+        const storyStarts = this.storyStarts[worldName] || [];
+        const targetStart = storyStarts.find(s => s.name === storyStartName);
+        
+        if (!targetStart) {
+            console.warn('Story start not found:', storyStartName);
+            return null;
+        }
+        
+        try {
+            const response = await fetch(targetStart.path);
+            const data = await response.json();
+            return data;
+        } catch (e) {
+            console.warn('Failed to load story start:', storyStartName, e);
+            return null;
         }
     },
     
@@ -278,16 +517,36 @@ const PresetCharacterLibrary = {
         });
     },
     
-    applyAISettings(aiSettings, worldId) {
+    applyAISettings(aiSettings, worldId, storyStartData) {
         console.log('Applying AI settings:', aiSettings);
         
         const targetWorldId = worldId || Data.getCurrentWorld()?.id;
         
         if (targetWorldId) {
-            Data.updateWorld(targetWorldId, {
-                aiSettings: aiSettings
-            });
-            console.log('AI settings saved to world:', targetWorldId);
+            const updates = { aiSettings: aiSettings };
+            
+            if (storyStartData && storyStartData.customStartScene) {
+                if (!aiSettings.storyStart) {
+                    aiSettings.storyStart = {};
+                }
+                aiSettings.storyStart.customStartScene = storyStartData.customStartScene;
+                aiSettings.storyStart.startStage = storyStartData.startStage || '相遇';
+            }
+            
+            Data.updateWorld(targetWorldId, updates);
+            
+            const storyConfigPlugin = window.StoryConfigPlugin || window.PluginSystem?.get?.('story-config');
+            if (storyConfigPlugin) {
+                storyConfigPlugin.saveWorldAISettings(targetWorldId, aiSettings);
+            } else {
+                try {
+                    localStorage.setItem(`story_ai_settings_${targetWorldId}`, JSON.stringify(aiSettings));
+                } catch (e) {
+                    console.warn('Failed to save AI settings to localStorage:', e);
+                }
+            }
+            
+            console.log('AI settings saved to world and localStorage:', targetWorldId);
         }
     }
 };

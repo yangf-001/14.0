@@ -21,8 +21,18 @@ const Story = {
         if (characters.length === 0) throw new Error('请先添加角色');
         
         const existingStory = Story.load(world.id);
-        if (existingStory && existingStory.status === 'ongoing') {
+        const userSelectedNode = window._userSelectedStoryNode;
+        if (existingStory && existingStory.status === 'ongoing' && !userSelectedNode) {
             throw new Error('当前世界已有进行中的故事，请先结束或继续当前故事');
+        }
+        
+        const storyNodeName = userSelectedNode || window._currentStoryNode || world.currentStoryNode;
+        let currentStoryNodeData = null;
+        if (storyNodeName && world.storyNodes) {
+            const node = world.storyNodes.find(n => n.name === storyNodeName);
+            if (node && node.data) {
+                currentStoryNodeData = node.data;
+            }
         }
         
         if (window.TimePlugin) {
@@ -102,7 +112,6 @@ const Story = {
         
         if (isResume) {
             const charNames = selectedChars.map(c => c.name).join('、');
-<<<<<<< HEAD
             
             const aiSetting = plugin.getAISetting('storyContinue', world.id);
             if (aiSetting && aiSetting.enabled) {
@@ -116,16 +125,8 @@ const Story = {
                     template += '\n\n' + aiSetting.customPrompt;
                 }
                 prompt = template;
-            }
-        } else {
-            prompt = plugin.getStoryGenerator().buildStartPrompt(selectedChars, config.scene, settings, playerCharInfo, config.charRatio);
-        }
-        
-        // 触发故事生成前事件
-        PluginSystem.triggerPluginEvent('beforeStoryGenerate', {
-            prompt: prompt
-=======
-            prompt = `根据以下历史剧情，继续生成新的故事：
+            } else {
+                prompt = `根据以下历史剧情，继续生成新的故事：
 
 【出场角色】${charNames}
 【故事背景】${world.name}
@@ -137,17 +138,32 @@ ${historyContext}
 2. 根据角色设定发展故事
 3. 适当埋下后续剧情的伏笔
 4. 如果故事中有明确的时间推进（如几小时后、几天后等），请在故事结束后另起一行输出【时间变化：X天】或【时间变化：X月】。如果时间没有明显变化，输出【时间变化：0天】`;
+            }
         } else {
             prompt = plugin.getStoryGenerator().buildStartPrompt(selectedChars, config.scene, settings, playerCharInfo, config.charRatio);
+            
+            if (currentStoryNodeData && currentStoryNodeData.customStartScene) {
+                const customScene = currentStoryNodeData.customStartScene;
+                const stageInfo = currentStoryNodeData.startStage ? `\n【当前剧情阶段】${currentStoryNodeData.startStage}` : '';
+                prompt = prompt.replace(
+                    /【场景设定】.*$/m,
+                    `【场景设定】${customScene}${stageInfo}`
+                );
+            }
         }
+        
         const simpleStoryPlugin = PluginSystem.get('simple-story');
-        const simpleStoryMode = simpleStoryPlugin && simpleStoryPlugin.isSimpleStoryMode();
+        let simpleStoryMode = false;
+        if (simpleStoryPlugin && typeof simpleStoryPlugin.isSimpleStoryMode === 'function') {
+            simpleStoryMode = simpleStoryPlugin.isSimpleStoryMode();
+        } else if (window.getSimpleStoryMode) {
+            simpleStoryMode = window.getSimpleStoryMode();
+        }
         
         // 触发故事生成前事件
         PluginSystem.triggerPluginEvent('beforeStoryGenerate', {
             prompt: prompt,
             simpleStoryMode: simpleStoryMode
->>>>>>> 6d274afa3f732818cdcc2d1805c6e6452a248cad
         });
         
         const adultTriggeredStart = this._checkAndApplyAdultTagsToStart(world.id, prompt);
@@ -177,12 +193,8 @@ ${historyContext}
             
             // 触发故事生成后事件
             PluginSystem.triggerPluginEvent('afterStoryGenerate', {
-<<<<<<< HEAD
-                content: content
-=======
                 content: content,
                 simpleStoryMode: simpleStoryMode
->>>>>>> 6d274afa3f732818cdcc2d1805c6e6452a248cad
             });
             
             const plugin = this._getPlugin();
@@ -205,6 +217,7 @@ ${historyContext}
                 id: Data._genId(),
                 worldId: world.id,
                 startTime: Date.now(),
+                storyNode: storyNodeName,
                 characters: selectedChars.map(c => ({
                     id: c.id,
                     name: c.name,
@@ -445,20 +458,18 @@ ${historyContext}
             }
         }
         
-<<<<<<< HEAD
-        // 触发故事生成前事件
-        PluginSystem.triggerPluginEvent('beforeStoryGenerate', {
-            prompt: prompt
-=======
-        // 检查是否启用小故事模式
         const simpleStoryPlugin = PluginSystem.get('simple-story');
-        const simpleStoryMode = simpleStoryPlugin && simpleStoryPlugin.isSimpleStoryMode();
+        let simpleStoryMode = false;
+        if (simpleStoryPlugin && typeof simpleStoryPlugin.isSimpleStoryMode === 'function') {
+            simpleStoryMode = simpleStoryPlugin.isSimpleStoryMode();
+        } else if (window.getSimpleStoryMode) {
+            simpleStoryMode = window.getSimpleStoryMode();
+        }
         
         // 触发故事生成前事件
         PluginSystem.triggerPluginEvent('beforeStoryGenerate', {
             prompt: prompt,
             simpleStoryMode: simpleStoryMode
->>>>>>> 6d274afa3f732818cdcc2d1805c6e6452a248cad
         });
         
         const adultTriggered = this._checkAndApplyAdultTags(world.id, prompt, systemPrompt);
@@ -484,7 +495,6 @@ ${historyContext}
         this._showLoading(isItemUse ? '正在生成物品使用剧情...' : '正在生成故事...');
         
         try {
-<<<<<<< HEAD
             let temperature = 0.7;
             if (isItemUse) {
                 const aiSetting = plugin.getAISetting('itemStory', world.id);
@@ -500,15 +510,8 @@ ${historyContext}
             
             // 触发故事生成后事件
             PluginSystem.triggerPluginEvent('afterStoryGenerate', {
-                content: content
-=======
-            let content = await ai.call(prompt, { system: systemPrompt });
-            
-            // 触发故事生成后事件
-            PluginSystem.triggerPluginEvent('afterStoryGenerate', {
                 content: content,
                 simpleStoryMode: simpleStoryMode
->>>>>>> 6d274afa3f732818cdcc2d1805c6e6452a248cad
             });
             
             const timePlugin = window.WorldTimePlugin;
@@ -577,6 +580,11 @@ ${historyContext}
             
             this._increaseExcitementAfterStory(world.id, cleanContent);
             
+            const sceneCount = this.current.scenes.length;
+            if (sceneCount > 0 && sceneCount % 5 === 0) {
+                window.unlockNextStoryNode && window.unlockNextStoryNode();
+            }
+            
             Data.saveStory(world.id, this.current);
             plugin.updateArchiveInPlace(world.id, this.current);
             plugin.checkArchiveForSummaries(plugin.getArchives(world.id), world.id);
@@ -592,7 +600,6 @@ ${historyContext}
         const adultPlugin = window.AdultTagsPlugin;
         if (!adultPlugin || !adultPlugin.isEnabled()) return;
         
-<<<<<<< HEAD
         const characters = Data.getCharacters(worldId);
         if (!characters || characters.length === 0) return;
         
@@ -600,12 +607,8 @@ ${historyContext}
         if (!playerChar || !playerChar.stats) return;
         
         const arousal = playerChar.stats.arousal || 0;
-        
-        console.log(`[兴奋值] 当前兴奋值: ${arousal}（由AI根据故事内容分析更新）`);
-=======
         const currentExcitement = adultPlugin.getExcitement(worldId);
-        console.log(`[兴奋值] 当前兴奋值: ${currentExcitement}`);
->>>>>>> 6d274afa3f732818cdcc2d1805c6e6452a248cad
+        console.log(`[兴奋值] 当前兴奋值: ${arousal}（由AI根据故事内容分析更新），插件兴奋值: ${currentExcitement}`);
     },
 
     _resetExcitementOnNewStory(worldId) {
@@ -619,16 +622,11 @@ ${historyContext}
         if (characters && characters.length > 0) {
             const playerChar = characters.find(c => c.isPlayer) || characters[0];
             if (playerChar && playerChar.stats) {
-<<<<<<< HEAD
                 playerChar.stats.arousal = 0;
-                Data.updateCharacter(worldId, playerChar.id, playerChar);
-                console.log(`[兴奋值] 新故事开始，角色 ${playerChar.name} 的 arousal 已重置为0`);
-=======
                 playerChar.stats.sexArousal = 0;
                 playerChar.stats.sexExcitement = 0;
                 Data.updateCharacter(worldId, playerChar.id, playerChar);
-                console.log(`[兴奋值] 新故事开始，角色 ${playerChar.name} 的 sexArousal 和 sexExcitement 已重置为0`);
->>>>>>> 6d274afa3f732818cdcc2d1805c6e6452a248cad
+                console.log(`[兴奋值] 新故事开始，角色 ${playerChar.name} 的 arousal/sexArousal/sexExcitement 已重置为0`);
             }
         }
         

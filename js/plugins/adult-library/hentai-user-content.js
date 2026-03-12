@@ -17,7 +17,7 @@ const HentaiUserContent = {
                 }
             }
             if (!this.basePath) {
-                this.basePath = 'js/plugins/adult-library/user-content/';
+                this.basePath = './js/plugins/adult-library/user-content/';
             }
         }
         

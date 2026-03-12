@@ -1,0 +1,43 @@
+{
+  "name": "【填入角色名称】",
+  "role": "【填入角色身份】",
+  "gender": "【填入性别】",
+  "age": 18,
+  "profile": {
+    "race": "【填入种族】",
+    "occupation": "【填入职业】",
+    "height": "【填入身高】",
+    "appearance": "【填入外貌描述】",
+    "personality": "【填入性格特点】",
+    "hobby": "【填入兴趣爱好】",
+    "favorite": "【填入喜欢的事物】",
+    "dislike": "【填入讨厌的事物】",
+    "backstory": "【填入背景故事】",
+    "catchphrase": "【填入口头禅】"
+  },
+  "adultProfile": {
+    "sexuality": "【填入性取向】",
+    "sensitiveParts": "【填入敏感部位】",
+    "fetish": "【填入性癖】",
+    "fantasy": "【填入幻想】",
+    "limits": "【填入底线/限制】",
+    "fantasies": "【填入渴望】"
+  },
+  "stats": {
+    "health": "【填入生命值】",
+    "charm": "【填入魅力值】",
+    "intelligence": "【填入智力值】",
+    "strength": "【填入力量值】",
+    "agility": "【填入敏捷值】",
+    "stamina": "【填入体力值】",
+    "arousal": "【填入兴奋值】",
+    "experience": "【填入经验值】",
+    "sexSkill": "【填入技巧值】",
+    "sexSensitivity": "【填入敏感值】",
+    "intimacy": "【填入亲密值】",
+    "willingness": "【填入意愿值】",
+    "corruption": "【填入堕落值】",
+    "shame": "【填入羞耻值】"
+  },
+  "relationship": "【填入角色关系描述】"
+}

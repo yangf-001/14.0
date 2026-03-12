@@ -11,18 +11,19 @@ View.register('story-config.main', function() {
 
     return `
         <div style="max-width: 900px; margin: 0 auto;">
-            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; flex-wrap: wrap; gap: 12px;">
                 <h2>🤖 AI设置</h2>
-                <div style="display: flex; gap: 8px;">
+                <div style="display: flex; gap: 8px; flex-wrap: wrap;">
                     <button class="btn btn-secondary" onclick="ViewCallbacks.storyConfig.exportPrompts()">📤 导出</button>
                     <button class="btn btn-secondary" onclick="document.getElementById('importPromptsInput').click()">📥 导入</button>
+                    <button class="btn btn-secondary" onclick="ViewCallbacks.storyConfig.testApiConfig()">🔌 测试API</button>
                     <input type="file" id="importPromptsInput" accept=".json,.txt" style="display: none;" onchange="ViewCallbacks.storyConfig.importFromFile(event)">
                 </div>
             </div>
 
             ${world ? `
                 <div class="card" style="margin-bottom: 16px; padding: 12px; background: var(--accent); color: white;">
-                    <div style="display: flex; justify-content: space-between; align-items: center;">
+                    <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 8px;">
                         <span>当前世界：${world.name}</span>
                         <label style="display: flex; align-items: center; gap: 8px; cursor: pointer;">
                             <input type="checkbox" id="useWorldConfig" ${localStorage.getItem(`story_ai_settings_${world.id}`) ? 'checked' : ''} onchange="ViewCallbacks.storyConfig.toggleWorldConfig('${world.id}', this.checked)">
@@ -32,9 +33,11 @@ View.register('story-config.main', function() {
                 </div>
             ` : '<div class="card" style="margin-bottom: 16px;">请先选择一个世界以使用世界级配置</div>'}
 
-            <div style="margin-bottom: 20px;">
-                <button class="btn btn-secondary" onclick="showPage('story-config-presets')" style="margin-right: 8px;">📋 预设模板</button>
-                <button class="btn" onclick="ViewCallbacks.storyConfig.savePrompts()" style="margin-right: 8px;">💾 保存</button>
+            <div id="apiTestResult" class="api-test-result" style="display: none; margin-bottom: 16px;"></div>
+
+            <div style="margin-bottom: 20px; display: flex; flex-wrap: wrap; gap: 8px;">
+                <button class="btn btn-secondary" onclick="showPage('story-config-presets')">📋 预设模板</button>
+                <button class="btn" onclick="ViewCallbacks.storyConfig.savePrompts()">💾 保存</button>
                 <button class="btn btn-secondary" onclick="ViewCallbacks.storyConfig.resetToDefault()">🔄 恢复默认</button>
             </div>
 
@@ -346,7 +349,33 @@ ViewCallbacks.storyConfig._getDefaultAISettings = function() {
 1. 保持角色个性
 2. 用第一人称回复
 3. 适当加入动作描写（用括号包裹）
-4. 语气自然流畅`,
+4. 语气自然流畅
+5. 如果是多人对话，每个角色分别回复，每行以"角色名："开头
+6. 每次回复必须包含以下格式的状态信息：
+【时间地点】当前时间|位置:地点
+【状态】
+- 关系: 与你的关系
+- 好感度: 数值(0-100)
+- 兴奋值: 数值(0-100)，根据对话内容自然变化
+- 内心: 内心独白
+7. 输出格式示例：
+林诗雅
+【时间地点】05/15/23:星期五，05:50pm|位置:庄园主厅
+【状态】
+- 关系: 与哥哥同居的妹妹
+- 好感度: 85
+- 兴奋值: 45
+- 内心: 其实很享受早上叫哥哥起床的时光...
+哥哥，早上起床啦！再不起来我就用脚踩你被子了！
+
+紫罗兰
+【时间地点】05/15/23:星期五，05:50pm|位置:庄园客厅
+【状态】
+- 关系: 合租室友
+- 好感度: 60
+- 兴奋值: 30
+- 内心: 这家伙终于出来了...
+"别发愣了，过来坐吧。"`,
             customPrompt: ''
         }
     };
@@ -717,4 +746,35 @@ ViewCallbacks.storyConfig.importFromFile = function(event) {
     };
     reader.readAsText(file);
     event.target.value = '';
+};
+
+ViewCallbacks.storyConfig.testApiConfig = async function() {
+    const resultDiv = document.getElementById('apiTestResult');
+    if (!resultDiv) return;
+    
+    if (!ai.config.apiKey) {
+        resultDiv.className = 'api-test-result error';
+        resultDiv.textContent = '请先在设置页面配置 API Key';
+        resultDiv.style.display = 'block';
+        return;
+    }
+    
+    resultDiv.className = 'api-test-result';
+    resultDiv.textContent = '正在测试 API 连接...';
+    resultDiv.style.display = 'block';
+    
+    try {
+        const result = await ai.testConnection();
+        
+        if (result.success) {
+            resultDiv.className = 'api-test-result success';
+            resultDiv.textContent = '✅ ' + result.message;
+        } else {
+            resultDiv.className = 'api-test-result error';
+            resultDiv.textContent = '❌ ' + result.error;
+        }
+    } catch (err) {
+        resultDiv.className = 'api-test-result error';
+        resultDiv.textContent = '❌ 测试失败: ' + err.message;
+    }
 };

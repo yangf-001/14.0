@@ -946,7 +946,6 @@ PluginSystem.register('story-config', {
             updateStats: {
                 title: '更新角色属性',
                 enabled: true,
-<<<<<<< HEAD
                 template: `根据以下故事内容，分析角色在剧情中的数值属性变化。
 
 故事内容：
@@ -962,15 +961,22 @@ PluginSystem.register('story-config', {
 - strength (力量 0-200)
 - agility (敏捷 0-200)
 - stamina (体力 0-200)
+- energy (体力 0-200)
 
 【色色属性】
 - arousal (兴奋值 0-200)
+- sexArousal (欲望 0-200)
+- sexExcitement (兴奋 0-200)
 - experience (经验值 0-200)
+- sexExperience (经验 0-200)
 - sexSkill (技巧 0-200)
+- sexLibido (性欲 0-200)
 - sexSensitivity (敏感 0-200)
 
 【状态属性】
 - intimacy (亲密 0-200)
+- affection (好感 0-200)
+- trust (信任 0-200)
 - willingness (意愿 0-200)
 - corruption (堕落 0-200)
 - shame (羞耻 0-200)
@@ -983,28 +989,9 @@ PluginSystem.register('story-config', {
 }
 
 注意：
-1. 根据剧情合理设置变化值，一般单次变化在-10到+10之间
+1. 根据剧情合理设置变化值，一般单次变化在-20到+20之间
 2. 如果某个属性没有变化，不要在JSON中列出
 3. 如果所有属性都没变化，返回空对象 {}`,
-=======
-                template: `根据以下故事内容，分析角色在剧情中的数值属性变化。\n\n故事内容：\n[内容]\n\n角色：[角色列表]\n\n可用属性：\n- health (生命 0-200)\n- energy (体力 0-200)\n- charm (魅力 0-200)\n- intelligence (智力 0-200)\n- strength (力量 0-200)\n- agility (敏捷 0-200)
-- stamina (耐力 0-200)
-
-【色色属性】
-- sexArousal (欲望 0-200)
-- sexExcitement (兴奋 0-200)
-- sexExperience (经验 0-200)
-- sexSkill (技巧 0-200)
-- sexLibido (性欲 0-200)
-- sexSensitivity (敏感 0-200)
-
-【状态属性】
-- affection (好感 0-200)
-- trust (信任 0-200)
-- intimacy (亲密 0-200)
-- corruption (堕落 0-200)
-- shame (羞耻 0-200)\n\n请分析故事情节，判断每个角色的数值属性应该有什么变化。返回JSON格式：\n{\n  "角色名": {\n    "属性名": 变化值\n  }\n}\n\n注意：\n1. 根据剧情合理设置变化值，一般单次变化在-20到+20之间\n2. 如果某个属性没有变化，不要在JSON中列出\n3. 如果所有属性都没变化，返回空对象 {}`,
->>>>>>> 6d274afa3f732818cdcc2d1805c6e6452a248cad
                 temperature: 0.3,
                 customPrompt: ''
             },
@@ -1052,15 +1039,6 @@ PluginSystem.register('story-config', {
             level1Summary: {
                 title: '一级故事摘要（每个故事的完整总结）',
                 enabled: true,
-<<<<<<< HEAD
-                template: `请用约500字总结以下完整的故事内容，要求：
-1. 专注于总结剧情内容和故事情节
-2. 保留关键剧情、人物和结局
-3. 不要添加任何无关的内容或分析
-
-[完整故事内容]`,
-                maxTokens: 1000,
-=======
                 template: `请将以下故事内容**精简改写**成一个简短的小说章节。
 
 【改写要求】
@@ -1086,32 +1064,11 @@ PluginSystem.register('story-config', {
 
 一句话概括：`,
                 maxTokens: 100,
->>>>>>> 6d274afa3f732818cdcc2d1805c6e6452a248cad
-                customPrompt: ''
-            },
-            corePlot: {
-                title: '核心情节（一句话概括）',
-                enabled: true,
-<<<<<<< HEAD
-                template: `请用一句话概括以下故事的核心情节，要求简洁明了，最多50字：
-
-[故事内容]
-
-一句话概括：`,
-                maxTokens: 100,
                 customPrompt: ''
             },
             level2Summary: {
                 title: '二级故事摘要（每次总结10幕）',
                 enabled: true,
-                template: `请用约1000字总结以下10幕故事内容，要求：
-1. 专注于总结剧情内容和故事情节
-2. 保留关键剧情、人物和转折点
-3. 不要添加任何无关的内容或分析
-
-[所有场景内容]`,
-                maxTokens: 2000,
-=======
                 template: `请将以下多个小说章节**整合改写**成一个完整的故事线叙述。
 
 【改写要求】
@@ -1125,21 +1082,11 @@ PluginSystem.register('story-config', {
 
 请直接输出整合后的故事叙述：`,
                 maxTokens: 1500,
->>>>>>> 6d274afa3f732818cdcc2d1805c6e6452a248cad
                 customPrompt: ''
             },
             level3Summary: {
                 title: '三级综合摘要（每次总结10个二级）',
                 enabled: true,
-<<<<<<< HEAD
-                template: `请用约2000字总结以下10个二级故事摘要，要求：
-1. 专注于总结每个故事的剧情内容
-2. 保留每个故事的核心剧情和人物关系
-3. 不要添加任何无关的内容或分析
-
-[10个故事的摘要]`,
-                maxTokens: 3000,
-=======
                 template: `请将以下多个故事线**整合改写**成一个宏大的故事叙事。
 
 【改写要求】
@@ -1153,7 +1100,6 @@ PluginSystem.register('story-config', {
 
 请直接输出整合后的宏大故事叙事：`,
                 maxTokens: 2500,
->>>>>>> 6d274afa3f732818cdcc2d1805c6e6452a248cad
                 customPrompt: ''
             },
             adultContinue: {
@@ -1214,10 +1160,39 @@ PluginSystem.register('story-config', {
                 template: `【聊天继续】根据对话历史继续聊天。
 
 要求：
-1. 保持角色个性
+1. 保持角色个性，符合角色人设
 2. 用第一人称回复
-3. 适当加入动作描写（用括号包裹）
-4. 语气自然流畅`,
+3. 加入动作描写和外貌描写（用括号包裹）
+4. 语气自然流畅
+5. 如果是多人对话，每个角色分别回复，每行以"角色名："开头
+6. 每次回复必须包含以下格式的状态信息：
+【时间地点】当前时间|位置:具体地点及与主角的相对位置
+【状态】
+- 关系: 与你的关系
+- 好感度: 数值(0-100)
+- 兴奋值: 数值(0-100)，根据对话内容自然变化
+- 色色状态: 描述当前的色色状态（如：正常、害羞、兴奋、情欲高涨等）
+- 内心: 内心独白
+7. 输出格式示例：
+林诗雅
+【时间地点】05/15/23:星期五，05:50pm|位置:客厅沙发张伟身上
+【状态】
+- 关系: 与哥哥同居的妹妹
+- 好感度: 85
+- 兴奋值: 45
+- 色色状态: 害羞
+- 内心: 其实很享受早上叫哥哥起床的时光...
+哥哥，早上起床啦！再不起来我就用脚踩你被子了！（内心：哼，明明很期待见他醒来的样子）
+
+紫罗兰
+【时间地点】05/15/23:星期五，05:50pm|位置:客厅沙发张伟对面
+【状态】
+- 关系: 合租室友
+- 好感度: 60
+- 兴奋值: 30
+- 色色状态: 正常
+- 内心: 这家伙终于出来了...
+“别发愣了，过来坐吧。”`,
                 customPrompt: ''
             }
         };
@@ -1571,13 +1546,10 @@ ${choice ? `[用户选择了：${choice}]` : ''}
                 }
                 return text;
             }).join('\n\n---分隔线---\n\n');
-<<<<<<< HEAD
             
             if (!content || content.trim() === '') {
                 return '这是一个简短的故事。';
             }
-=======
->>>>>>> 6d274afa3f732818cdcc2d1805c6e6452a248cad
             
             let template = aiSetting.template || '';
             template = template.replace('[完整故事内容]', content);
@@ -1632,18 +1604,13 @@ template = template.replace('[故事内容]', content);
                 return text;
             }).join('\n\n---分隔线---\n\n');
             
-<<<<<<< HEAD
             if (!content || content.trim() === '') {
                 return this.getSimpleCorePlot(story);
             }
             
             let template = aiSetting.template || '';
             template = template.replace('[完整故事内容]', content);
-template = template.replace('[故事内容]', content);
-=======
-            let template = aiSetting.template || '';
             template = template.replace('[故事内容]', content);
->>>>>>> 6d274afa3f732818cdcc2d1805c6e6452a248cad
             
             const result = await ai.call(template, {
                 temperature: aiSetting.temperature || 0.3,

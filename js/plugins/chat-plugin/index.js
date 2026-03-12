@@ -25,7 +25,6 @@ PluginSystem.register('chat-plugin', {
 
     _initDefaultSettings() {
         const defaultSettings = {
-            systemPrompt: '你是一个虚拟角色。请根据角色设定与用户进行自然、流畅的对话。保持角色个性，用第一人称回应。可以适当加入一些动作描写来丰富对话。',
             temperature: 0.7,
             maxTokens: 500,
             includeHistory: true,
@@ -58,7 +57,6 @@ PluginSystem.register('chat-plugin', {
 
     _getDefaultSettings() {
         return {
-            systemPrompt: '你是一个虚拟角色。请根据角色设定与用户进行自然、流畅的对话。保持角色个性，用第一人称回应。可以适当加入一些动作描写来丰富对话。',
             temperature: 0.7,
             maxTokens: 500,
             includeHistory: true,
@@ -187,6 +185,9 @@ PluginSystem.register('chat-plugin', {
         const world = Data.getCurrentWorld();
         const worldId = world?.id;
         
+        const plugin = PluginSystem.get('story-config');
+        const aiSetting = plugin?.getAISetting('chatContinue', worldId);
+        
         const charList = Array.isArray(aiCharacters) ? aiCharacters : (aiCharacters ? [aiCharacters] : []);
         let charInfo = '';
         
@@ -240,7 +241,17 @@ PluginSystem.register('chat-plugin', {
             }).join('\n');
         }
 
-        let prompt = settings.systemPrompt || '';
+        let prompt = '';
+        
+        if (aiSetting && aiSetting.enabled) {
+            let template = aiSetting.template || '';
+            if (aiSetting.customPrompt) {
+                template += '\n\n' + aiSetting.customPrompt;
+            }
+            prompt = template;
+        } else {
+            throw new Error('请先在AI设置中配置"聊天继续"模板');
+        }
         
         if (playerInfo) {
             prompt += `\n\n【玩家角色】${playerInfo}`;
@@ -258,17 +269,54 @@ PluginSystem.register('chat-plugin', {
             prompt += timeContext;
         }
 
+        const storyHistory = this._getStoryHistory(worldId);
+        if (storyHistory.length > 0) {
+            prompt += '\n\n【之前的故事剧情】\n' + storyHistory.join('\n\n---\n\n');
+        }
+
         if (historyContext) {
             prompt += historyContext;
         }
 
         if (charList.length > 1) {
-            prompt += '\n\n这是多人对话。你可以选择一个角色来回复，或者让多个角色进行互动。用第一人称回复，适当加入动作描写（用括号包裹）。';
-        } else {
-            prompt += '\n\n请根据以上设定进行对话。用第一人称回复，适当加入动作描写（用括号包裹）。';
+            prompt += '\n\n这是多人对话。你可以选择一个角色来回复，或者让多个角色进行互动。';
         }
 
         return prompt;
+    },
+
+    _getStoryHistory(worldId) {
+        const allStoryHistory = [];
+        
+        if (!window.Story) return allStoryHistory;
+        
+        try {
+            const level3Archives = window.Story.getLevel3Archives ? window.Story.getLevel3Archives(worldId) : [];
+            for (const l3 of level3Archives) {
+                if (l3.summary && l3.summary !== '[待生成综合摘要]') {
+                    allStoryHistory.push(`[三级储存]\n${l3.summary}`);
+                }
+            }
+            
+            const level2Archives = window.Story.getLevel2Archives ? window.Story.getLevel2Archives(worldId) : [];
+            for (const l2 of level2Archives) {
+                if (l2.summary && l2.summary !== '[待生成总结]') {
+                    allStoryHistory.push(`[二级储存]\n${l2.summary}`);
+                }
+            }
+            
+            const archives = window.Story.getArchives ? window.Story.getArchives(worldId) : [];
+            for (const archive of archives) {
+                const title = archive.title ? `[${archive.title}]` : '';
+                if (archive.fullSummary) {
+                    allStoryHistory.push(`${title}[一级储存]\n${archive.fullSummary}`);
+                }
+            }
+        } catch (e) {
+            console.error('获取故事历史失败:', e);
+        }
+        
+        return allStoryHistory;
     },
 
     _cleanChatResponse(content) {
@@ -342,7 +390,7 @@ PluginSystem.register('chat-plugin', {
                 role: 'assistant',
                 content: cleanResponse,
                 timestamp: Date.now(),
-                characterName: characters.length > 0 ? characters[0].name : '角色'
+                characterName: aiCharacters.length > 0 ? aiCharacters[0].name : '角色'
             });
 
             this.updateSessionMessages(world.id, sessionId, messages);

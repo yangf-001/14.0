@@ -3,9 +3,8 @@ const HentaiPluginHub = {
     config: {},
     triggerMode: 'mixed',
     history: [],
-    onAutoTriggerConfirm: null,
-    onRuleTriggerConfirm: null,
-    
+    onUserTriggerConfirm: null,
+
     async init() {
         console.log('🎯 Hentai Plugin Hub Initializing...');
         
@@ -20,19 +19,9 @@ const HentaiPluginHub = {
     async loadConfig() {
         const defaultConfig = {
             triggerMode: 'mixed',
-            autoTrigger: {
-                enabled: true,
-                minAffection: 30,
-                minArousal: 20,
-                probability: 0.3
-            },
             userTrigger: {
                 enabled: true,
                 requireConfirmation: true
-            },
-            ruleTrigger: {
-                enabled: true,
-                rules: []
             },
             combination: {
                 intelligent: true,
@@ -54,7 +43,7 @@ const HentaiPluginHub = {
     saveConfig() {
         localStorage.setItem('hentaiPluginHub_config', JSON.stringify(this.config));
     },
-    
+
     async loadPlugins() {
         this.plugins = {
             poses: {
@@ -175,7 +164,7 @@ const HentaiPluginHub = {
     },
     
     setTriggerMode(mode) {
-        if (['auto', 'user', 'rule', 'mixed'].includes(mode)) {
+        if (['user', 'mixed'].includes(mode)) {
             this.triggerMode = mode;
             this.config.triggerMode = mode;
             this.saveConfig();
@@ -189,19 +178,18 @@ const HentaiPluginHub = {
             return await this.customTrigger(context);
         }
         
-        if (triggerMode === 'auto' || (triggerMode === 'mixed' && Math.random() < 0.5)) {
-            return await this.autoTrigger(context);
-        }
-        
         if (triggerMode === 'user' || (triggerMode === 'mixed' && context.userRequested)) {
             return this.userTrigger(context);
         }
         
-        if (triggerMode === 'rule' || triggerMode === 'mixed') {
-            const ruleResult = await this.ruleTriggerWithConfirm(context);
-            if (ruleResult) {
-                return ruleResult;
-            }
+        if (triggerMode === 'mixed') {
+            const scene = await this.generateScene(context);
+            return {
+                type: 'auto',
+                scene,
+                context,
+                pending: false
+            };
         }
         
         return null;
@@ -249,37 +237,6 @@ const HentaiPluginHub = {
         return elements;
     },
     
-    async autoTrigger(context) {
-        const { autoTrigger } = this.config;
-        if (!autoTrigger.enabled) return null;
-        
-        const { affection, arousal, location, time } = context;
-        
-        if (affection < autoTrigger.minAffection) return null;
-        if (arousal < autoTrigger.minArousal) return null;
-        
-        if (Math.random() > autoTrigger.probability) return null;
-        
-        const scene = await this.generateScene(context);
-        
-        const result = {
-            type: 'auto',
-            scene,
-            context,
-            suggestion: '建议触发亲密互动',
-            pending: true
-        };
-        
-        if (this.onAutoTriggerConfirm) {
-            const confirmed = await this.onAutoTriggerConfirm(result);
-            if (!confirmed) {
-                return { triggered: false, cancelled: true };
-            }
-        }
-        
-        return result;
-    },
-    
     userTrigger(context) {
         if (!this.config.userTrigger.enabled) return null;
         
@@ -293,118 +250,29 @@ const HentaiPluginHub = {
         };
     },
     
-    ruleTrigger(context) {
-        if (!this.config.ruleTrigger.enabled) return null;
-        
-        const matchedRules = this.config.ruleTrigger.rules.filter(rule => 
-            this.matchRule(rule, context)
-        );
-        
-        if (matchedRules.length === 0) return null;
-        
-        const scene = this.generateFromRules(matchedRules, context);
-        
-        return {
-            type: 'rule',
-            matchedRules,
-            scene,
-            context,
-            pending: true
-        };
-    },
-
-    async ruleTriggerWithConfirm(context) {
-        if (!this.config.ruleTrigger.enabled) return null;
-        
-        const matchedRules = this.config.ruleTrigger.rules.filter(rule => 
-            this.matchRule(rule, context)
-        );
-        
-        if (matchedRules.length === 0) return null;
-        
-        const scene = this.generateFromRules(matchedRules, context);
-        
-        const result = {
-            type: 'rule',
-            matchedRules,
-            scene,
-            context,
-            pending: true
-        };
-        
-        if (this.onRuleTriggerConfirm) {
-            const confirmed = await this.onRuleTriggerConfirm(result);
-            if (!confirmed) {
-                return { triggered: false, cancelled: true };
-            }
-        }
-        
-        return result;
-    },
-    
-    matchRule(rule, context) {
-        const { conditions } = rule;
-        
-        for (const [key, value] of Object.entries(conditions)) {
-            if (key === 'location') {
-                if (!value.includes(context.location)) return false;
-            } else if (key === 'time') {
-                const hour = new Date().getHours();
-                if (!value.some(r => hour >= r[0] && hour < r[1])) return false;
-            } else if (key === 'minAffection') {
-                if (context.affection < value) return false;
-            } else if (key === 'minArousal') {
-                if (context.arousal < value) return false;
-            }
-        }
-        
-        return true;
-    },
-    
-    generateFromRules(rules, context) {
-        const elements = {};
-        
-        for (const rule of rules) {
-            for (const [cat, action] of Object.entries(rule.actions || {})) {
-                if (action === 'random') {
-                    elements[cat] = this.getRandomFromUserContent(cat);
-                } else if (typeof action === 'string') {
-                    elements[cat] = action;
-                } else if (Array.isArray(action)) {
-                    elements[cat] = action[Math.floor(Math.random() * action.length)];
-                }
-            }
-        }
-        
-        return elements;
-    },
-    
     getSuggestions(context) {
-        const suggestions = [];
-        
-        if (context.affection > 50) {
-            suggestions.push({
-                type: 'high_affection',
-                label: '深情互动',
-                plugins: ['poses', 'dialogue', 'style']
-            });
-        }
-        
-        if (context.arousal > 30) {
-            suggestions.push({
-                type: 'high_arousal',
+        const suggestions = [
+            {
+                type: 'full',
+                label: '完整亲密互动',
+                plugins: ['poses', 'dialogue', 'style', 'body', 'actions']
+            },
+            {
+                type: 'passion',
                 label: '激情互动',
-                plugins: ['poses', 'actions', 'body']
-            });
-        }
-        
-        if (context.location === 'bedroom' || context.location === 'home') {
-            suggestions.push({
-                type: 'private',
-                label: '私密空间',
-                plugins: ['poses', 'toys', 'style']
-            });
-        }
+                plugins: ['poses', 'actions', 'body', 'toys']
+            },
+            {
+                type: 'romantic',
+                label: '浪漫互动',
+                plugins: ['dialogue', 'style', 'locations', 'roles']
+            },
+            {
+                type: 'playful',
+                label: '情趣互动',
+                plugins: ['toys', 'actions', 'dialogue', 'style']
+            }
+        ];
         
         return suggestions;
     },
@@ -447,15 +315,7 @@ const HentaiPluginHub = {
     },
     
     getPluginPriority(context) {
-        if (context.arousal > 70 && context.affection > 50) {
-            return ['poses', 'body', 'actions', 'dialogue', 'style', 'locations', 'roles', 'toys', 'reference'];
-        } else if (context.affection > 60) {
-            return ['dialogue', 'style', 'poses', 'locations', 'roles', 'body', 'actions', 'toys', 'reference'];
-        } else if (context.arousal > 40) {
-            return ['toys', 'actions', 'dialogue', 'style', 'poses', 'body', 'locations', 'roles', 'reference'];
-        }
-        
-        return ['dialogue', 'style', 'body', 'locations', 'poses', 'actions', 'roles', 'toys', 'reference'];
+        return ['poses', 'body', 'actions', 'dialogue', 'style', 'locations', 'roles', 'toys', 'reference'];
     },
     
     buildPrompt(elements, context) {
@@ -510,20 +370,18 @@ const HentaiPluginHub = {
         
         return prompt || '生成亲密互动场景';
     },
-    
-    addRule(rule) {
-        if (!this.config.ruleTrigger.rules) {
-            this.config.ruleTrigger.rules = [];
-        }
-        this.config.ruleTrigger.rules.push(rule);
-        this.saveConfig();
-    },
-    
-    removeRule(ruleId) {
-        this.config.ruleTrigger.rules = this.config.ruleTrigger.rules.filter(
-            (r, i) => i !== ruleId
-        );
-        this.saveConfig();
+
+    buildIntimatePrompt(elements, extraContext = '') {
+        const basePrompt = this.buildPrompt(elements, {});
+        
+        const fullPrompt = `${basePrompt}
+
+【亲密互动要求】
+${extraContext ? extraContext + '\n' : ''}用词直白露骨，直接描写性器官接触、插入、抽动、高潮等细节。
+描写要流畅如小说，避免罗列。
+只描述亲密互动过程，自然融入剧情。`;
+
+        return fullPrompt;
     },
     
     getHistory() {

@@ -102,20 +102,33 @@ ViewCallbacks.storyConfig = ViewCallbacks.storyConfig || {};
 ViewCallbacks.storyConfig._getDefaultAISettings = function() {
     return {
         dataSources: {
-            title: '数据源设置',
-            enabled: true,
-            charFields: ['name', 'gender', 'age', 'appearance', 'personality', 'backstory', 'fetish', 'turnOns'],
-            storyContentLength: 800,
-            historyScenes: 3,
-            charDescriptionLength: 'medium',
-            includeAdultProfile: true
-        },
+                title: '数据源设置',
+                enabled: true,
+                charFields: ['name', 'gender', 'age', 'appearance', 'personality', 'backstory', 'fetish', 'turnOns'],
+                storyContentLength: 0,
+                historyScenes: 0,
+                charDescriptionLength: 'medium',
+                includeAdultProfile: true
+            },
         storyStart: {
             title: '故事开头生成',
             enabled: true,
-            template: `[系统提示词]\n\n生成一个故事开头：\n角色信息：[角色JSON]\n场景设定：[场景]\n风格要求：[风格设置]\n\n请生成200-500字的故事开头，并自然地引出后续剧情发展的可能性。`,
+            template: `[系统提示词]\n\n生成一个故事开头：\n角色信息：[角色JSON]\n场景设定：[场景]\n风格要求：[风格设置]\n\n请生成100-300字的故事开头，并自然地引出后续剧情发展的可能性。`,
             customPrompt: ''
         },
+        storyChoice: {
+            title: '选择后继续故事',
+            enabled: true,
+            template: `[系统提示词]\n\n根据用户的选择继续故事：[用户选择]\n\n[上下文]\n\n【角色出场比例】\n[角色比例设置]\n\n请生成下一段故事内容（100-300字），自然地回应用户的选择。`,
+            customPrompt: ''
+        },
+        storyFree: {
+            title: '自由发展继续',
+            enabled: true,
+            template: `[系统提示词]\n\n继续故事，生成下一段内容：\n\n[上下文]\n\n【角色出场比例】\n[角色比例设置]\n\n请生成100-300字的故事内容，推动剧情发展。`,
+            customPrompt: ''
+        },
+
         storyContinue: {
             title: '继续故事',
             enabled: true,
@@ -144,7 +157,44 @@ ViewCallbacks.storyConfig._getDefaultAISettings = function() {
         updateStats: {
             title: '更新角色属性',
             enabled: true,
-            template: `根据以下故事内容，分析角色在剧情中的数值属性变化。\n\n故事内容：\n[内容]\n\n角色：[角色列表]\n\n可用属性：\n- health (生命 0-200)\n- energy (体力 0-200)\n- charm (魅力 0-200)\n- intelligence (智力 0-200)\n- strength (力量 0-200)\n- agility (敏捷 0-200)\n- sexArousal (欲望 0-200)\n- sexLibido (性欲 0-200)\n- sexSensitivity (敏感 0-200)\n- affection (好感 0-200)\n- trust (信任 0-200)\n- intimacy (亲密 0-200)\n\n请分析故事情节，判断每个角色的数值属性应该有什么变化。返回JSON格式：\n{\n  "角色名": {\n    "属性名": 变化值\n  }\n}\n\n注意：\n1. 根据剧情合理设置变化值，一般单次变化在-20到+20之间\n2. 如果某个属性没有变化，不要在JSON中列出\n3. 如果所有属性都没变化，返回空对象 {}`,
+            template: `根据以下故事内容，分析角色在剧情中的数值属性变化。
+
+故事内容：
+[内容]
+
+角色：[角色列表]
+
+【基础属性】
+- health (生命 0-200)
+- charm (魅力 0-200)
+- intelligence (智力 0-200)
+- strength (力量 0-200)
+- agility (敏捷 0-200)
+- stamina (体力 0-200)
+
+【色色属性】
+- arousal (兴奋值 0-200)
+- experience (经验值 0-200)
+- sexSkill (技巧 0-200)
+- sexSensitivity (敏感 0-200)
+
+【状态属性】
+- intimacy (亲密 0-200)
+- willingness (意愿 0-200)
+- corruption (堕落 0-200)
+- shame (羞耻 0-200)
+
+请分析故事情节，判断每个角色的数值属性应该有什么变化。返回JSON格式：
+{
+  "角色名": {
+    "属性名": 变化值
+  }
+}
+
+注意：
+1. 根据剧情合理设置变化值，一般单次变化在-10到+10之间
+2. 如果某个属性没有变化，不要在JSON中列出
+3. 如果所有属性都没变化，返回空对象 {}`,
             temperature: 0.3,
             customPrompt: ''
         },
@@ -158,26 +208,145 @@ ViewCallbacks.storyConfig._getDefaultAISettings = function() {
         level2Summary: {
             title: '二级故事摘要（每次总结10幕）',
             enabled: true,
-            template: `请用约1000字总结以下10幕故事内容，要求保留关键剧情、人物和转折点：\n\n[10幕剧情内容]`,
+            template: `请用约1000字总结以下10幕故事内容，要求：
+1. 专注于总结剧情内容和故事情节
+2. 保留关键剧情、人物和转折点
+3. 不要添加任何无关的内容或分析
+
+[所有场景内容]`,
             maxTokens: 2000,
             customPrompt: ''
         },
         level3Summary: {
             title: '三级综合摘要（每次总结10个二级）',
             enabled: true,
-            template: `请用约2000字总结以下10个二级故事摘要，要求保留每个故事的核心剧情和人物关系：
+            template: `请用约2000字总结以下10个二级故事摘要，要求：
+1. 专注于总结每个故事的剧情内容
+2. 保留每个故事的核心剧情和人物关系
+3. 不要添加任何无关的内容或分析
 
-[10个二级摘要]`,
+[10个故事的摘要]`,
             maxTokens: 3000,
             customPrompt: ''
         },
         level1Summary: {
             title: '一级故事摘要（每个故事的完整总结）',
             enabled: true,
-            template: `请用约500字总结以下完整的故事内容，要求保留关键剧情、人物和结局：
+            template: `请用约500字总结以下完整的故事内容，要求：
+1. 专注于总结剧情内容和故事情节
+2. 保留关键剧情、人物和结局
+3. 不要添加任何无关的内容或分析
 
 [完整故事内容]`,
             maxTokens: 1000,
+            customPrompt: ''
+        },
+        adultContinue: {
+            title: '成人内容继续',
+            enabled: true,
+            template: `[系统提示词]
+
+【重要限制】剧情中不能出现陌生人、路人或其他未建立关系的角色。所有亲密互动必须由主角一人完成，如果需要多人参与（如使用玩具、按摩棒等道具，或需要分身的场景），请用主角的分身、神奇道具、魔法道具、玩具等来代替。
+
+兴奋值：[兴奋值]/100
+亲密度：[亲密度]/100
+经验值：[经验值]/100
+意愿度：[意愿度]/100
+当前阶段：[阶段]（[阶段名称]）
+尺度级别：[尺度]
+阶段限制：[阶段描述]
+
+【必须融入的玩法】（选取1-2个，自然融入剧情）：
+[标签列表]
+
+【冷却中的标签】（避免重复使用）：
+[冷却列表]
+
+【历史剧情】
+[上下文]
+
+请生成100-300字的故事情节，自然融入上述玩法描写。`,
+            temperature: 0.7,
+            customPrompt: '',
+            addToPrompt: true
+        },
+        adultStart: {
+            title: '成人内容开头',
+            enabled: true,
+            template: `[系统提示词]
+
+【重要限制】剧情中不能出现陌生人、路人或其他未建立关系的角色。所有亲密互动必须由主角一人完成，如果需要多人参与（如使用玩具、按摩棒等道具，或需要分身的场景），请用主角的分身、神奇道具、魔法道具、玩具等来代替。
+
+兴奋值：[兴奋值]/100
+亲密度：[亲密度]/100
+经验值：[经验值]/100
+意愿度：[意愿度]/100
+当前阶段：[阶段]（[阶段名称]）
+尺度级别：[尺度]
+阶段限制：[阶段描述]
+
+【必须融入的玩法】（选取1-2个，自然融入剧情）：
+[标签列表]
+
+请生成100-300字的故事开头，自然融入上述玩法。`,
+            temperature: 0.7,
+            customPrompt: '',
+            addToPrompt: true
+        },
+        adultChoices: {
+            title: '生成成人选项（自动分级）',
+            enabled: true,
+            template: `[系统提示词]
+
+[成人选项模板]
+
+故事内容摘要：
+[内容摘要]
+
+角色：[角色列表]
+
+当前属性状态：
+兴奋值：[兴奋值]/100
+经验值：[经验值]/100
+意愿度：[意愿度]/100
+当前阶段：[阶段]
+尺度级别：[尺度]
+
+请生成3个让用户选择的剧情分支选项。`,
+            temperature: 0.8,
+            customPrompt: ''
+        },
+        simpleStory: {
+            title: '小故事模式',
+            enabled: true,
+            template: `【小故事模式】故事内容将控制在100字以内，情节简单直接。
+
+要求：
+1. 故事长度控制在100字以内
+2. 情节简单直接
+3. 快速进入主题
+4. 语言简洁明了`,
+            customPrompt: '',
+            maxLength: 100
+        },
+        chatStart: {
+            title: '聊天开场',
+            enabled: true,
+            template: `【聊天开场】生成与角色聊天的开场白。
+
+请根据角色设定生成一句友好的开场白或问候语，50字以内。`,
+            customPrompt: ''
+        },
+        chatContinue: {
+            title: '聊天继续',
+            enabled: true,
+            template: `【聊天继续】根据对话历史继续聊天。
+
+要求：
+1. 保持角色个性
+2. 用第一人称回复
+3. 适当加入动作描写（用括号包裹）
+4. 语气自然流畅`,
             customPrompt: ''
         }
     };
@@ -227,9 +396,10 @@ ViewCallbacks.storyConfig._renderDataSourceSection = function(setting) {
                 <div style="margin-bottom: 16px;">
                     <label style="display: block; margin-bottom: 8px; font-weight: 500;">剧情内容截取长度：</label>
                     <select id="storyContentLength" style="padding: 8px; border-radius: 4px; border: 1px solid var(--border); background: var(--bg); color: var(--text);">
+                        <option value="0" ${ds.storyContentLength === 0 ? 'selected' : ''}>0字（不限制）</option>
                         <option value="300" ${ds.storyContentLength === 300 ? 'selected' : ''}>300字（简短）</option>
                         <option value="500" ${ds.storyContentLength === 500 ? 'selected' : ''}>500字（中等）</option>
-                        <option value="800" ${ds.storyContentLength === 800 || !ds.storyContentLength ? 'selected' : ''}>800字（标准）</option>
+                        <option value="800" ${ds.storyContentLength === 800 ? 'selected' : ''}>800字（标准）</option>
                         <option value="1200" ${ds.storyContentLength === 1200 ? 'selected' : ''}>1200字（详细）</option>
                         <option value="2000" ${ds.storyContentLength === 2000 ? 'selected' : ''}>2000字（完整）</option>
                     </select>
@@ -237,11 +407,11 @@ ViewCallbacks.storyConfig._renderDataSourceSection = function(setting) {
                 <div style="margin-bottom: 16px;">
                     <label style="display: block; margin-bottom: 8px; font-weight: 500;">历史剧情取最近几幕：</label>
                     <select id="historyScenes" style="padding: 8px; border-radius: 4px; border: 1px solid var(--border); background: var(--bg); color: var(--text);">
+                        <option value="0" ${ds.historyScenes === 0 ? 'selected' : ''}>0幕（不限制）</option>
                         <option value="1" ${ds.historyScenes === 1 ? 'selected' : ''}>1幕</option>
-                        <option value="3" ${ds.historyScenes === 3 || !ds.historyScenes ? 'selected' : ''}>3幕</option>
+                        <option value="3" ${ds.historyScenes === 3 ? 'selected' : ''}>3幕</option>
                         <option value="5" ${ds.historyScenes === 5 ? 'selected' : ''}>5幕</option>
                         <option value="10" ${ds.historyScenes === 10 ? 'selected' : ''}>10幕</option>
-                        <option value="0" ${ds.historyScenes === 0 ? 'selected' : ''}>不包含历史</option>
                     </select>
                 </div>
                 <div style="margin-bottom: 16px;">
@@ -272,7 +442,7 @@ ViewCallbacks.storyConfig._renderAISettingSection = function(aiSettings) {
 
     sections.push(this._renderDataSourceSection(aiSettings?.dataSources || defaultSettings.dataSources));
 
-    const sectionKeys = ['storyStart', 'storyContinue', 'itemStory', 'intimateContinue', 'generateChoices', 'updateStats', 'extractItems', 'level1Summary', 'level2Summary', 'level3Summary'];
+    const sectionKeys = ['storyStart', 'storyChoice', 'storyFree', 'storyContinue', 'itemStory', 'intimateContinue', 'generateChoices', 'updateStats', 'extractItems', 'level1Summary', 'level2Summary', 'level3Summary', 'adultContinue', 'adultStart', 'adultChoices', 'simpleStory', 'chatStart', 'chatContinue'];
 
     for (const key of sectionKeys) {
         const defaultSetting = defaultSettings[key] || {};
@@ -390,7 +560,7 @@ ViewCallbacks.storyConfig.savePrompts = function() {
         includeAdultProfile: document.getElementById('includeAdultProfile')?.checked !== false
     };
 
-    const sectionKeys = ['storyStart', 'storyContinue', 'itemStory', 'intimateContinue', 'generateChoices', 'updateStats', 'extractItems', 'level1Summary', 'level2Summary', 'level3Summary'];
+    const sectionKeys = ['storyStart', 'storyChoice', 'storyFree', 'storyContinue', 'itemStory', 'intimateContinue', 'generateChoices', 'updateStats', 'extractItems', 'level1Summary', 'level2Summary', 'level3Summary', 'adultContinue', 'adultStart', 'adultChoices', 'simpleStory', 'chatStart', 'chatContinue'];
     const aiSettings = { dataSources: dataSources };
 
     for (const key of sectionKeys) {
@@ -418,7 +588,7 @@ ViewCallbacks.storyConfig.savePrompts = function() {
         }
     }
 
-    if (world && localStorage.getItem(`story_ai_settings_${world.id}`)) {
+    if (world && document.getElementById('useWorldConfig')?.checked) {
         plugin?.saveWorldAISettings(world.id, aiSettings);
     } else {
         plugin?.saveAISettings(aiSettings);
@@ -464,7 +634,7 @@ ViewCallbacks.storyConfig.applyPreset = function(idx) {
     const presets = [
         {
             name: '默认风格',
-            template: `[系统提示词]\n\n生成一个故事开头：\n角色信息：[角色JSON]\n场景设定：[场景]\n风格要求：[风格设置]\n\n请生成200-500字的故事开头，并自然地引出后续剧情发展的可能性。`,
+            template: `[系统提示词]\n\n生成一个故事开头：\n角色信息：[角色JSON]\n场景设定：[场景]\n风格要求：[风格设置]\n\n请生成100-300字的故事开头，并自然地引出后续剧情发展的可能性。`,
             customPrompt: ''
         },
         {

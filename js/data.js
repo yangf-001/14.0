@@ -226,10 +226,15 @@ const Data = {
     saveStory(worldId, story) {
         const data = this._loadWorldData(worldId);
         data.story = story;
-        this._saveWorldData(worldId, data);
+        if (this._saveDebounceTimer) {
+            clearTimeout(this._saveDebounceTimer);
+            this._saveDebounceTimer = null;
+        }
+        this._saveWorldDataImmediate(worldId, data);
     },
 
     getStory(worldId) {
+        this._cache.delete(worldId);
         const data = this._loadWorldData(worldId);
         return data.story;
     },

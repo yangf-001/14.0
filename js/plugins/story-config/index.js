@@ -178,10 +178,10 @@ PluginSystem.register('story-config', {
 
         let systemPrompt = this.getWorldSystemPrompt(worldId) || '';
 
-        const allHistory = this._getAllHistory(world.id);
+        const allHistory = this._getAllHistory(worldId);
 
         const historyCount = ds.historyScenes || 9999;
-        const recentScenes = historyCount > 0 ? currentStory.scenes.slice(-historyCount) : [];
+        const recentScenes = historyCount > 0 ? currentStory.scenes.slice(-historyCount) : currentStory.scenes;
         const currentHistoryText = recentScenes.map((s, i) => {
             let text = s.content;
             if (s.choice) {
@@ -191,7 +191,7 @@ PluginSystem.register('story-config', {
         }).join('\n\n---\n\n');
 
         let historySection = '';
-        if (allHistory.length > 0 && historyCount > 0) {
+        if (allHistory.length > 0 && (historyCount > 0 || ds.historyScenes === 0)) {
             historySection = `\n\n【之前的故事剧情】\n${allHistory.join('\n\n---\n\n')}`;
         }
 
@@ -279,6 +279,15 @@ PluginSystem.register('story-config', {
     async _generateChoices(content, characters, settings) {
         const world = Data.getCurrentWorld();
         const worldId = world?.id;
+        
+        const adultPlugin = window.AdultTagsPlugin;
+        if (adultPlugin) {
+            const adultChoice = await this._generateAdultChoices(content, characters, worldId);
+            if (adultChoice) {
+                return adultChoice;
+            }
+        }
+        
         const aiSetting = this.getAISetting('generateChoices', worldId);
         const ds = this.getDataSources(worldId);
 
@@ -291,11 +300,12 @@ PluginSystem.register('story-config', {
         let systemPrompt = this.getWorldSystemPrompt(worldId) || '';
 
         const contentLength = ds.storyContentLength || 800;
+        const contentToUse = contentLength > 0 ? content.substring(0, contentLength) : content;
         let template = aiSetting.template || '';
         template = template.replace('[系统提示词]', systemPrompt);
-        template = template.replace('[内容摘要]', content.substring(0, contentLength));
-        template = template.replace('[故事内容]', content.substring(0, contentLength));
-        template = template.replace('[内容]', content.substring(0, contentLength));
+        template = template.replace('[内容摘要]', contentToUse);
+        template = template.replace('[故事内容]', contentToUse);
+        template = template.replace('[内容]', contentToUse);
         template = template.replace('[角色列表]', charNames);
         template = template.replace('[角色]', charNames);
 
@@ -330,6 +340,142 @@ PluginSystem.register('story-config', {
                 '改变故事方向'
             ];
         }
+    },
+
+    _loadUserTags(stage) {
+        const tagPaths = [];
+        for (let i = 1; i <= 32; i++) {
+            tagPaths.push(`js/plugins/adult-tags/user-content/${i}.txt`);
+        }
+        
+        const stageRanges = {
+            1: [1, 32],
+            2: [1, 32],
+            3: [1, 32],
+            4: [1, 32]
+        };
+        
+        const range = stageRanges[stage] || [1, 8];
+        const tags = [];
+        
+        return new Promise((resolve) => {
+            Promise.all(
+                tagPaths.slice(range[0] - 1, range[1]).map(path => 
+                    fetch(path).then(r => r.ok ? r.text() : '').catch(() => '')
+                )
+            ).then(contents => {
+                contents.forEach(content => {
+                    if (content) {
+                        try {
+                            const data = JSON.parse(content);
+                            if (data.tags && Array.isArray(data.tags)) {
+                                tags.push(...data.tags);
+                            }
+                        } catch (e) {}
+                    }
+                });
+                const shuffled = tags.sort(() => Math.random() - 0.5).slice(0, 5);
+                resolve(shuffled);
+            }).catch(() => resolve([]));
+        });
+    },
+
+    _getAdultChoiceTemplate(stage) {
+        const templates = {
+            1: `[系统提示词]\n\n基于当前故事内容，生成3个让用户选择的剧情分支选项。\n当前阶段：暧昧挑逗期（轻度淫靡）\n尺度：非常克制，仅限心理与轻微肢体接触\n\n故事内容摘要：\n[内容摘要]\n\n角色：[角色列表]\n\n要求：\n- 所有选项必须保持暧昧、挑逗、性张力逐步积累\n- 严禁出现任何性器官名称、裸露、插入、高潮、潮吹等直接描写\n- 使用含蓄但色情的语言（脸红、心跳加速、呼吸紊乱、指尖轻颤、耳边低语、衣料滑落、身体发热等）\n- 每个选项都应自然暗示下一步可能的亲密升级，但绝不跨越界限\n\n输出格式（只输出三行选项，无其他文字）：\n1. [选项描述]\n2. [选项描述]\n3. [选项描述]`,
+
+            2: `[系统提示词]\n\n基于当前故事内容，生成3个让用户选择的剧情分支选项。\n当前阶段：肉体交缠期（中度淫乱）\n尺度：允许直接触碰性敏感区、前戏、口交、指交、初次插入等\n\n故事内容摘要：\n[内容摘要]\n\n角色：[角色列表]\n\n要求：\n- 选项必须包含明确的性行为开始或过程描写\n- 可使用半露骨词汇（鸡巴、骚穴、湿透、龟头、淫水、舔弄、抽插、紧致等）\n- 但禁止极端高潮描写、潮吹失禁、连续内射、肉便器化等\n- 每个选项带来明显的快感递增与身体反应\n\n输出格式（只输出三行选项，无其他文字）：\n1. [选项描述]\n2. [选项描述]\n3. [选项描述]`,
+
+            3: `[系统提示词]\n\n基于当前故事内容，生成3个让用户选择的剧情分支选项。\n当前阶段：高潮崩坏期（高度淫靡）\n尺度：允许激烈抽插、内射、潮吹、强制高潮、大量脏话与羞辱\n\n故事内容摘要：\n[内容摘要]\n\n角色：[角色列表]\n\n要求：\n- 选项要极具冲击力，包含强烈生理快感与精神崩溃描写\n- 大量使用下流直接语言、拟声词（啪啪、咕啾、噗滋）、脏话、求饶/命令对话\n- 体现角色在快感中逐渐失控、尖叫、痉挛、喷水等\n- 可涉及姿势变换、连续高潮、轻度疼痛快感\n\n输出格式（只输出三行选项，无其他文字）：\n1. [选项描述]\n2. [选项描述]\n3. [选项描述]`,
+
+            4: `[系统提示词]\n\n基于当前故事内容，生成3个让用户选择的剧情分支选项。\n当前阶段：极致堕落期（极限淫乱）\n尺度：无任何上限，允许极端、变态、成瘾式、超现实描写\n\n故事内容摘要：\n[内容摘要]\n\n角色：[角色列表]\n\n要求：\n- 选项必须展现彻底的肉体与精神堕落\n- 使用最下流、最病态的语言（肉便器、子宫灌满、精液容器、意识融化、孕肚鼓起、永久标记等）\n- 可包含超现实元素（魔法分身、多重插入、连续多日性爱、彻底成瘾）\n- 角色主动求虐、淫荡展示、完全放弃尊严与羞耻\n\n输出格式（只输出三行选项，无其他文字）：\n1. [选项描述]\n2. [选项描述]\n3. [选项描述]`
+        };
+        return templates[stage] || templates[1];
+    },
+
+    _getStageFromStats(stats) {
+        const arousal = stats.arousal || 0;
+        const intimacy = stats.intimacy || 0;
+        const experience = stats.experience || 0;
+        const willingness = stats.willingness || 0;
+        
+        if (arousal < 25) return 1;
+        if (arousal >= 25 && intimacy >= 30) {
+            if (arousal >= 50 && intimacy >= 50 && experience >= 30) {
+                if (arousal >= 75 && intimacy >= 70 && experience >= 60 && willingness >= 50) {
+                    return 4;
+                }
+                return 3;
+            }
+            return 2;
+        }
+        return 1;
+    },
+
+    async _generateAdultChoices(content, characters, worldId) {
+        const aiSetting = this.getAISetting('adultChoices', worldId);
+        if (!aiSetting || !aiSetting.enabled) {
+            return null;
+        }
+        
+        const adultPlugin = window.AdultTagsPlugin;
+        let stats, stage, scale;
+        
+        if (adultPlugin) {
+            stats = adultPlugin.getAllStats(worldId);
+            stage = adultPlugin.getStage(stats.arousal, worldId);
+            scale = adultPlugin.getScale(worldId);
+        } else {
+            stats = { arousal: 0, intimacy: 0, experience: 0, willingness: 0 };
+            stage = this._getStageFromStats(stats);
+            scale = '中';
+        }
+        
+        const choiceTemplate = this._getAdultChoiceTemplate(stage);
+        const charNames = characters.map(c => c.name).join('、');
+        let systemPrompt = this.getWorldSystemPrompt(worldId) || '';
+        
+        const tags = await this._loadUserTags(stage);
+        const tagsText = tags.length > 0 ? tags.map(t => `- ${t}`).join('\n') : '（无标签可用）';
+        
+        let template = choiceTemplate;
+        template = template.replace('[系统提示词]', systemPrompt);
+        template = template.replace('[内容摘要]', content);
+        template = template.replace('[故事内容]', content);
+        template = template.replace('[角色列表]', charNames);
+        template = template.replace('[角色]', charNames);
+        template = template.replace('[兴奋值]', stats.arousal);
+        template = template.replace('[亲密度]', stats.intimacy);
+        template = template.replace('[经验值]', stats.experience);
+        template = template.replace('[意愿度]', stats.willingness);
+        template = template.replace('[阶段]', stage);
+        template = template.replace('[尺度]', scale);
+        template = template.replace('[标签列表]', tagsText);
+        
+        if (aiSetting.customPrompt) {
+            template += '\n\n' + aiSetting.customPrompt;
+        }
+        
+        try {
+            const result = await ai.call(template, {
+                system: systemPrompt,
+                temperature: aiSetting.temperature || 0.8
+            });
+
+            const choices = result.split('\n')
+                .map(line => line.replace(/^\d+[\.、]\s*/, '').trim())
+                .filter(line => line.length > 0 && line.length < 100)
+                .slice(0, 3);
+
+            if (choices.length >= 3) {
+                console.log(`[成人选项] 阶段${stage}生成了成人选项，标签: ${tags.join(', ')}`);
+                return choices;
+            }
+        } catch (e) {
+            console.warn('[成人选项] 生成失败:', e);
+        }
+        
+        return null;
     },
     
     _cleanStoryContent(content) {
@@ -369,9 +515,10 @@ PluginSystem.register('story-config', {
         const charNames = characters.map(c => c.name).join('、');
 
         const contentLength = ds.storyContentLength || 800;
+        const contentToUse = contentLength > 0 ? storyContent.substring(0, contentLength) : storyContent;
         let template = aiSetting.template || '';
-        template = template.replace(/\[内容\]/g, storyContent.substring(0, contentLength));
-        template = template.replace(/\[故事内容\]/g, storyContent.substring(0, contentLength));
+        template = template.replace(/\[内容\]/g, contentToUse);
+        template = template.replace(/\[故事内容\]/g, contentToUse);
         template = template.replace('[角色列表]', charNames);
         template = template.replace('[角色]', charNames);
 
@@ -393,8 +540,26 @@ PluginSystem.register('story-config', {
             
             const updates = JSON.parse(jsonStr);
             
+            const findMatchingCharUpdates = (charName) => {
+                if (updates[charName]) {
+                    return updates[charName];
+                }
+                const lowerCharName = charName.toLowerCase();
+                for (const key of Object.keys(updates)) {
+                    if (key.toLowerCase() === lowerCharName) {
+                        return updates[key];
+                    }
+                }
+                for (const key of Object.keys(updates)) {
+                    if (lowerCharName.includes(key.toLowerCase()) || key.toLowerCase().includes(lowerCharName)) {
+                        return updates[key];
+                    }
+                }
+                return null;
+            };
+            
             for (const char of characters) {
-                const charUpdates = updates[char.name];
+                const charUpdates = findMatchingCharUpdates(char.name);
                 if (!charUpdates || Object.keys(charUpdates).length === 0) continue;
                 
                 const dbChar = Data.getCharacter(worldId, char.id);
@@ -441,13 +606,14 @@ PluginSystem.register('story-config', {
         const charNames = characters.map(c => c.name).join('、');
 
         const contentLength = ds.storyContentLength || 800;
+        const contentToUse = contentLength > 0 ? storyContent.substring(0, contentLength) : storyContent;
         let template = aiSetting.template || '';
         template = template.replace('[物品库]', itemNames);
         template = template.replace('[物品列表]', itemNames);
         template = template.replace('[角色列表]', charNames);
         template = template.replace('[角色]', charNames);
-        template = template.replace(/\[内容\]/g, storyContent.substring(0, contentLength));
-        template = template.replace(/\[故事内容\]/g, storyContent.substring(0, contentLength));
+        template = template.replace(/\[内容\]/g, contentToUse);
+        template = template.replace(/\[故事内容\]/g, contentToUse);
 
         if (aiSetting.customPrompt) {
             template += '\n\n' + aiSetting.customPrompt;
@@ -533,9 +699,10 @@ PluginSystem.register('story-config', {
         }).join('；');
         
         const contentLength = ds.storyContentLength || 800;
+        const contentToUse = contentLength > 0 ? storyContent.substring(0, contentLength) : storyContent;
         let template = aiSetting.template || '';
-        template = template.replace('[内容]', storyContent.substring(0, contentLength));
-        template = template.replace('[故事内容]', storyContent.substring(0, contentLength));
+        template = template.replace('[内容]', contentToUse);
+        template = template.replace('[故事内容]', contentToUse);
         template = template.replace('[角色列表]', charNames);
         template = template.replace('[角色]', charNames);
         template = template.replace('[当前关系]', currentRelations);
@@ -635,8 +802,8 @@ PluginSystem.register('story-config', {
                 title: '数据源设置',
                 enabled: true,
                 charFields: ['name', 'gender', 'age', 'appearance', 'personality', 'backstory', 'fetish', 'turnOns'],
-                storyContentLength: 800,
-                historyScenes: 3,
+                storyContentLength: 0,
+                historyScenes: 0,
                 charDescriptionLength: 'medium',
                 includeAdultProfile: true
             },
@@ -652,11 +819,50 @@ PluginSystem.register('story-config', {
 场景设定：[场景]
 风格要求：[风格设置]
 
-请生成200-500字的故事开头，并自然地引出后续剧情发展的可能性。
+请生成100-300字的故事开头，并自然地引出后续剧情发展的可能性。
 重要限制：
 1. 时间跨度最多1天，不要出现跨越多年、数月或数日的大段时间跳跃
 2. 故事应该从故事开始的时间点直接展开
 3. 如果需要时间推进，最多推进几小时到1天`,
+                temperature: 0.7,
+                customPrompt: ''
+            },
+            storyChoice: {
+                title: '选择后继续故事',
+                enabled: true,
+                template: `[系统提示词]
+
+【重要限制】剧情中不能出现陌生人、路人或其他未建立关系的角色。所有互动必须由主角和已建立关系的角色完成，如果需要多人参与，请用主角的分身、神奇道具、魔法道具、玩具等来代替。
+
+根据用户的选择继续故事：[用户选择]
+
+[上下文]
+
+【角色出场比例】
+[角色比例设置]
+
+请生成下一段故事内容（100-300字），自然地回应用户的选择。
+如果故事中有明确的时间推进，请在故事结束后另起一行输出【时间变化：X天】或【时间变化：X月】。如果时间没有明显变化，输出【时间变化：0天】。`,
+                temperature: 0.7,
+                customPrompt: ''
+            },
+            storyFree: {
+                title: '自由发展继续',
+                enabled: true,
+                template: `[系统提示词]
+
+【重要限制】剧情中不能出现陌生人、路人或其他未建立关系的角色。所有互动必须由主角和已建立关系的角色完成，如果需要多人参与，请用主角的分身、神奇道具、魔法道具、玩具等来代替。
+
+继续故事，生成下一段内容：
+
+[上下文]
+
+【角色出场比例】
+[角色比例设置]
+
+请生成100-300字的故事内容，推动剧情发展。
+如果故事中有明确的时间推进，请在故事结束后另起一行输出【时间变化：X天】或【时间变化：X月】。如果时间没有明显变化，输出【时间变化：0天】。`,
+                temperature: 0.7,
                 customPrompt: ''
             },
             storyContinue: {
@@ -679,6 +885,7 @@ PluginSystem.register('story-config', {
 2. 根据角色设定发展故事
 3. 适当埋下后续剧情的伏笔
 4. 如果故事中有明确的时间推进（如几小时后、几天后、几个月后等），请在故事结束后另起一行输出【时间变化：X天】或【时间变化：X月】。如果时间没有明显变化，输出【时间变化：0天】。`,
+                temperature: 0.7,
                 customPrompt: ''
             },
             itemStory: {
@@ -698,6 +905,7 @@ PluginSystem.register('story-config', {
 
 请生成100-200字的故事内容。
 如果故事中有明确的时间推进，请在故事结束后另起一行输出【时间变化：X天】或【时间变化：X月】。如果时间没有明显变化，输出【时间变化：0天】。`,
+                temperature: 0.7,
                 customPrompt: ''
             },
             intimateContinue: {
@@ -717,6 +925,7 @@ PluginSystem.register('story-config', {
 
 请生成100-200字的故事内容。
 如果故事中有明确的时间推进，请在故事结束后另起一行输出【时间变化：X天】或【时间变化：X月】。如果时间没有明显变化，输出【时间变化：0天】。`,
+                temperature: 0.7,
                 customPrompt: ''
             },
             generateChoices: {
@@ -726,10 +935,56 @@ PluginSystem.register('story-config', {
                 temperature: 0.8,
                 customPrompt: ''
             },
+            adultChoices: {
+                title: '生成成人选项（自动分级）',
+                enabled: true,
+                template: `[系统提示词]\n\n[成人选项模板]\n\n故事内容摘要：\n[内容摘要]\n\n角色：[角色列表]\n\n当前属性状态：\n兴奋值：[兴奋值]/100\n亲密度：[亲密度]/100\n经验值：[经验值]/100\n意愿度：[意愿度]/100\n当前阶段：[阶段]\n尺度级别：[尺度]\n\n请生成3个让用户选择的剧情分支选项。`,
+                temperature: 0.8,
+                customPrompt: ''
+            },
+
             updateStats: {
                 title: '更新角色属性',
                 enabled: true,
-                template: `根据以下故事内容，分析角色在剧情中的数值属性变化。\n\n故事内容：\n[内容]\n\n角色：[角色列表]\n\n可用属性：\n- health (生命 0-200)\n- energy (体力 0-200)\n- charm (魅力 0-200)\n- intelligence (智力 0-200)\n- strength (力量 0-200)\n- agility (敏捷 0-200)\n- sexArousal (欲望 0-200)\n- sexLibido (性欲 0-200)\n- sexSensitivity (敏感 0-200)\n- affection (好感 0-200)\n- trust (信任 0-200)\n- intimacy (亲密 0-200)\n\n请分析故事情节，判断每个角色的数值属性应该有什么变化。返回JSON格式：\n{\n  "角色名": {\n    "属性名": 变化值\n  }\n}\n\n注意：\n1. 根据剧情合理设置变化值，一般单次变化在-20到+20之间\n2. 如果某个属性没有变化，不要在JSON中列出\n3. 如果所有属性都没变化，返回空对象 {}`,
+                template: `根据以下故事内容，分析角色在剧情中的数值属性变化。
+
+故事内容：
+[内容]
+
+角色：[角色列表]
+
+可用属性：
+【基础属性】
+- health (生命 0-200)
+- charm (魅力 0-200)
+- intelligence (智力 0-200)
+- strength (力量 0-200)
+- agility (敏捷 0-200)
+- stamina (体力 0-200)
+
+【色色属性】
+- arousal (兴奋值 0-200)
+- experience (经验值 0-200)
+- sexSkill (技巧 0-200)
+- sexSensitivity (敏感 0-200)
+
+【状态属性】
+- intimacy (亲密 0-200)
+- willingness (意愿 0-200)
+- corruption (堕落 0-200)
+- shame (羞耻 0-200)
+
+请分析故事情节，判断每个角色的数值属性应该有什么变化。返回JSON格式：
+{
+  "角色名": {
+    "属性名": 变化值
+  }
+}
+
+注意：
+1. 根据剧情合理设置变化值，一般单次变化在-10到+10之间
+2. 如果某个属性没有变化，不要在JSON中列出
+3. 如果所有属性都没变化，返回空对象 {}`,
                 temperature: 0.3,
                 customPrompt: ''
             },
@@ -775,40 +1030,50 @@ PluginSystem.register('story-config', {
                 customPrompt: ''
             },
             level1Summary: {
-                title: '一级故事摘要（每个剧情结束时生成）',
+                title: '一级故事摘要（每个故事的完整总结）',
                 enabled: true,
-                template: `请用约500字总结以下故事内容，生成一个简短但包含关键信息的概况摘要：
+                template: `请用约500字总结以下完整的故事内容，要求：
+1. 专注于总结剧情内容和故事情节
+2. 保留关键剧情、人物和结局
+3. 不要添加任何无关的内容或分析
 
-[故事内容]
-
-要求：
-- 严格按照故事中的时间背景和场景设定进行总结
-- 保留主要人物、场景和关键剧情
-- 描述故事的核心发展和结局
-- 简洁明了，概括性强
-- 确保摘要与原故事的时间背景、场景设定完全一致，不要添加故事中没有的时间背景或场景元素`,
+[完整故事内容]`,
                 maxTokens: 1000,
                 customPrompt: ''
             },
-            level2Summary: {
-                title: '二级综合摘要（每次总结10个一级）',
+            corePlot: {
+                title: '核心情节（一句话概括）',
                 enabled: true,
-                template: `请用约2000字将以下10个一级故事摘要**合并总结为1个综合摘要**，描述从开始到结束期间的完整剧情主线：\n\n[10个一级摘要]\n\n要求：\n- 不要列出每个一级摘要的单独内容\n- 而是按时间顺序，用连贯的叙述描述整个故事的主要发展\n- 整合所有人物关系和剧情线索，保留核心剧情和关键转折点`,
-                maxTokens: 3000,
+                template: `请用一句话概括以下故事的核心情节，要求简洁明了，最多50字：
+
+[故事内容]
+
+一句话概括：`,
+                maxTokens: 100,
+                customPrompt: ''
+            },
+            level2Summary: {
+                title: '二级故事摘要（每次总结10幕）',
+                enabled: true,
+                template: `请用约1000字总结以下10幕故事内容，要求：
+1. 专注于总结剧情内容和故事情节
+2. 保留关键剧情、人物和转折点
+3. 不要添加任何无关的内容或分析
+
+[所有场景内容]`,
+                maxTokens: 2000,
                 customPrompt: ''
             },
             level3Summary: {
-                title: '三级终极摘要（每次总结10个二级）',
+                title: '三级综合摘要（每次总结10个二级）',
                 enabled: true,
-                template: `请用约3000字将以下10个二级故事摘要**合并总结为1个终极摘要**，描述从故事开始到结束的完整宏大叙事：
+                template: `请用约2000字总结以下10个二级故事摘要，要求：
+1. 专注于总结每个故事的剧情内容
+2. 保留每个故事的核心剧情和人物关系
+3. 不要添加任何无关的内容或分析
 
-[10个二级摘要]
-
-要求：
-- 不要列出每个二级摘要的单独内容
-- 而是统合所有剧情线，用宏大的叙述描述整个故事的来龙去脉
-- 包含所有重要人物命运、剧情走向和最终结局`,
-                maxTokens: 4000,
+[10个故事的摘要]`,
+                maxTokens: 3000,
                 customPrompt: ''
             },
             adultContinue: {
@@ -851,9 +1116,29 @@ PluginSystem.register('story-config', {
 【必须融入的玩法】（选取1-2个，自然融入剧情）：
 [标签列表]
 
-请生成200-500字的故事开头，自然融入上述玩法。`,
+请生成100-300字的故事开头，自然融入上述玩法。`,
                 customPrompt: '',
                 addToPrompt: true
+            },
+            chatStart: {
+                title: '聊天开场',
+                enabled: true,
+                template: `【聊天开场】生成与角色聊天的开场白。
+
+请根据角色设定生成一句友好的开场白或问候语，50字以内。`,
+                customPrompt: ''
+            },
+            chatContinue: {
+                title: '聊天继续',
+                enabled: true,
+                template: `【聊天继续】根据对话历史继续聊天。
+
+要求：
+1. 保持角色个性
+2. 用第一人称回复
+3. 适当加入动作描写（用括号包裹）
+4. 语气自然流畅`,
+                customPrompt: ''
             }
         };
     },
@@ -1186,6 +1471,10 @@ ${choice ? `[用户选择了：${choice}]` : ''}
         try {
             const aiSetting = this.getAISetting('level1Summary', worldId);
             
+            if (!story || !story.scenes || story.scenes.length === 0) {
+                return '这是一个简短的故事。';
+            }
+            
             if (!aiSetting?.enabled) {
                 return this.generateSimpleSummary(story);
             }
@@ -1198,13 +1487,18 @@ ${choice ? `[用户选择了：${choice}]` : ''}
             const content = scenes.map((s, i) => {
                 let text = s.content;
                 if (s.choice) {
-                    text += `\n[用户选择了：${s.choice}]`;
+                    text += `\n\n用户选择：${s.choice}`;
                 }
-                return `[场景${i + 1}]\n${text}`;
-            }).join('\n\n');
+                return text;
+            }).join('\n\n---分隔线---\n\n');
+            
+            if (!content || content.trim() === '') {
+                return '这是一个简短的故事。';
+            }
             
             let template = aiSetting.template || '';
-            template = template.replace('[故事内容]', content);
+            template = template.replace('[完整故事内容]', content);
+template = template.replace('[故事内容]', content);
             
             const timePlugin = window.WorldTimePlugin;
             if (timePlugin && worldId) {
@@ -1230,11 +1524,66 @@ ${choice ? `[用户选择了：${choice}]` : ''}
         }
     },
 
-    generateSimpleSummary(story) {
+    async generateCorePlot(worldId, story) {
+        try {
+            const aiSetting = this.getAISetting('corePlot', worldId);
+            
+            if (!story || !story.scenes || story.scenes.length === 0) {
+                return this.getSimpleCorePlot(story);
+            }
+            
+            if (!aiSetting?.enabled) {
+                return this.getSimpleCorePlot(story);
+            }
+            
+            const scenes = story.scenes;
+            if (!scenes || scenes.length === 0) {
+                return '故事正在进行中';
+            }
+            
+            const content = scenes.map((s, i) => {
+                let text = s.content;
+                if (s.choice) {
+                    text += `\n\n用户选择：${s.choice}`;
+                }
+                return text;
+            }).join('\n\n---分隔线---\n\n');
+            
+            if (!content || content.trim() === '') {
+                return this.getSimpleCorePlot(story);
+            }
+            
+            let template = aiSetting.template || '';
+            template = template.replace('[完整故事内容]', content);
+template = template.replace('[故事内容]', content);
+            
+            const result = await ai.call(template, {
+                temperature: aiSetting.temperature || 0.3,
+                maxTokens: aiSetting.maxTokens || 100
+            });
+            
+            return result.trim();
+        } catch (e) {
+            console.error('生成核心情节失败:', e);
+            return this.getSimpleCorePlot(story);
+        }
+    },
+
+    getSimpleCorePlot(story) {
+        if (!story || !story.scenes || story.scenes.length === 0) {
+            return '故事正在进行中';
+        }
         const scenes = story.scenes;
-        if (!scenes || scenes.length === 0) {
+        const firstScene = scenes[0]?.content || '';
+        const lastScene = scenes[scenes.length - 1]?.content || '';
+        return (firstScene + lastScene).substring(0, 50) + '...';
+    },
+
+    generateSimpleSummary(story) {
+        if (!story || !story.scenes || story.scenes.length === 0) {
             return '这是一个简短的故事。';
         }
+        const scenes = story.scenes;
         
         return scenes.map((s, i) => {
             let text = s.content;
@@ -1472,7 +1821,8 @@ ${lastScene.substring(0, 300)}
         }
 
         const contentLength = ds.storyContentLength || 800;
-        const content = scenes.map(s => s.content).join('\n\n').substring(0, contentLength * 3);
+        const scenesContent = scenes.map(s => s.content).join('\n\n');
+        const content = contentLength > 0 ? scenesContent.substring(0, contentLength * 3) : scenesContent;
 
         let template = aiSetting.template || '';
         template = template.replace('[所有场景内容]', content);
@@ -1512,7 +1862,8 @@ ${lastScene.substring(0, 300)}
 
         const contentLength = ds.storyContentLength || 800;
         const toSummarize = level2Archives.slice(0, 10);
-        const content = toSummarize.map(s => s.summary).join('\n\n---\n\n').substring(0, contentLength * 5);
+        const summariesContent = toSummarize.map(s => s.summary).join('\n\n---\n\n');
+        const content = contentLength > 0 ? summariesContent.substring(0, contentLength * 5) : summariesContent;
 
         let template = aiSetting.template || '';
         template = template.replace('[10个故事的摘要]', content);
@@ -1561,7 +1912,8 @@ ${lastScene.substring(0, 300)}
         }
 
         const contentLength = ds.storyContentLength || 800;
-        const content = stories.map(s => s.summary).join('\n\n---\n\n').substring(0, contentLength * 5);
+        const storiesContent = stories.map(s => s.summary).join('\n\n---\n\n');
+        const content = contentLength > 0 ? storiesContent.substring(0, contentLength * 5) : storiesContent;
 
         let template = aiSetting.template || '';
         template = template.replace('[10个故事的摘要]', content);

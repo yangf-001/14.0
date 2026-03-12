@@ -25,7 +25,7 @@ const Settings = {
                 format: '流畅叙述'
             },
             adult: {
-                enabled: false,
+                enabled: true,
                 intensity: 50,
                 variety: 50,
                 include: [],

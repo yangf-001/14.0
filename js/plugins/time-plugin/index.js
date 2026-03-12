@@ -2,18 +2,187 @@ const TimePlugin = {
     _config: {
         enabled: true,
         showAgeInStory: true,
-        birthdayEnabled: false
+        birthdayEnabled: true,
+        birthdayAdvanceDays: 7
     },
 
     _relationTypes: [],
     _relationLoaded: false,
 
+    setCharacterBirthday(worldId, charId, month, day) {
+        const timeData = this._getWorldTime(worldId);
+        if (!timeData.characterBirthdays) {
+            timeData.characterBirthdays = {};
+        }
+        timeData.characterBirthdays[charId] = { month: parseInt(month), day: parseInt(day) };
+        this._saveWorldTime(worldId, timeData);
+    },
+
+    getCharacterBirthday(worldId, charId) {
+        const timeData = this._getWorldTime(worldId);
+        return timeData.characterBirthdays?.[charId] || null;
+    },
+
+    getCharacterBirthdayString(worldId, charId) {
+        const birthday = this.getCharacterBirthday(worldId, charId);
+        if (!birthday) return null;
+        return `${birthday.month}月${birthday.day}日`;
+    },
+
+    getCharactersWithBirthday(worldId) {
+        const timeData = this._getWorldTime(worldId);
+        const characters = Data.getCharacters(worldId);
+        const birthdays = timeData.characterBirthdays || {};
+        
+        return characters
+            .filter(char => birthdays[char.id])
+            .map(char => ({
+                id: char.id,
+                name: char.name,
+                month: birthdays[char.id].month,
+                day: birthdays[char.id].day,
+                birthdayString: `${birthdays[char.id].month}月${birthdays[char.id].day}日`
+            }));
+    },
+
+    getUpcomingBirthdays(worldId, days = 7) {
+        const timeData = this._getWorldTime(worldId);
+        const currentYear = timeData.currentYear;
+        const currentMonth = timeData.currentMonth;
+        const currentDay = timeData.currentDay;
+        
+        const birthdays = timeData.characterBirthdays || {};
+        const characters = Data.getCharacters(worldId);
+        const upcoming = [];
+        
+        for (const char of characters) {
+            const b = birthdays[char.id];
+            if (!b) continue;
+            
+            let isUpcoming = false;
+            if (b.month > currentMonth || (b.month === currentMonth && b.day >= currentDay)) {
+                const daysUntil = (b.month - currentMonth) * 30 + (b.day - currentDay);
+                if (daysUntil <= days) {
+                    isUpcoming = true;
+                }
+            } else {
+                const daysUntil = (12 - currentMonth + b.month) * 30 + (b.day - currentDay);
+                if (daysUntil <= days) {
+                    isUpcoming = true;
+                }
+            }
+            
+            if (isUpcoming) {
+                const daysUntil = b.month > currentMonth || (b.month === currentMonth && b.day >= currentDay)
+                    ? (b.month - currentMonth) * 30 + (b.day - currentDay)
+                    : (12 - currentMonth + b.month) * 30 + (b.day - currentDay);
+                
+                upcoming.push({
+                    id: char.id,
+                    name: char.name,
+                    month: b.month,
+                    day: b.day,
+                    birthdayString: `${b.month}月${b.day}日`,
+                    daysUntil: daysUntil,
+                    isToday: b.month === currentMonth && b.day === currentDay
+                });
+            }
+        }
+        
+        return upcoming.sort((a, b) => a.daysUntil - b.daysUntil);
+    },
+
+    checkBirthdayEvents(worldId) {
+        const config = this._getConfig();
+        if (!config.birthdayEnabled) return [];
+        
+        const timeData = this._getWorldTime(worldId);
+        const birthdays = timeData.characterBirthdays || {};
+        const characters = Data.getCharacters(worldId);
+        const events = [];
+        
+        for (const char of characters) {
+            const b = birthdays[char.id];
+            if (!b) continue;
+            
+            if (b.month === timeData.currentMonth && b.day === timeData.currentDay) {
+                const baseAge = timeData.characterAges?.[char.id]?.baseAge || char.age;
+                const yearsPassed = timeData.currentYear - (timeData.storyStartYear || timeData.currentYear);
+                const currentAge = (timeData.protagonistAge || baseAge) + (char.age - (timeData.protagonistAge || baseAge)) + yearsPassed;
+                
+                events.push({
+                    type: 'birthday',
+                    charId: char.id,
+                    charName: char.name,
+                    age: currentAge + 1,
+                    birthdayString: `${b.month}月${b.day}日`
+                });
+            }
+        }
+        
+        return events;
+    },
+
+    getBirthdayContext(worldId) {
+        const config = this._getConfig();
+        if (!config.birthdayEnabled) return '';
+        
+        const upcoming = this.getUpcomingBirthdays(worldId, config.birthdayAdvanceDays || 7);
+        if (upcoming.length === 0) return '';
+        
+        const today = upcoming.filter(b => b.isToday);
+        const soon = upcoming.filter(b => !b.isToday);
+        
+        let context = '\n【生日信息】';
+        
+        if (today.length > 0) {
+            context += '\n今天是以下角色的生日：' + today.map(b => `${b.name}(${b.birthdayString})`).join('、') + '！';
+        }
+        
+        if (soon.length > 0) {
+            context += '\n近期生日：' + soon.map(b => `${b.name}(${b.birthdayString},还有${b.daysUntil}天)`).join('、') + '。';
+        }
+        
+        return context;
+    },
+
+    getBirthdayAPI() {
+        return {
+            setCharacterBirthday: this.setCharacterBirthday.bind(this),
+            getCharacterBirthday: this.getCharacterBirthday.bind(this),
+            getCharacterBirthdayString: this.getCharacterBirthdayString.bind(this),
+            getCharactersWithBirthday: this.getCharactersWithBirthday.bind(this),
+            getUpcomingBirthdays: this.getUpcomingBirthdays.bind(this),
+            checkBirthdayEvents: this.checkBirthdayEvents.bind(this),
+            getBirthdayContext: this.getBirthdayContext.bind(this)
+        };
+    },
+
     async _loadRelationTypes() {
         if (this._relationLoaded) return;
         
+        const getUserContentPath = () => {
+            const script = document.currentScript;
+            if (script && script.src) {
+                const scriptUrl = new URL(script.src);
+                const pluginDir = scriptUrl.pathname.replace(/[^/]*$/, '');
+                return pluginDir + 'user-content/';
+            }
+            
+            const scripts = document.getElementsByTagName('script');
+            for (let s of scripts) {
+                if (s.src && s.src.includes('time-plugin')) {
+                    const scriptUrl = new URL(s.src);
+                    const pluginDir = scriptUrl.pathname.replace(/[^/]*$/, '');
+                    return pluginDir + 'user-content/';
+                }
+            }
+            
+            return 'js/plugins/time-plugin/user-content/';
+        };
+        
         const possiblePaths = [
-            './js/plugins/time-plugin/user-content/relationships.txt',
-            './user-content/relationships.txt'
+            getUserContentPath() + 'relationships.txt'
         ];
         
         for (const path of possiblePaths) {
@@ -234,6 +403,15 @@ const TimePlugin = {
         }
 
         this._saveWorldTime(worldId, timeData);
+        
+        const birthdayEvents = this.checkBirthdayEvents(worldId);
+        if (birthdayEvents.length > 0) {
+            for (const event of birthdayEvents) {
+                console.log(`[生日事件] 今天是${event.charName}的生日！TA满${event.age}岁了！`);
+                PluginSystem.triggerPluginEvent('birthday', event);
+            }
+        }
+        
         return timeData;
     },
 
@@ -516,6 +694,35 @@ const TimePlugin = {
         
         const stats = this.getPluginStats(worldId);
         const relationships = this.getAllRelationships(worldId);
+        const config = this._getConfig();
+        
+        let birthdaySection = '';
+        if (config.birthdayEnabled) {
+            const charactersWithBirthday = this.getCharactersWithBirthday(worldId);
+            const upcomingBirthdays = this.getUpcomingBirthdays(worldId, config.birthdayAdvanceDays || 7);
+            
+            const birthdayListHtml = charactersWithBirthday.length > 0 
+                ? charactersWithBirthday.map(b => {
+                    const upcoming = upcomingBirthdays.find(u => u.id === b.id);
+                    let info = b.birthdayString;
+                    if (upcoming) {
+                        if (upcoming.isToday) {
+                            info += ' 🎂今日生日！';
+                        } else {
+                            info += ` (${upcoming.daysUntil}天后)`;
+                        }
+                    }
+                    return `<span class="time-birthday-item">${b.name}: ${info}</span>`;
+                }).join('')
+                : '<span class="time-tip">暂无生日信息</span>';
+            
+            birthdaySection = `
+                <div class="time-birthday-section">
+                    <div class="time-char-list-title">🎂 生日信息</div>
+                    <div class="time-birthday-list">${birthdayListHtml}</div>
+                </div>
+            `;
+        }
 
         if (!stats.time || stats.time.storyStartAge === null) {
             return `
@@ -570,6 +777,7 @@ const TimePlugin = {
                             <span class="time-value">${stats.time.yearsPassed}年</span>
                         </div>
                     </div>
+                    ${birthdaySection}
                     <div class="time-char-list">
                         <div class="time-char-list-title">🎭 角色年龄与关系</div>
                         ${charListHtml}
@@ -578,6 +786,7 @@ const TimePlugin = {
                         <button class="btn btn-secondary" onclick="TimePluginUI.showTimeModal()">⏱️ 调整时间</button>
                         <button class="btn btn-secondary" onclick="TimePluginUI.showRelationModal()">👥 年龄关系</button>
                         <button class="btn btn-secondary" onclick="TimePluginUI.showRelationshipModal()">❤️ 角色关系</button>
+                        ${config.birthdayEnabled ? `<button class="btn btn-secondary" onclick="TimePluginUI.showBirthdayModal()">🎂 生日设置</button>` : ''}
                         <button class="btn btn-secondary" onclick="TimePluginUI.showResetConfirm()">🔄 重置</button>
                     </div>
                 </div>
@@ -955,6 +1164,94 @@ const TimePluginUI = {
     
     setRefreshCallback(callback) {
         this.refreshCallback = callback;
+    },
+
+    showBirthdayModal() {
+        const world = Data.getCurrentWorld();
+        if (!world) return;
+
+        const characters = Data.getCharacters(world.id);
+
+        const modal = document.createElement('div');
+        modal.className = 'modal active';
+        modal.innerHTML = `
+            <div class="modal-content" style="max-width: 550px;">
+                <div class="modal-header">
+                    <h3>🎂 设置角色生日</h3>
+                    <button class="modal-close" onclick="this.closest('.modal').remove()">×</button>
+                </div>
+                <div class="modal-body">
+                    <p class="time-tip">设置角色的生日（月-日），系统会在适当时机提醒生日信息</p>
+                    <div id="birthdayList" style="max-height: 350px; overflow-y: auto;">
+                        ${characters.map(char => {
+                            const birthday = TimePlugin.getCharacterBirthday(world.id, char.id);
+                            const month = birthday ? birthday.month : '';
+                            const day = birthday ? birthday.day : '';
+                            return `
+                                <div class="form-group" style="display: flex; align-items: center; gap: 10px; padding: 10px; background: var(--bg); border-radius: 6px; margin-bottom: 8px;">
+                                    <label style="min-width: 80px; font-weight: 500;">${char.name}</label>
+                                    <input type="number" class="birthday-month" data-char-id="${char.id}" value="${month}" min="1" max="12" placeholder="月" style="width: 60px;">
+                                    <span>月</span>
+                                    <input type="number" class="birthday-day" data-char-id="${char.id}" value="${day}" min="1" max="31" placeholder="日" style="width: 60px;">
+                                    <span>日</span>
+                                    ${birthday ? `<button class="btn btn-secondary" style="padding: 4px 8px; font-size: 0.75rem;" onclick="TimePluginUI.clearBirthday(${char.id})">清除</button>` : ''}
+                                </div>
+                            `;
+                        }).join('')}
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button class="btn" onclick="TimePluginUI.saveBirthdays()">保存</button>
+                    <button class="btn btn-secondary" onclick="this.closest('.modal').remove()">关闭</button>
+                </div>
+            </div>
+        `;
+        document.body.appendChild(modal);
+    },
+
+    saveBirthdays() {
+        const world = Data.getCurrentWorld();
+        if (!world) return;
+
+        const monthInputs = document.querySelectorAll('.birthday-month');
+        const dayInputs = document.querySelectorAll('.birthday-day');
+
+        monthInputs.forEach(monthInput => {
+            const charId = monthInput.dataset.charId;
+            const dayInput = document.querySelector(`.birthday-day[data-char-id="${charId}"]`);
+            const month = parseInt(monthInput.value);
+            const day = parseInt(dayInput.value);
+
+            if (month >= 1 && month <= 12 && day >= 1 && day <= 31) {
+                TimePlugin.setCharacterBirthday(world.id, charId, month, day);
+            }
+        });
+
+        document.querySelector('.modal.active')?.remove();
+
+        if (this.refreshCallback) {
+            this.refreshCallback();
+        }
+    },
+
+    clearBirthday(charId) {
+        const world = Data.getCurrentWorld();
+        if (!world) return;
+
+        const timeData = TimePlugin._getWorldTime(world.id);
+        if (timeData.characterBirthdays && timeData.characterBirthdays[charId]) {
+            delete timeData.characterBirthdays[charId];
+            TimePlugin._saveWorldTime(world.id, timeData);
+        }
+
+        const monthInput = document.querySelector(`.birthday-month[data-char-id="${charId}"]`);
+        const dayInput = document.querySelector(`.birthday-day[data-char-id="${charId}"]`);
+        if (monthInput) monthInput.value = '';
+        if (dayInput) dayInput.value = '';
+
+        const row = monthInput?.closest('.form-group');
+        const clearBtn = row?.querySelector('button');
+        if (clearBtn) clearBtn.remove();
     }
 };
 
@@ -962,7 +1259,7 @@ window.TimePluginUI = TimePluginUI;
 
 PluginSystem.register('time-plugin', {
     description: '时间插件 - 故事时间与角色年龄动态管理',
-    features: ['动态年龄计算', '时间推进管理', '角色年龄关系设置', '时间重置', '独立世界时间', '角色关系监测'],
+    features: ['动态年龄计算', '时间推进管理', '角色年龄关系设置', '时间重置', '独立世界时间', '角色关系监测', '生日管理'],
 
     init() {
         console.log('Time plugin loaded');
@@ -970,7 +1267,9 @@ PluginSystem.register('time-plugin', {
     },
 
     getStoryContext(worldId) {
-        return TimePlugin.getRelationshipContext(worldId);
+        const relationshipContext = TimePlugin.getRelationshipContext(worldId);
+        const birthdayContext = TimePlugin.getBirthdayContext(worldId);
+        return relationshipContext + birthdayContext;
     },
 
     getRelationshipAPI() {
@@ -982,6 +1281,18 @@ PluginSystem.register('time-plugin', {
             updateCharacterRelationship: TimePlugin.updateCharacterRelationship.bind(TimePlugin),
             getAllRelationships: TimePlugin.getAllRelationships.bind(TimePlugin),
             getRelationshipContext: TimePlugin.getRelationshipContext.bind(TimePlugin)
+        };
+    },
+
+    getBirthdayAPI() {
+        return {
+            setCharacterBirthday: TimePlugin.setCharacterBirthday.bind(TimePlugin),
+            getCharacterBirthday: TimePlugin.getCharacterBirthday.bind(TimePlugin),
+            getCharacterBirthdayString: TimePlugin.getCharacterBirthdayString.bind(TimePlugin),
+            getCharactersWithBirthday: TimePlugin.getCharactersWithBirthday.bind(TimePlugin),
+            getUpcomingBirthdays: TimePlugin.getUpcomingBirthdays.bind(TimePlugin),
+            checkBirthdayEvents: TimePlugin.checkBirthdayEvents.bind(TimePlugin),
+            getBirthdayContext: TimePlugin.getBirthdayContext.bind(TimePlugin)
         };
     },
 

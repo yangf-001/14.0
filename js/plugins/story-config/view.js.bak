@@ -113,7 +113,7 @@ ViewCallbacks.storyConfig._getDefaultAISettings = function() {
         storyStart: {
             title: '故事开头生成',
             enabled: true,
-            template: `[系统提示词]\n\n生成一个故事开头：\n角色信息：[角色JSON]\n场景设定：[场景]\n风格要求：[风格设置]\n\n请生成200-500字的故事开头，并自然地引出后续剧情发展的可能性。`,
+            template: `[系统提示词]\n\n生成一个故事开头：\n角色信息：[角色JSON]\n场景设定：[场景]\n风格要求：[风格设置]\n\n请生成100-300字的故事开头，并自然地引出后续剧情发展的可能性。`,
             customPrompt: ''
         },
         storyContinue: {
@@ -464,7 +464,7 @@ ViewCallbacks.storyConfig.applyPreset = function(idx) {
     const presets = [
         {
             name: '默认风格',
-            template: `[系统提示词]\n\n生成一个故事开头：\n角色信息：[角色JSON]\n场景设定：[场景]\n风格要求：[风格设置]\n\n请生成200-500字的故事开头，并自然地引出后续剧情发展的可能性。`,
+            template: `[系统提示词]\n\n生成一个故事开头：\n角色信息：[角色JSON]\n场景设定：[场景]\n风格要求：[风格设置]\n\n请生成100-300字的故事开头，并自然地引出后续剧情发展的可能性。`,
             customPrompt: ''
         },
         {

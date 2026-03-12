@@ -45,7 +45,7 @@ class AI {
     }
 
     _generateCacheKey(prompt, options) {
-        return btoa(encodeURIComponent(prompt.substring(0, 100) + JSON.stringify(options)));
+        return btoa(encodeURIComponent(prompt + JSON.stringify(options)));
     }
 
     _getFromCache(key) {
@@ -161,11 +161,11 @@ class AI {
         
         const length = options.length || '中篇';
         const lengthMap = {
-            '短篇': this.CONSTANTS.MAX_TOKENS_SHORT,
-            '中篇': this.CONSTANTS.MAX_TOKENS_STORY,
-            '长篇': this.CONSTANTS.MAX_TOKENS
+            '短篇': 500,  // 对应100-300字
+            '中篇': 800,  // 对应300-500字
+            '长篇': 1200  // 对应500-800字
         };
-        return lengthMap[length] || this.CONSTANTS.MAX_TOKENS_STORY;
+        return lengthMap[length] || 800;
     }
 
     async chat(messages, options = {}) {
@@ -208,25 +208,7 @@ class AI {
             }
         }
         
-        const s = settings.content || {};
-        let prompt = '你是一个色情故事生成AI。请用色情故事的方式呈现内容。专注于性场景的详细描写，包括肢体动作、内心描写、感官描写和语气描写。';
-        
-        if (s.tone) prompt += `\n风格基调：${s.tone}`;
-        if (s.detailLevel) prompt += `\n描写详细程度：${s.detailLevel}`;
-        if (s.intimacy && s.intimacy > 0) {
-            const levels = ['纯爱', '暧昧', '亲密', '热烈', '激情', '淫乱', '重口'];
-            prompt += `\n亲密程度：${levels[Math.min(6, Math.floor(s.intimacy / 15))] || '纯爱'}`;
-        }
-        
-        if (s.forbidden && s.forbidden.length > 0) {
-            prompt += `\n禁止内容：${s.forbidden.join('、')}`;
-        }
-        
-        prompt += '\n请用故事的方式呈现内容。重要提示：只输出故事正文内容，不要包含任何选项、后续发展、剧情走向、选择提示等信息。用词直白露骨，直接描写性器官接触、插入、抽动、高潮等细节。';
-        
-        prompt += '\n\n【重要限制】剧情中女角色不能和陌生人、路人或其他未建立关系的角色进行亲密行为。所有互动必须由主角和已建立关系的角色完成，如果需要多人参与，请用主角的分身、神奇道具、魔法道具、玩具等来代替。';
-        
-        return prompt;
+        throw new Error('请先在AI设置中配置系统提示词');
     }
 
     clearCache() {

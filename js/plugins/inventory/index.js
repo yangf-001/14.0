@@ -241,9 +241,10 @@ PluginSystem.register('inventory', {
             if (item.effects.intelligence) char.stats.intelligence = Math.min(200, Math.max(0, (char.stats.intelligence || 0) + item.effects.intelligence));
             if (item.effects.strength) char.stats.strength = Math.min(200, Math.max(0, (char.stats.strength || 0) + item.effects.strength));
             if (item.effects.agility) char.stats.agility = Math.min(200, Math.max(0, (char.stats.agility || 0) + item.effects.agility));
-            if (item.effects.affection) char.stats.affection = Math.min(200, Math.max(0, (char.stats.affection || 0) + item.effects.affection));
-            if (item.effects.sexArousal) char.stats.sexArousal = Math.min(200, Math.max(0, (char.stats.sexArousal || 0) + item.effects.sexArousal));
-            if (item.effects.sexLibido) char.stats.sexLibido = Math.min(200, Math.max(0, (char.stats.sexLibido || 0) + item.effects.sexLibido));
+            if (item.effects.intimacy || item.effects.affection) char.stats.intimacy = Math.min(200, Math.max(0, (char.stats.intimacy || 0) + (item.effects.intimacy || item.effects.affection || 0)));
+            if (item.effects.arousal || item.effects.sexArousal) char.stats.arousal = Math.min(200, Math.max(0, (char.stats.arousal || 0) + (item.effects.arousal || item.effects.sexArousal || 0)));
+            if (item.effects.willingness) char.stats.willingness = Math.min(200, Math.max(0, (char.stats.willingness || 0) + item.effects.willingness));
+            if (item.effects.experience) char.stats.experience = Math.min(200, Math.max(0, (char.stats.experience || 0) + item.effects.experience));
             if (item.effects.sexSensitivity) char.stats.sexSensitivity = Math.min(200, Math.max(0, (char.stats.sexSensitivity || 0) + item.effects.sexSensitivity));
             
             Data.updateCharacter(worldId, characterId, { stats: char.stats });

@@ -28,233 +28,13 @@ const StoryController = {
         }
     },
     
-    async continueStory() {
-        const selectedCharIds = Array.from(document.querySelectorAll('input[name="storyCharsContinue"]:checked')).map(c => c.value);
-        const charRatio = document.getElementById('charRatio')?.value || 80;
-        const world = Data.getCurrentWorld();
-        
-        const currentStory = Story.load(world.id);
-        const currentCharIds = currentStory?.characters?.map(c => c.id) || [];
-        
-        const addedChars = selectedCharIds.filter(id => !currentCharIds.includes(id));
-        const stillPresentChars = selectedCharIds.filter(id => currentCharIds.includes(id));
-        
-        const allChars = Data.getCharacters(world.id);
-        
-        const addedCharInfo = addedChars.map(id => {
-            const char = allChars.find(c => c.id === id);
-            return char ? `${char.name}` : '';
-        }).filter(Boolean);
-        
-        const stillPresentCharInfo = stillPresentChars.map(id => {
-            const char = allChars.find(c => c.id === id);
-            return char ? `${char.name}` : '';
-        }).filter(Boolean);
-        
-        let charChangeNote = '';
-        if (addedCharInfo.length > 0 || stillPresentCharInfo.length > 0) {
-            charChangeNote = '\n\n【参与角色调整】';
-            if (stillPresentCharInfo.length > 0) {
-                charChangeNote += `\n继续参与的角色：${stillPresentCharInfo.join('、')}`;
-            }
-            if (addedCharInfo.length > 0) {
-                charChangeNote += `\n新加入的角色：${addedCharInfo.join('、')}（这些角色与主角可能还不熟悉，需要适当介绍）`;
-            }
-        }
-        
-        try {
-            await Story.continue(null, { 
-                characters: selectedCharIds,
-                charChangeNote: charChangeNote,
-                charRatio: parseInt(charRatio)
-            });
-            App.namespace.router.showPage('story');
-            this.updateStoryRightPanel();
-        } catch (err) {
-            alert('错误：' + err.message);
-        }
-    },
-    
-    async continueStoryWithNewChars() {
-        const selectedCharIds = Array.from(document.querySelectorAll('input[name="storyCharsContinue"]:checked')).map(c => c.value);
-        const charRatio = document.getElementById('charRatio')?.value || 80;
-        const world = Data.getCurrentWorld();
-        
-        const currentStory = Story.load(world.id);
-        const currentCharIds = currentStory?.characters?.map(c => c.id) || [];
-        
-        const addedChars = selectedCharIds.filter(id => !currentCharIds.includes(id));
-        const stillPresentChars = selectedCharIds.filter(id => currentCharIds.includes(id));
-        
-        const allChars = Data.getCharacters(world.id);
-        
-        const addedCharInfo = addedChars.map(id => {
-            const char = allChars.find(c => c.id === id);
-            return char ? `${char.name}` : '';
-        }).filter(Boolean);
-        
-        const stillPresentCharInfo = stillPresentChars.map(id => {
-            const char = allChars.find(c => c.id === id);
-            return char ? `${char.name}` : '';
-        }).filter(Boolean);
-        
-        let charChangeNote = '';
-        if (addedCharInfo.length > 0 || stillPresentCharInfo.length > 0) {
-            charChangeNote = '\n\n【参与角色调整】';
-            if (stillPresentCharInfo.length > 0) {
-                charChangeNote += `\n继续参与的角色：${stillPresentCharInfo.join('、')}`;
-            }
-            if (addedCharInfo.length > 0) {
-                charChangeNote += `\n新加入的角色：${addedCharInfo.join('、')}（这些角色与主角可能还不熟悉，需要适当介绍）`;
-            }
-        }
-        
-        try {
-            await Story.continue(null, { 
-                characters: selectedCharIds,
-                charChangeNote: charChangeNote,
-                generateNewScene: true,
-                charRatio: parseInt(charRatio)
-            });
-            App.namespace.router.showPage('story');
-            this.updateStoryRightPanel();
-            document.getElementById('storyCharSelector').style.display = 'none';
-        } catch (err) {
-            alert('错误：' + err.message);
-        }
-    },
-    
-    async refreshChoicesWithNewChars() {
-        const selectedCharIds = Array.from(document.querySelectorAll('input[name="storyCharsContinue"]:checked')).map(c => c.value);
-        const world = Data.getCurrentWorld();
-        
-        const currentStory = Story.load(world.id);
-        const currentCharIds = currentStory?.characters?.map(c => c.id) || [];
-        
-        const addedChars = selectedCharIds.filter(id => !currentCharIds.includes(id));
-        const stillPresentChars = selectedCharIds.filter(id => currentCharIds.includes(id));
-        
-        const allChars = Data.getCharacters(world.id);
-        
-        const addedCharInfo = addedChars.map(id => {
-            const char = allChars.find(c => c.id === id);
-            return char ? `${char.name}` : '';
-        }).filter(Boolean);
-        
-        const stillPresentCharInfo = stillPresentChars.map(id => {
-            const char = allChars.find(c => c.id === id);
-            return char ? `${char.name}` : '';
-        }).filter(Boolean);
-        
-        let charChangeNote = '';
-        if (addedCharInfo.length > 0 || stillPresentCharInfo.length > 0) {
-            charChangeNote = '\n\n【参与角色调整】';
-            if (stillPresentCharInfo.length > 0) {
-                charChangeNote += `\n继续参与的角色：${stillPresentCharInfo.join('、')}`;
-            }
-            if (addedCharInfo.length > 0) {
-                charChangeNote += `\n新加入的角色：${addedCharInfo.join('、')}（这些角色与主角可能还不熟悉，需要适当介绍）`;
-            }
-        }
-        
-        try {
-            const newChoices = await Story.refreshChoices(currentStory, {
-                characters: selectedCharIds,
-                charChangeNote: charChangeNote
-            });
-            
-            const lastSceneIndex = currentStory.scenes.length - 1;
-            if (currentStory.scenes[lastSceneIndex]) {
-                currentStory.scenes[lastSceneIndex].choices = newChoices;
-            }
-            
-            Data.saveStory(world.id, currentStory);
-            
-            App.namespace.router.showPage('story');
-            this.updateStoryRightPanel();
-            document.getElementById('storyCharSelector').style.display = 'none';
-        } catch (err) {
-            alert('错误：' + err.message);
-        }
-    },
-    
-    async getRecommendedChars() {
-        const world = Data.getCurrentWorld();
-        if (!world) return;
-        
-        const story = Story.load(world.id);
-        if (!story || !story.scenes || story.scenes.length === 0) {
-            alert('暂无剧情内容，无法推荐角色');
-            return;
-        }
-        
-        const allChars = Data.getCharacters(world.id);
-        if (allChars.length === 0) {
-            alert('暂无角色数据');
-            return;
-        }
-        
-        const recentScenes = story.scenes.slice(-3);
-        const recentContent = recentScenes.map(s => s.content).join('\n\n');
-        const currentCharNames = story.characters?.map(c => c.name).join('、') || '无';
-        const allCharNames = allChars.map(c => c.name).join('、');
-        
-        const prompt = `根据以下最近的故事剧情，推荐接下来最应该参与剧情的角色。
-
-【当前参与角色】：${currentCharNames}
-【所有可用角色】：${allCharNames}
-
-【最近剧情】：
-${recentContent}
-
-请根据剧情发展和人物关系，推荐3-5个最适合参与下一段剧情的角色。只返回角色名字，用顿号分隔，不需要其他解释。`;
-
-        try {
-            const loadingDiv = document.getElementById('recommendedChars');
-            const loadingList = document.getElementById('recommendedCharsList');
-            loadingDiv.style.display = 'block';
-            loadingList.innerHTML = '<span style="color: var(--bg); font-size: 0.8rem;">正在分析剧情...</span>';
-            
-            const result = await ai.call(prompt, { 
-                system: '你是一个故事创作助手，擅长分析剧情和人物关系。',
-                temperature: 0.3
-            });
-            
-            const recommended = result.split(/[、，,]/).map(s => s.trim()).filter(s => s.length > 0);
-            
-            const matchedChars = allChars.filter(c => 
-                recommended.some(r => c.name.includes(r) || r.includes(c.name))
-            );
-            
-            loadingList.innerHTML = matchedChars.map(c => `
-                <button class="btn btn-secondary" onclick="App.namespace.storyController.toggleRecommendChar('${c.id}')" 
-                    style="padding: 4px 8px; font-size: 0.75rem; background: var(--bg); color: var(--accent);">
-                    ${c.name}
-                </button>
-            `).join('');
-            
-            matchedChars.forEach(c => {
-                const checkbox = document.querySelector(`input[name="storyCharsContinue"][value="${c.id}"]`);
-                if (checkbox) checkbox.checked = true;
-            });
-            
-        } catch (err) {
-            console.error('推荐角色失败:', err);
-            alert('推荐角色失败，请重试');
-        }
-    },
-    
-    toggleRecommendChar(charId) {
-        const checkbox = document.querySelector(`input[name="storyCharsContinue"][value="${charId}"]`);
-        if (checkbox) {
-            checkbox.checked = !checkbox.checked;
-        }
-    },
-    
     async makeChoice(choice) {
         try {
             await Story.continue(choice);
-            App.namespace.router.showPage('story');
+            const main = document.getElementById('mainContent');
+            if (main) {
+                Pages.renderStory(main);
+            }
             this.updateStoryRightPanel();
         } catch (err) {
             alert('错误：' + err.message);
@@ -281,13 +61,31 @@ ${recentContent}
     },
     
     makeCustomChoice() {
-        const customText = document.getElementById('customChoiceText').value.trim();
-        if (!customText) {
-            alert('请输入你的选择');
+        const simpleInput = document.getElementById('customChoiceText');
+        
+        if (simpleInput && simpleInput.offsetParent !== null) {
+            const text = simpleInput.value.trim();
+            if (!text) {
+                return;
+            }
+            const inputDiv = document.getElementById('simpleStoryCustomInput');
+            if (inputDiv) inputDiv.style.display = 'none';
+            simpleInput.value = '';
+            
+            if (window.SimpleStoryPlugin) {
+                SimpleStoryPlugin._continueStory(text);
+            }
             return;
         }
-        document.getElementById('customChoiceInput').style.display = 'none';
-        document.getElementById('customChoiceText').value = '';
+        
+        const customText = document.getElementById('customChoiceText')?.value.trim();
+        if (!customText) {
+            return;
+        }
+        const inputDiv = document.getElementById('customChoiceInput');
+        if (inputDiv) inputDiv.style.display = 'none';
+        const textInput = document.getElementById('customChoiceText');
+        if (textInput) textInput.value = '';
         this.makeChoice(customText);
     },
     
@@ -307,7 +105,6 @@ ${recentContent}
         try {
             const archive = await Story.end();
             
-            // 支持新格式（stories数组）和旧格式
             const storyCount = archive.stories ? archive.stories.length : 1;
             const sceneCount = archive.stories 
                 ? archive.stories.reduce((sum, s) => sum + (s.sceneCount || 0), 0)
@@ -344,32 +141,160 @@ ${recentContent}
         } catch (err) {
             alert('错误：' + err.message);
         }
+    },
+    
+    showWorldEditModal() {
+        const world = Data.getCurrentWorld();
+        if (!world) {
+            alert('请先选择一个世界');
+            return;
+        }
+        
+        const plugin = Story._getPlugin();
+        const level3Archives = plugin?.getLevel3Archives(world.id) || [];
+        const level2Archives = plugin?.getLevel2Archives(world.id) || [];
+        const archives = plugin?.getArchives(world.id) || [];
+        
+        let allStoryContent = '';
+        
+        for (const l3 of level3Archives) {
+            if (l3.summary) {
+                allStoryContent += `\n\n【很久以前的故事】\n${l3.summary}`;
+            }
+        }
+        
+        for (const l2 of level2Archives) {
+            if (l2.summary) {
+                allStoryContent += `\n\n【之前的故事】\n${l2.summary}`;
+            }
+        }
+        
+        for (const archive of archives) {
+            if (archive.fullSummary) {
+                allStoryContent += `\n\n【上一个故事】\n${archive.fullSummary}`;
+            }
+        }
+        
+        let timeInfo = '';
+        const timePlugin = window.WorldTimePlugin;
+        if (timePlugin) {
+            const displayTime = timePlugin.getDisplayTime(world.id);
+            if (displayTime) {
+                timeInfo = `主角年龄：${displayTime.protagonistAge}岁<br>故事时间：${displayTime.formatted}<br>从${displayTime.storyStartAge}岁开始，已过${displayTime.yearsPassed}年`;
+            }
+        }
+        
+        const modalContent = `
+            <div style="max-height: 60vh; overflow-y: auto;">
+                <h3 style="margin-bottom: 16px;">🎮 世界编辑</h3>
+                
+                <div style="margin-bottom: 20px;">
+                    <h4 style="font-size: 0.9rem; margin-bottom: 8px;">⏰ 时间设置</h4>
+                    <div style="font-size: 0.85rem; color: var(--text-dim); margin-bottom: 8px;">${timeInfo || '暂无时间信息'}</div>
+                    <button class="btn btn-secondary" onclick="App.namespace.storyController.showTimeEditModal()">调整时间</button>
+                </div>
+                
+                <div style="margin-bottom: 20px;">
+                    <h4 style="font-size: 0.9rem; margin-bottom: 8px;">📜 剧情总结</h4>
+                    <textarea id="storySummaryEdit" style="width: 100%; min-height: 150px; padding: 8px; border-radius: 6px; border: 1px solid var(--border); background: var(--bg); color: var(--text);" placeholder="编辑之前的剧情总结...">${allStoryContent}</textarea>
+                    <button class="btn btn-secondary" onclick="App.namespace.storyController.saveStorySummary()" style="margin-top: 8px;">保存总结</button>
+                </div>
+                
+                <div>
+                    <h4 style="font-size: 0.9rem; margin-bottom: 8px;">📚 故事历史</h4>
+                    <div style="font-size: 0.8rem; color: var(--text-dim);">
+                        <p>三级储存：${level3Archives.length}个</p>
+                        <p>二级储存：${level2Archives.length}个</p>
+                        <p>一级储存：${archives.length}个</p>
+                    </div>
+                    <button class="btn btn-secondary" onclick="App.namespace.storyController.clearStoryHistory()" style="margin-top: 8px; color: #ff6b6b;">清除所有历史</button>
+                </div>
+            </div>
+            <button class="btn btn-secondary" onclick="App.namespace.modal.close()" style="margin-top: 16px;">关闭</button>
+        `;
+        App.namespace.modal.show('🎮 世界编辑', modalContent);
+    },
+    
+    showTimeEditModal() {
+        const world = Data.getCurrentWorld();
+        if (!world) return;
+        
+        const timePlugin = window.WorldTimePlugin;
+        if (!timePlugin) {
+            alert('时间插件未加载');
+            return;
+        }
+        
+        const displayTime = timePlugin.getDisplayTime(world.id);
+        const currentAge = displayTime?.protagonistAge || 18;
+        const currentYear = displayTime?.year || new Date().getFullYear();
+        
+        const modalContent = `
+            <div style="margin-bottom: 16px;">
+                <label style="display: block; margin-bottom: 8px;">主角年龄：<input type="number" id="editProtagonistAge" value="${currentAge}" min="1" max="100" style="width: 60px; padding: 4px;"></label>
+                <label style="display: block; margin-bottom: 8px;">故事年份：<input type="number" id="editStoryYear" value="${currentYear}" style="width: 80px; padding: 4px;"></label>
+            </div>
+            <button class="btn" onclick="App.namespace.storyController.saveTimeEdit()">保存</button>
+            <button class="btn btn-secondary" onclick="App.namespace.modal.close()" style="margin-left: 8px;">取消</button>
+        `;
+        App.namespace.modal.show('⏰ 调整时间', modalContent);
+    },
+    
+    saveTimeEdit() {
+        const world = Data.getCurrentWorld();
+        if (!world) return;
+        
+        const timePlugin = window.WorldTimePlugin;
+        if (!timePlugin) return;
+        
+        const newAge = parseInt(document.getElementById('editProtagonistAge').value, 10);
+        const newYear = parseInt(document.getElementById('editStoryYear').value, 10);
+        
+        const timeData = timePlugin._getWorldTime(world.id);
+        if (timeData) {
+            timeData.protagonistAge = newAge;
+            timeData.currentYear = newYear;
+            timeData.storyStartYear = newYear;
+            timePlugin._saveWorldTime(world.id, timeData);
+        }
+        
+        App.namespace.modal.close();
+        alert('时间已更新');
+        App.namespace.router.showPage('story');
+    },
+    
+    saveStorySummary() {
+        const world = Data.getCurrentWorld();
+        if (!world) return;
+        
+        const newSummary = document.getElementById('storySummaryEdit').value.trim();
+        
+        localStorage.setItem(`story_manual_summary_${world.id}`, newSummary);
+        
+        App.namespace.modal.close();
+        alert('剧情总结已保存');
+    },
+    
+    clearStoryHistory() {
+        const world = Data.getCurrentWorld();
+        if (!world) return;
+        
+        if (!confirm('确定要清除所有故事历史吗？此操作不可恢复！')) return;
+        
+        localStorage.removeItem(`story_archives_${world.id}`);
+        localStorage.removeItem(`story_archived_${world.id}`);
+        localStorage.removeItem(`story_level2_${world.id}`);
+        localStorage.removeItem(`story_level3_${world.id}`);
+        localStorage.removeItem(`story_manual_summary_${world.id}`);
+        
+        App.namespace.modal.close();
+        alert('故事历史已清除');
+        App.namespace.router.showPage('story');
     }
 };
 
-// 暴露到全局
 window.startStory = function() {
     StoryController.startStory();
-};
-
-window.continueStory = function() {
-    StoryController.continueStory();
-};
-
-window.continueStoryWithNewChars = function() {
-    StoryController.continueStoryWithNewChars();
-};
-
-window.refreshChoicesWithNewChars = function() {
-    StoryController.refreshChoicesWithNewChars();
-};
-
-window.getRecommendedChars = function() {
-    StoryController.getRecommendedChars();
-};
-
-window.toggleRecommendChar = function(charId) {
-    StoryController.toggleRecommendChar(charId);
 };
 
 window.makeChoice = function(choice) {
@@ -394,4 +319,8 @@ window.showEndStoryModal = function() {
 
 window.endStory = function() {
     StoryController.endStory();
+};
+
+window.showWorldEditModal = function() {
+    StoryController.showWorldEditModal();
 };

@@ -18,7 +18,8 @@ const AdultTagsViewRenderer = {
     renderMain(worldId) {
         const plugin = window.AdultTagsPlugin;
         if (!plugin) return '<div class="empty">插件未加载</div>';
-
+        
+        const isMobile = window.innerWidth <= 900;
         const characters = Data.getCharacters(worldId);
         const settings = plugin.getSettings();
         const cooldown = plugin.getCooldownList(worldId);

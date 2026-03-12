@@ -5,6 +5,12 @@ const Pages = {
         }
         if (typeof View !== 'undefined' && View.render) {
             main.innerHTML = View.render('chat-plugin.main');
+            setTimeout(() => {
+                const chatMessages = document.getElementById('chatMessages');
+                if (chatMessages) {
+                    chatMessages.scrollTop = chatMessages.scrollHeight;
+                }
+            }, 50);
         } else {
             main.innerHTML = '<div class="empty">聊天插件未加载</div>';
         }
@@ -38,6 +44,10 @@ const Pages = {
                     <div class="title">📖 故事</div>
                     <div class="meta">开始新的故事旅程</div>
                 </div>
+                <div class="card" onclick="showPage('simple-story')">
+                    <div class="title">⚡ 小故事</div>
+                    <div class="meta">快速随机词条故事</div>
+                </div>
                 <div class="card" onclick="showPage('settings')">
                     <div class="title">⚙️ 设置</div>
                     <div class="meta">配置AI和内容偏好</div>
@@ -61,7 +71,10 @@ const Pages = {
             <h2>世界管理</h2>
             <p class="desc">创建和管理你的故事世界</p>
             
-            <button class="btn" onclick="showCreateWorld()" style="margin-bottom: 20px;">+ 创建世界</button>
+            <div style="display: flex; gap: 12px; margin-bottom: 20px; flex-wrap: wrap;">
+                <button class="btn" onclick="showCreateWorld()">+ 创建世界</button>
+                <button class="btn" onclick="PresetCharacterLibrary.showWorldSelector()">📚 从预设导入</button>
+            </div>
             
             <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 16px;">
                 ${worlds.map(w => `
@@ -126,6 +139,54 @@ const Pages = {
         }
     },
 
+    async renderSimpleStory(main) {
+        const world = Data.getCurrentWorld();
+        
+        if (!world) {
+            main.innerHTML = `<h2>⚡ 小故事</h2><p class="desc">请先选择一个世界</p><div class="empty">请先在"世界"页面选择一个世界</div>`;
+            return;
+        }
+        
+        const chars = Data.getCharacters(world.id);
+        
+        if (chars.length === 0) {
+            main.innerHTML = `<h2>⚡ 小故事</h2><p class="desc">当前世界：${world.name}</p><div class="empty">请先添加角色</div>`;
+            return;
+        }
+        
+        main.innerHTML = `
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                <div>
+                    <h2>⚡ 小故事</h2>
+                    <p class="desc">${world.name}</p>
+                </div>
+            </div>
+            
+            <div style="text-align: center; padding: 40px;">
+                <div style="margin-bottom: 20px;">
+                    <div style="font-size: 0.9rem; color: var(--text-dim); margin-bottom: 12px; text-align: left;">选择参与角色（至少1个）:</div>
+                    <div id="simpleStoryCharSelector" style="display: flex; flex-wrap: wrap; gap: 8px; justify-content: center;">
+                        ${chars.map(c => `
+                            <label style="display: flex; align-items: center; gap: 6px; padding: 8px 12px; background: var(--card); border-radius: 6px; cursor: pointer; border: 1px solid var(--border);">
+                                <input type="checkbox" name="simpleStoryChars" value="${c.id}" checked style="width: 16px; height: 16px;">
+                                <span>${c.name}</span>
+                            </label>
+                        `).join('')}
+                    </div>
+                </div>
+                <p style="margin-bottom: 20px; color: var(--text-dim);">每次从词条库随机抽取玩法相关词条，详细描写动作场景</p>
+                <button class="btn" id="startSimpleStoryBtn" style="font-size: 1.1rem; padding: 12px 32px;">🎲 开始小故事</button>
+            </div>
+        `;
+        
+        setTimeout(() => {
+            const simpleStoryPlugin = PluginSystem.get('simple-story');
+            if (simpleStoryPlugin) {
+                simpleStoryPlugin._initSimpleStoryPage();
+            }
+        }, 100);
+    },
+
     renderStory(main) {
         const world = Data.getCurrentWorld();
         
@@ -151,10 +212,10 @@ const Pages = {
             const statChanges = lastScene?.statChanges || {};
             if (Object.keys(statChanges).length > 0) {
                 const localStatLabels = {
-                    health: '生命', energy: '体力', charm: '魅力', intelligence: '智力', strength: '力量',
+                    health: '生命', charm: '魅力', intelligence: '智力', strength: '力量',
                     agility: '敏捷', stamina: '耐力',
-                    sexArousal: '欲望', sexExperience: '经验', sexSkill: '技巧', sexLibido: '性欲', sexSensitivity: '敏感',
-                    affection: '好感', trust: '信任', intimacy: '亲密', corruption: '堕落', shame: '羞耻'
+                    arousal: '欲望', sexExperience: '经验', sexSkill: '技巧', sexSensitivity: '敏感',
+                    affection: '好感', corruption: '堕落', shame: '羞耻'
                 };
                 
                 mobileStatsHtml = `
@@ -213,7 +274,7 @@ const Pages = {
                                     `).join('')}
                                     <button class="choice-btn" onclick="showCustomChoiceInput()" style="background: var(--accent); color: var(--bg);">✏️ 自定义</button>
                                     <div id="customChoiceInput" style="display: none; margin-top: 12px;">
-                                        <input type="text" id="customChoiceText" placeholder="输入你的选择..." style="flex: 1;">
+                                        <input type="text" id="customChoiceText" placeholder="输入你的选择..." style="flex: 1;" onkeypress="if(event.key==='Enter'){makeCustomChoice()}">
                                         <button class="btn" onclick="makeCustomChoice()">确定</button>
                                     </div>
                                 </div>
@@ -268,8 +329,8 @@ const Pages = {
                         </div>
                     </div>
                     <div style="display: flex; gap: 8px; margin-top: 12px;">
-                        <button class="btn" onclick="refreshChoicesWithNewChars()" style="flex: 1;">🔄 刷新选项</button>
-                        <button class="btn btn-secondary" onclick="continueStoryWithNewChars()" style="flex: 1;">▶️ 继续剧情</button>
+                        <button class="btn btn-secondary" onclick="showWorldEditModal()" style="flex: 1;">🎮 世界编辑</button>
+                        <button class="btn" onclick="startStory()" style="flex: 1;">▶️ 开始/继续故事</button>
                     </div>
                 </div>
             ` : `
@@ -319,8 +380,8 @@ const Pages = {
                         <input type="text" id="sceneInput" placeholder="例如：浪漫的烛光晚餐、雨中的相遇...">
                     </div>
                     <div style="display: flex; gap: 8px; margin-top: 16px;">
-                        <button class="btn" onclick="startStory()" style="flex: 1;">🎬 开始故事</button>
-                        <button class="btn btn-secondary" onclick="continueLastStory()" style="flex: 1;">🔄 继续故事</button>
+                        <button class="btn btn-secondary" onclick="showWorldEditModal()" style="flex: 1;">🎮 世界编辑</button>
+                        <button class="btn" onclick="startStory()" style="flex: 1;">▶️ 开始/继续故事</button>
                     </div>
                 </div>
                 
@@ -352,17 +413,17 @@ const Pages = {
         const chars = Data.getCharacters(world.id);
         
         const DEFAULT_STATS = {
-            health: 100, energy: 100, charm: 50, intelligence: 50,
+            health: 100, charm: 50, intelligence: 50,
             strength: 50, agility: 50, stamina: 50,
-            sexArousal: 0, sexExperience: 0, sexSkill: 0, sexLibido: 50, sexSensitivity: 50,
-            affection: 50, trust: 50, intimacy: 0, corruption: 0, shame: 50
+            arousal: 0, sexExperience: 0, sexSkill: 0, sexSensitivity: 50,
+            affection: 50, corruption: 0, shame: 50
         };
         
         const statLabels = {
-            health: '生命', energy: '体力', charm: '魅力', intelligence: '智力', strength: '力量',
+            health: '生命', charm: '魅力', intelligence: '智力', strength: '力量',
             agility: '敏捷', stamina: '耐力',
-            sexArousal: '欲望', sexExperience: '经验', sexSkill: '技巧', sexLibido: '性欲', sexSensitivity: '敏感',
-            affection: '好感', trust: '信任', intimacy: '亲密', corruption: '堕落', shame: '羞耻'
+            arousal: '欲望', sexExperience: '经验', sexSkill: '技巧', sexSensitivity: '敏感',
+            affection: '好感', corruption: '堕落', shame: '羞耻'
         };
         
         const storyChars = story && story.characters ? story.characters : chars.slice(0, 3);
@@ -622,15 +683,15 @@ const Pages = {
                 <div class="card" style="margin-top: 16px;">
                     <h4>属性状态</h4>
                     <div class="char-info">
-                        <p><strong>生命：</strong>${stats.health || 0} | <strong>体力：</strong>${stats.energy || 0} | <strong>魅力：</strong>${stats.charm || 0}</p>
-                        <p><strong>智力：</strong>${stats.intelligence || 0} | <strong>力量：</strong>${stats.strength || 0} | <strong>敏捷：</strong>${stats.agility || 0}</p>
-                        <p><strong>兴奋值：</strong>${excitementValue} 
+                        <p><strong>生命：</strong>${stats.health || 0} | <strong>魅力：</strong>${stats.charm || 0} | <strong>智力：</strong>${stats.intelligence || 0}</p>
+                        <p><strong>力量：</strong>${stats.strength || 0} | <strong>敏捷：</strong>${stats.agility || 0} | <strong>耐力：</strong>${stats.stamina || 0}</p>
+                        <p><strong>欲望：</strong>${stats.arousal || 0} 
                             <button onclick="window.adjustExcitement('${char.id}', 15)" style="margin-left:8px;padding:2px 8px;cursor:pointer;">+15</button>
                             <button onclick="window.adjustExcitement('${char.id}', -15)" style="margin-left:4px;padding:2px 8px;cursor:pointer;">-15</button>
                             <button onclick="window.adjustExcitement('${char.id}', 0)" style="margin-left:4px;padding:2px 8px;cursor:pointer;">重置</button>
                         </p>
-                        <p><strong>欲望：</strong>${stats.sexArousal || 0} | <strong>性欲：</strong>${stats.sexLibido || 0} | <strong>敏感：</strong>${stats.sexSensitivity || 0}</p>
-                        <p><strong>好感：</strong>${stats.affection || 0} | <strong>信任：</strong>${stats.trust || 0} | <strong>亲密：</strong>${stats.intimacy || 0}</p>
+                        <p><strong>经验：</strong>${stats.sexExperience || 0} | <strong>技巧：</strong>${stats.sexSkill || 0} | <strong>敏感：</strong>${stats.sexSensitivity || 0}</p>
+                        <p><strong>好感：</strong>${stats.affection || 0} | <strong>堕落：</strong>${stats.corruption || 0} | <strong>羞耻：</strong>${stats.shame || 0}</p>
                     </div>
                 </div>
             `;
@@ -689,7 +750,9 @@ window.saveContentSettings = function() {
     const detailLevel = document.getElementById('detailLevel')?.value;
     const outputStyle = document.getElementById('outputStyle')?.value;
     
-    Settings.set(world?.id, { content: { tone: contentTone, detailLevel, outputStyle: outputStyle } });
+    const currentSettings = Settings.get(world?.id);
+    const newSettings = { ...currentSettings, content: { ...currentSettings.content, tone: contentTone, detailLevel, outputStyle: outputStyle } };
+    Settings.save(world?.id, newSettings);
     alert('内容设置已保存');
 };
 
@@ -698,7 +761,9 @@ window.saveAdultSettings = function() {
     const adultEnabled = document.getElementById('adultEnabled')?.checked;
     const intimacyLevel = document.getElementById('intimacyLevel')?.value;
     
-    Settings.set(world?.id, { adult: { enabled: adultEnabled }, content: { intimacy: parseInt(intimacyLevel) } });
+    const currentSettings = Settings.get(world?.id);
+    const newSettings = { ...currentSettings, adult: { ...currentSettings.adult, enabled: adultEnabled }, content: { ...currentSettings.content, intimacy: parseInt(intimacyLevel) } };
+    Settings.save(world?.id, newSettings);
     alert('成人设置已保存');
 };
 

@@ -11,10 +11,29 @@ PluginSystem.register('achievement', {
         if (force) {
             localStorage.removeItem('achievement_library');
         }
-
+        
+        const getUserContentPath = () => {
+            const script = document.currentScript;
+            if (script && script.src) {
+                const scriptUrl = new URL(script.src);
+                const pluginDir = scriptUrl.pathname.replace(/[^/]*$/, '');
+                return pluginDir + 'user-content/';
+            }
+            
+            const scripts = document.getElementsByTagName('script');
+            for (let s of scripts) {
+                if (s.src && s.src.includes('achievement')) {
+                    const scriptUrl = new URL(s.src);
+                    const pluginDir = scriptUrl.pathname.replace(/[^/]*$/, '');
+                    return pluginDir + 'user-content/';
+                }
+            }
+            
+            return 'js/plugins/achievement/user-content/';
+        };
+        
         const possiblePaths = [
-            './js/plugins/achievement/user-content/achievements.txt',
-            './user-content/achievements.txt'
+            getUserContentPath() + 'achievements.txt'
         ];
 
         for (const path of possiblePaths) {

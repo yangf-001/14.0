@@ -10,10 +10,18 @@ PluginSystem.register('story-config', {
     },
     
     _initDefaultPrompts() {
+        const promptManager = window.PromptManagerPlugin;
+        if (!promptManager) {
+            console.error('[故事配置] 提示词管理插件未加载');
+            return;
+        }
+        
+        const defaultStyle = promptManager.getStylePreset('erotic');
+        
         const defaultPrompts = {
-            systemRole: '你是一个色情故事生成AI。请用色情故事的方式呈现内容。专注于性场景的详细描写，包括肢体动作、内心描写、感官描写和语气描写。只输出故事正文内容，不要包含任何选项、后续发展、剧情走向、选择提示等信息。\n\n【重要限制】剧情中女角色不能和陌生人、路人或其他未建立关系的角色进行亲密行为。所有互动必须由主角和已建立关系的角色完成，如果需要多人参与，请用主角的分身、神奇道具、魔法道具、玩具等来代替。',
-            outputRules: '只输出故事正文内容，不要包含任何选项、后续发展、剧情走向、选择提示等信息。用词直白露骨，直接描写性器官接触、插入、抽动、高潮等细节。',
-            customRules: ''
+            systemRole: defaultStyle.systemRole,
+            outputRules: defaultStyle.outputRules,
+            customRules: defaultStyle.customRules
         };
         
         if (!localStorage.getItem('story_system_prompts')) {
@@ -120,6 +128,19 @@ PluginSystem.register('story-config', {
         const pluginContext = this._getPluginContext(worldId);
         let systemPrompt = this.getWorldSystemPrompt(worldId) || '';
 
+        const adultPlugin = window.AdultTagsPlugin;
+        let stats = { arousal: 0, intimacy: 0, experience: 0, willingness: 0 };
+        let stage = 1;
+        
+        if (adultPlugin) {
+            stats = adultPlugin.getAllStats(worldId) || stats;
+            stage = adultPlugin.getStage(stats.arousal, worldId) || 1;
+        } else {
+            stage = this._getStageFromStats(stats);
+        }
+        
+        const stageInfo = this._getStageDescription(stage);
+
         let template = aiSetting.template || '';
         template = template.replace('[系统提示词]', systemPrompt);
         template = template.replace('[角色JSON]', JSON.stringify(charList));
@@ -128,6 +149,10 @@ PluginSystem.register('story-config', {
         template = template.replace('[场景设定]', scene || '任意');
         template = template.replace('[风格设置]', ctx + pluginContext);
         template = template.replace('[风格要求]', ctx + pluginContext);
+        template = template.replace('[当前阶段]', stageInfo.name);
+        template = template.replace('[阶段]', stageInfo.name);
+        template = template.replace('[尺度描述]', stageInfo.description);
+        template = template.replace('[尺度]', stageInfo.description);
 
         if (timeInfo && timeInfo.storyStartAge !== null) {
             template = template.replace('[主角年龄]', String(timeInfo.protagonistAge));
@@ -231,6 +256,19 @@ PluginSystem.register('story-config', {
 
         const ctx = Settings.buildPromptContext(settings);
 
+        const adultPlugin = window.AdultTagsPlugin;
+        let stats = { arousal: 0, intimacy: 0, experience: 0, willingness: 0 };
+        let stage = 1;
+        
+        if (adultPlugin) {
+            stats = adultPlugin.getAllStats(worldId) || stats;
+            stage = adultPlugin.getStage(stats.arousal, worldId) || 1;
+        } else {
+            stage = this._getStageFromStats(stats);
+        }
+        
+        const stageInfo = this._getStageDescription(stage);
+
         let template = aiSetting.template || '';
         template = template.replace('[系统提示词]', systemPrompt);
         template = template.replace('[角色描述]', charDesc);
@@ -241,6 +279,10 @@ PluginSystem.register('story-config', {
         template = template.replace('[设定]', ctx);
         template = template.replace('[之前的故事剧情]', historySection);
         template = template.replace('[当前故事最新剧情]', currentHistoryText);
+        template = template.replace('[当前阶段]', stageInfo.name);
+        template = template.replace('[阶段]', stageInfo.name);
+        template = template.replace('[尺度描述]', stageInfo.description);
+        template = template.replace('[尺度]', stageInfo.description);
 
         if (timeInfo && timeInfo.storyStartAge !== null) {
             template = template.replace('[主角年龄]', String(timeInfo.protagonistAge));
@@ -400,141 +442,55 @@ PluginSystem.register('story-config', {
     },
 
     _getStageFromStats(stats) {
-        const templates = {
-            1: `[系统提示词]\n\n基于当前故事内容，生成4个让用户选择的剧情分支选项。要求：2个正常纯爱选项 + 1个轻度色情选项 + 1个重度淫荡选项。\n当前阶段：暧昧挑逗期（轻度淫靡）\n尺度：非常克制，仅限心理与轻微肢体接触\n\n故事内容摘要：\n[内容摘要]\n\n角色：[角色列表]\n\n要求：\n- 选项1-2：纯爱选项，保持暧昧、挑逗、性张力逐步积累，严禁出现任何性器官名称、裸露、插入、高潮、潮吹等直接描写\n- 选项3：轻度色情选项，可有轻微身体接触暗示\n- 选项4：淫荡选项，可有较开放的性暗示\n\n输出格式（只输出四行选项，无其他文字）：\n1. [选项描述]\n2. [选项描述]\n3. [选项描述]\n4. [选项描述]`,
-
-            2: `[系统提示词]\n\n基于当前故事内容，生成4个让用户选择的剧情分支选项。要求：2个正常纯爱选项 + 1个轻度色情选项 + 1个重度淫荡选项。\n当前阶段：肉体交缠期（中度淫乱）\n尺度：允许直接触碰性敏感区、前戏、口交、指交、初次插入等\n\n故事内容摘要：\n[内容摘要]\n\n角色：[角色列表]\n\n要求：\n- 选项1-2：纯爱选项，保持温馨浪漫的亲密描写\n- 选项3：轻度色情选项，包含直接触碰性敏感区描写\n- 选项4：淫荡选项，包含更深入的性行为描写\n\n输出格式（只输出四行选项，无其他文字）：\n1. [选项描述]\n2. [选项描述]\n3. [选项描述]\n4. [选项描述]`,
-
-            3: `[系统提示词]\n\n基于当前故事内容，生成4个让用户选择的剧情分支选项。要求：2个正常纯爱选项 + 1个轻度色情选项 + 1个重度淫荡选项。\n当前阶段：高潮崩坏期（高度淫靡）\n尺度：允许激烈抽插、内射、潮吹、强制高潮、大量脏话与羞辱\n\n故事内容摘要：\n[内容摘要]\n\n角色：[角色列表]\n\n要求：\n- 选项1-2：纯爱选项，可有亲密描写但保持一定克制\n- 选项3：轻度色情选项，包含直接性行为描写\n- 选项4：淫荡选项，包含极端高潮、潮喷等描写\n\n输出格式（只输出四行选项，无其他文字）：\n1. [选项描述]\n2. [选项描述]\n3. [选项描述]\n4. [选项描述]`,
-
-            4: `[系统提示词]\n\n基于当前故事内容，生成4个让用户选择的剧情分支选项。要求：2个正常纯爱选项 + 1个轻度色情选项 + 1个重度淫荡选项。\n当前阶段：极致堕落期（极限淫乱）\n尺度：无任何上限，允许极端、变态、成瘾式、超现实描写\n\n故事内容摘要：\n[内容摘要]\n\n角色：[角色列表]\n\n要求：\n- 选项1-2：纯爱选项，即使在极限阶段也保持一定情感描写\n- 选项3：轻度色情选项，包含极端性行为描写\n- 选项4：淫荡选项，包含最极端、最变态的描写\n\n输出格式（只输出四行选项，无其他文字）：\n1. [选项描述]\n2. [选项描述]\n3. [选项描述]\n4. [选项描述]`
-        };
-        return templates[stage] || templates[1];
-    },
-
-    _getStageFromStats(stats) {
         const arousal = stats.arousal || 0;
         const intimacy = stats.intimacy || 0;
         const experience = stats.experience || 0;
         const willingness = stats.willingness || 0;
         
-        if (arousal < 25) return 1;
-        if (arousal >= 25 && intimacy >= 30) {
-            if (arousal >= 50 && intimacy >= 50 && experience >= 30) {
-                if (arousal >= 75 && intimacy >= 70 && experience >= 60 && willingness >= 50) {
-                    return 4;
-                }
-                return 3;
-            }
-            return 2;
-        }
-        return 1;
+        const weights = { arousal: 0.4, intimacy: 0.3, experience: 0.2, willingness: 0.1 };
+        const score = arousal * weights.arousal + intimacy * weights.intimacy + experience * weights.experience + willingness * weights.willingness;
+        
+        return score < 60 ? 1 : 2;
     },
 
     _getStageDescription(stage) {
+        const promptManager = window.PromptManagerPlugin;
+        
+        if (promptManager) {
+            const name = promptManager.getStageName(stage, 'default');
+            const description = promptManager.getStageDescription(stage, 'default');
+            
+            return {
+                name: name,
+                description: description,
+                option1: stage === 1 ? '日常选项，保持正常日常行为，色气隐藏在无意识的身体反应中' : '温柔选项，保持温馨浪漫的亲密描写',
+                option2: stage === 1 ? '日常选项，保持正常日常行为，色气隐藏在无意识的身体反应中' : '温柔选项，保持温馨浪漫的亲密描写',
+                option3: stage === 1 ? '暧昧选项，可有轻微身体接触暗示，但语言仍需克制' : '色色选项，包含直接性行为描写',
+                option4: stage === 1 ? '挑逗选项，可有较开放的性暗示，但不直说露骨词汇' : '淫荡选项，包含极端、变态、最露骨的描写'
+            };
+        }
+        
         const descriptions = {
             1: {
-                name: '暧昧挑逗期（轻度淫靡）',
-                description: '非常克制，仅限心理与轻微肢体接触',
-                option1: '纯爱选项，保持暧昧、挑逗、性张力逐步积累，严禁出现任何性器官名称、裸露、插入、高潮、潮吹等直接描写',
-                option2: '纯爱选项，保持暧昧、挑逗、性张力逐步积累，严禁出现任何性器官名称、裸露、插入、高潮、潮吹等直接描写',
-                option3: '轻度色情选项，可有轻微身体接触暗示',
-                option4: '淫荡选项，可有较开放的性暗示'
+                name: '日常模式（闷骚挑逗）',
+                description: '表面100%正常日常，色气只藏在"无意识的身体反应"里，语言极度克制，让读者自己脑补',
+                option1: '日常选项，保持正常日常行为，色气隐藏在无意识的身体反应中',
+                option2: '日常选项，保持正常日常行为，色气隐藏在无意识的身体反应中',
+                option3: '暧昧选项，可有轻微身体接触暗示，但语言仍需克制',
+                option4: '挑逗选项，可有较开放的性暗示，但不直说露骨词汇'
             },
             2: {
-                name: '肉体交缠期（中度淫乱）',
-                description: '允许直接触碰性敏感区、前戏、口交、指交、初次插入等',
-                option1: '纯爱选项，保持温馨浪漫的亲密描写',
-                option2: '纯爱选项，保持温馨浪漫的亲密描写',
-                option3: '轻度色情选项，包含直接触碰性敏感区描写',
-                option4: '淫荡选项，包含更深入的性行为描写'
-            },
-            3: {
-                name: '高潮崩坏期（高度淫靡）',
-                description: '允许激烈抽插、内射、潮吹、强制高潮、大量脏话与羞辱',
-                option1: '纯爱选项，可有亲密描写但保持一定克制',
-                option2: '纯爱选项，可有亲密描写但保持一定克制',
-                option3: '轻度色情选项，包含直接性行为描写',
-                option4: '淫荡选项，包含极端高潮、潮喷等描写'
-            },
-            4: {
-                name: '极致堕落期（极限淫乱）',
-                description: '无任何上限，允许极端、变态、成瘾式、超现实描写',
-                option1: '纯爱选项，即使在极限阶段也保持一定情感描写',
-                option2: '纯爱选项，即使在极限阶段也保持一定情感描写',
-                option3: '轻度色情选项，包含极端性行为描写',
-                option4: '淫荡选项，包含最极端、最变态的描写'
+                name: '色色模式（直白淫荡）',
+                description: '允许直白露骨的性行为描写，尺度无上限，用词艳俗淫荡',
+                option1: '温柔选项，保持温馨浪漫的亲密描写',
+                option2: '温柔选项，保持温馨浪漫的亲密描写',
+                option3: '色色选项，包含直接性行为描写',
+                option4: '淫荡选项，包含极端、变态、最露骨的描写'
             }
         };
         return descriptions[stage] || descriptions[1];
     },
 
-    async _generateAdultChoices(content, characters, worldId) {
-        const aiSetting = this.getAISetting('adultChoices', worldId);
-        if (!aiSetting || !aiSetting.enabled) {
-            return null;
-        }
-        
-        const adultPlugin = window.AdultTagsPlugin;
-        let stats, stage, scale;
-        
-        if (adultPlugin) {
-            stats = adultPlugin.getAllStats(worldId);
-            stage = adultPlugin.getStage(stats.arousal, worldId);
-            scale = adultPlugin.getScale(worldId);
-        } else {
-            stats = { arousal: 0, intimacy: 0, experience: 0, willingness: 0 };
-            stage = this._getStageFromStats(stats);
-            scale = '中';
-        }
-        
-        const choiceTemplate = this._getAdultChoiceTemplate(stage);
-        const charNames = characters.map(c => c.name).join('、');
-        let systemPrompt = this.getWorldSystemPrompt(worldId) || '';
-        
-        const tags = await this._loadUserTags(stage);
-        const tagsText = tags.length > 0 ? tags.map(t => `- ${t}`).join('\n') : '（无标签可用）';
-        
-        let template = choiceTemplate;
-        template = template.replace('[系统提示词]', systemPrompt);
-        template = template.replace('[内容摘要]', content);
-        template = template.replace('[故事内容]', content);
-        template = template.replace('[角色列表]', charNames);
-        template = template.replace('[角色]', charNames);
-        template = template.replace('[兴奋值]', stats.arousal);
-        template = template.replace('[亲密度]', stats.intimacy);
-        template = template.replace('[经验值]', stats.experience);
-        template = template.replace('[意愿度]', stats.willingness);
-        template = template.replace('[阶段]', stage);
-        template = template.replace('[尺度]', scale);
-        template = template.replace('[标签列表]', tagsText);
-        
-        if (aiSetting.customPrompt) {
-            template += '\n\n' + aiSetting.customPrompt;
-        }
-        
-        try {
-            const result = await ai.call(template, {
-                system: systemPrompt,
-                temperature: aiSetting.temperature || 0.8
-            });
-
-            const choices = result.split('\n')
-                .map(line => line.replace(/^\d+[\.、]\s*/, '').trim())
-                .filter(line => line.length > 0 && line.length < 100)
-                .slice(0, 4);
-
-            if (choices.length >= 4) {
-                console.log(`[成人选项] 阶段${stage}生成了4个选项，标签: ${tags.join(', ')}`);
-                return choices;
-            }
-        } catch (e) {
-            console.warn('[成人选项] 生成失败:', e);
-        }
-        
-        return null;
-    },
-    
     _cleanStoryContent(content) {
         if (!content) return content;
         
@@ -854,6 +810,12 @@ PluginSystem.register('story-config', {
     },
     
     _getDefaultAISettings() {
+        const promptManager = window.PromptManagerPlugin;
+        
+        const getTemplate = (category, presetId = 'default') => {
+            return promptManager ? promptManager.getTemplate(category, presetId) : '';
+        };
+        
         return {
             dataSources: {
                 title: '数据源设置',
@@ -867,389 +829,83 @@ PluginSystem.register('story-config', {
             storyStart: {
                 title: '故事开头生成',
                 enabled: true,
-                template: `[系统提示词]
-
-【重要限制】剧情中不能出现陌生人、路人或其他未建立关系的角色。所有互动必须由主角和已建立关系的角色完成，如果需要多人参与，请用主角的分身、神奇道具、魔法道具、玩具等来代替。
-
-生成一个故事开头：
-角色信息：[角色JSON]
-场景设定：[场景]
-风格要求：[风格设置]
-
-请生成100-300字的故事开头，并自然地引出后续剧情发展的可能性。
-重要限制：
-1. 时间跨度最多1天，不要出现跨越多年、数月或数日的大段时间跳跃
-2. 故事应该从故事开始的时间点直接展开
-3. 如果需要时间推进，最多推进几小时到1天`,
+                template: getTemplate('storyStart'),
                 temperature: 0.7,
                 customPrompt: ''
             },
             storyChoice: {
                 title: '选择后继续故事',
                 enabled: true,
-                template: `[系统提示词]
-
-【重要限制】剧情中不能出现陌生人、路人或其他未建立关系的角色。所有互动必须由主角和已建立关系的角色完成，如果需要多人参与，请用主角的分身、神奇道具、魔法道具、玩具等来代替。
-
-根据用户的选择继续故事：[用户选择]
-
-[上下文]
-
-【角色出场比例】
-[角色比例设置]
-
-请生成下一段故事内容（100-300字），自然地回应用户的选择。
-如果故事中有明确的时间推进，请在故事结束后另起一行输出【时间变化：X天】或【时间变化：X月】。如果时间没有明显变化，输出【时间变化：0天】。`,
+                template: getTemplate('storyChoice'),
                 temperature: 0.7,
                 customPrompt: ''
             },
             storyFree: {
                 title: '自由发展继续',
                 enabled: true,
-                template: `[系统提示词]
-
-【重要限制】剧情中不能出现陌生人、路人或其他未建立关系的角色。所有互动必须由主角和已建立关系的角色完成，如果需要多人参与，请用主角的分身、神奇道具、魔法道具、玩具等来代替。
-
-继续故事，生成下一段内容：
-
-[上下文]
-
-【角色出场比例】
-[角色比例设置]
-
-请生成100-300字的故事内容，推动剧情发展。
-如果故事中有明确的时间推进，请在故事结束后另起一行输出【时间变化：X天】或【时间变化：X月】。如果时间没有明显变化，输出【时间变化：0天】。`,
+                template: getTemplate('storyFree'),
                 temperature: 0.7,
                 customPrompt: ''
             },
             storyContinue: {
                 title: '继续故事',
                 enabled: true,
-                template: `[系统提示词]
-
-【重要限制】剧情中不能出现陌生人、路人或其他未建立关系的角色。所有互动必须由主角和已建立关系的角色完成，如果需要多人参与，请用主角的分身、神奇道具、魔法道具、玩具等来代替。
-
-基于以下设定继续故事：
-角色：[角色描述]
-背景：[世界名]
-设定：[风格设置]
-[之前的故事剧情]
-[当前故事最新剧情]
-
-请生成下一段故事内容（100-300字），通过故事情节自然呈现。
-注意：
-1. 响应用户上一次的选择
-2. 根据角色设定发展故事
-3. 适当埋下后续剧情的伏笔
-4. 如果故事中有明确的时间推进（如几小时后、几天后、几个月后等），请在故事结束后另起一行输出【时间变化：X天】或【时间变化：X月】。如果时间没有明显变化，输出【时间变化：0天】。`,
-                temperature: 0.7,
-                customPrompt: ''
-            },
-            itemStory: {
-                title: '物品使用剧情',
-                enabled: true,
-                template: `[系统提示词]
-
-【重要限制】剧情中不能出现陌生人、路人或其他未建立关系的角色。所有互动必须由主角和已建立关系的角色完成，如果需要多人参与，请用主角的分身、神奇道具、魔法道具、玩具等来代替。
-
-根据以下情节继续故事：
-[上下文]
-
-【新的情节】
-[角色]使用了[物品名]
-物品效果：[物品效果]
-[物品描述]
-
-请生成100-200字的故事内容。
-如果故事中有明确的时间推进，请在故事结束后另起一行输出【时间变化：X天】或【时间变化：X月】。如果时间没有明显变化，输出【时间变化：0天】。`,
-                temperature: 0.7,
-                customPrompt: ''
-            },
-            intimateContinue: {
-                title: '亲密互动继续',
-                enabled: true,
-                template: `[系统提示词]
-
-【重要限制】剧情中不能出现陌生人、路人或其他未建立关系的角色。所有亲密互动必须由主角一人完成，如果需要多人参与，请用主角的分身、神奇道具、魔法道具、玩具等来代替。
-
-根据用户选择的亲密互动继续故事：
-[亲密互动内容]
-
-上下文：
-[上下文]
-
-角色：[角色列表]
-
-请生成100-200字的故事内容。
-如果故事中有明确的时间推进，请在故事结束后另起一行输出【时间变化：X天】或【时间变化：X月】。如果时间没有明显变化，输出【时间变化：0天】。`,
+                template: getTemplate('storyContinue'),
                 temperature: 0.7,
                 customPrompt: ''
             },
             generateChoices: {
                 title: '生成剧情选项',
                 enabled: true,
-                template: `[系统提示词]\n\n基于以下故事内容，生成4个让用户选择的剧情分支选项。要求：2个正常选项 + 1个轻度色情选项 + 1个重度淫荡选项。\n\n故事内容：\n[内容摘要]\n\n角色：[角色列表]\n\n请生成4个符合故事发展的选择项，格式如下（只需要选项，不要其他内容）：\n1. [选项1描述]\n2. [选项2描述]\n3. [选项3描述]\n4. [选项4描述]`,
+                template: getTemplate('generateChoices'),
                 temperature: 0.8,
                 customPrompt: ''
             },
-            adultChoices: {
-                title: '生成成人选项（自动分级）',
-                enabled: true,
-                template: `[系统提示词]\n\n[成人选项模板]\n\n故事内容摘要：\n[内容摘要]\n\n角色：[角色列表]\n\n当前属性状态：\n兴奋值：[兴奋值]/100\n亲密度：[亲密度]/100\n经验值：[经验值]/100\n意愿度：[意愿度]/100\n当前阶段：[阶段]\n尺度级别：[尺度]\n\n请生成4个让用户选择的剧情分支选项（2个正常 + 1个轻度色情 + 1个重度淫荡）。`,
-                temperature: 0.8,
-                customPrompt: ''
-            },
-
             updateStats: {
                 title: '更新角色属性',
                 enabled: true,
-                template: `根据以下故事内容，分析角色在剧情中的数值属性变化。
-
-故事内容：
-[内容]
-
-角色：[角色列表]
-
-可用属性：
-【基础属性】
-- health (生命 0-200)
-- charm (魅力 0-200)
-- intelligence (智力 0-200)
-- strength (力量 0-200)
-- agility (敏捷 0-200)
-- stamina (体力 0-200)
-- energy (体力 0-200)
-
-【色色属性】
-- arousal (兴奋值 0-200)
-- sexArousal (欲望 0-200)
-- sexExcitement (兴奋 0-200)
-- experience (经验值 0-200)
-- sexExperience (经验 0-200)
-- sexSkill (技巧 0-200)
-- sexLibido (性欲 0-200)
-- sexSensitivity (敏感 0-200)
-
-【状态属性】
-- intimacy (亲密 0-200)
-- affection (好感 0-200)
-- trust (信任 0-200)
-- willingness (意愿 0-200)
-- corruption (堕落 0-200)
-- shame (羞耻 0-200)
-
-请分析故事情节，判断每个角色的数值属性应该有什么变化。返回JSON格式：
-{
-  "角色名": {
-    "属性名": 变化值
-  }
-}
-
-注意：
-1. 根据剧情合理设置变化值，一般单次变化在-20到+20之间
-2. 如果某个属性没有变化，不要在JSON中列出
-3. 如果所有属性都没变化，返回空对象 {}`,
-                temperature: 0.3,
-                customPrompt: ''
-            },
-            updateRelationship: {
-                title: '更新角色关系',
-                enabled: true,
-                template: `根据以下故事内容，分析角色与主角的关系应该是什么。
-
-故事内容：
-[内容]
-
-角色：[角色列表]
-
-当前关系：
-[当前关系]
-
-关系库（选择最合适的关系ID）：
-0-9: 通用等级（陌生人→认识→熟人→朋友→暧昧→恋人→知己→情人→伴侣→配偶）
-10-18: 恋爱细分（女朋友、男朋友、未婚妻、未婚夫、妻子、丈夫、前女友/男友、暗恋对象）
-19-32: 血缘（父亲、母亲、儿子、女儿、哥哥、姐姐、弟弟、妹妹、爷爷、奶奶、外公、外婆、孙子、孙女）
-33-36: 亲戚（叔叔、阿姨、舅舅、姨妈）
-37-45: 社会（老师、学生、同事、上司、下属、合作伙伴、邻居、同学、朋友的朋友）
-46-54: 敌对/特殊（敌人、仇人、情敌、竞争对手、背叛者、救命恩人、恩人、债主、债户）
-
-请根据故事情节，判断每个角色与主角的关系应该是什么。返回JSON格式：
-{
-  "角色名": 目标关系ID
-}
-
-注意：
-1. 仔细阅读剧情，根据实际发展设置关系
-2. 关系可以是任意ID，不一定只能升级
-3. 如果关系没有变化，不要在JSON中列出
-4. 0表示陌生人，ID越大并不代表越亲密`,
+                template: getTemplate('updateStats'),
                 temperature: 0.3,
                 customPrompt: ''
             },
             extractItems: {
                 title: '提取物品信息',
                 enabled: true,
-                template: `根据以下故事内容，分析是否有出现以下物品（从物品库中匹配），并识别哪个角色获得了物品：\n\n物品库：[物品列表]\n\n角色：[角色列表]\n\n故事内容：\n[内容]\n\n请分析故事中物品的获得和使用情况，返回JSON格式：\n{\n  "获得": [\n    {"物品": "物品名", "角色": "角色名"}\n  ],\n  "使用": [\n    {"物品": "物品名", "角色": "角色名"}\n  ]\n}\n\n注意：\n1. "获得"指角色获得/拥有的物品\n2. "使用"指角色使用/消耗的物品\n3. 如果物品没有明确指定给哪个角色，默认给第一个角色\n4. 只返回与物品库中物品名称匹配的内容\n5. 如果没有匹配，返回空数组`,
+                template: getTemplate('extractItems'),
                 temperature: 0.3,
                 customPrompt: ''
             },
             level1Summary: {
-                title: '一级故事摘要（每个故事的完整总结）',
+                title: '一级故事摘要',
                 enabled: true,
-                template: `请将以下故事内容**精简改写**成一个简短的小说章节。
-
-【改写要求】
-1. 用第三人称叙述，写作小说章节的风格
-2. 精简内容，只保留关键情节、人物对话和情感互动
-3. 将碎片化的场景描述整合成连贯的叙事
-4. 篇幅：300-500字左右
-5. 只输出改写后的小说内容，不要包含原始的场景标记
-
-【原始故事内容】
-[故事内容]
-
-请直接输出精简后的小说章节：`,
+                template: getTemplate('storySummary', 'level1'),
                 maxTokens: 1000,
                 customPrompt: ''
             },
-            corePlot: {
-                title: '核心情节（一句话概括）',
-                enabled: true,
-                template: `请用一句话概括以下故事的核心情节，要求简洁明了，最多50字：
-
-[故事内容]
-
-一句话概括：`,
-                maxTokens: 100,
-                customPrompt: ''
-            },
             level2Summary: {
-                title: '二级故事摘要（每次总结10幕）',
+                title: '二级故事摘要',
                 enabled: true,
-                template: `请将以下多个小说章节**整合改写**成一个完整的故事线叙述。
-
-【改写要求】
-1. 用第三人称叙述，写作连贯的故事风格
-2. 整合所有章节的主要剧情，按时间顺序叙述
-3. 保留关键人物关系、情感发展和重要情节
-4. 篇幅：800-1000字左右
-
-【原始章节内容】
-[10个一级摘要]
-
-请直接输出整合后的故事叙述：`,
-                maxTokens: 1500,
+                template: getTemplate('storySummary', 'level2'),
+                maxTokens: 2000,
                 customPrompt: ''
             },
             level3Summary: {
-                title: '三级综合摘要（每次总结10个二级）',
+                title: '三级综合摘要',
                 enabled: true,
-                template: `请将以下多个故事线**整合改写**成一个宏大的故事叙事。
-
-【改写要求】
-1. 用第三人称叙述，写作宏大的故事风格
-2. 整合所有故事线的主要剧情，按时间顺序叙述
-3. 展现完整的人物命运、剧情发展和最终结局
-4. 篇幅：1500-2000字左右
-
-【原始故事内容】
-[10个二级摘要]
-
-请直接输出整合后的宏大故事叙事：`,
-                maxTokens: 2500,
+                template: getTemplate('storySummary', 'level3'),
+                maxTokens: 3000,
                 customPrompt: ''
-            },
-            adultContinue: {
-                title: '成人内容继续',
-                enabled: true,
-                template: `[系统提示词]
-
-【重要限制】剧情中不能出现陌生人、路人或其他未建立关系的角色。所有亲密互动必须由主角一人完成，如果需要多人参与（如使用玩具、按摩棒等道具，或需要分身的场景），请用主角的分身、神奇道具、魔法道具、玩具等来代替。
-
-兴奋值：[兴奋值]/100
-当前阶段：[阶段]（[阶段名称]）
-尺度级别：[尺度]
-阶段限制：[阶段描述]
-
-【必须融入的玩法】（选取1-2个，自然融入剧情）：
-[标签列表]
-
-【冷却中的标签】（避免重复使用）：
-[冷却列表]
-
-【历史剧情】
-[上下文]
-
-请生成100-300字的故事情节，自然融入上述玩法描写。`,
-                customPrompt: '',
-                addToPrompt: true
-            },
-            adultStart: {
-                title: '成人内容开头',
-                enabled: true,
-                template: `[系统提示词]
-
-【重要限制】剧情中不能出现陌生人、路人或其他未建立关系的角色。所有亲密互动必须由主角一人完成，如果需要多人参与（如使用玩具、按摩棒等道具，或需要分身的场景），请用主角的分身、神奇道具、魔法道具、玩具等来代替。
-
-兴奋值：[兴奋值]/100
-当前阶段：[阶段]（[阶段名称]）
-尺度级别：[尺度]
-阶段限制：[阶段描述]
-
-【必须融入的玩法】（选取1-2个，自然融入剧情）：
-[标签列表]
-
-请生成100-300字的故事开头，自然融入上述玩法。`,
-                customPrompt: '',
-                addToPrompt: true
             },
             chatStart: {
                 title: '聊天开场',
                 enabled: true,
-                template: `【聊天开场】生成与角色聊天的开场白。
-
-请根据角色设定生成一句友好的开场白或问候语，50字以内。`,
+                template: getTemplate('chatStart'),
                 customPrompt: ''
             },
             chatContinue: {
                 title: '聊天继续',
                 enabled: true,
-                template: `【聊天继续】根据对话历史继续聊天。
-
-要求：
-1. 保持角色个性，符合角色人设
-2. 用第一人称回复
-3. 加入动作描写和外貌描写（用括号包裹）
-4. 语气自然流畅
-5. 如果是多人对话，每个角色分别回复，每行以"角色名："开头
-6. 每次回复必须包含以下格式的状态信息：
-【时间地点】当前时间|位置:具体地点及与主角的相对位置
-【状态】
-- 关系: 与你的关系
-- 好感度: 数值(0-100)
-- 兴奋值: 数值(0-100)，根据对话内容自然变化
-- 色色状态: 描述当前的色色状态（如：正常、害羞、兴奋、情欲高涨等）
-- 内心: 内心独白
-7. 输出格式示例：
-林诗雅
-【时间地点】05/15/23:星期五，05:50pm|位置:客厅沙发张伟身上
-【状态】
-- 关系: 与哥哥同居的妹妹
-- 好感度: 85
-- 兴奋值: 45
-- 色色状态: 害羞
-- 内心: 其实很享受早上叫哥哥起床的时光...
-哥哥，早上起床啦！再不起来我就用脚踩你被子了！（内心：哼，明明很期待见他醒来的样子）
-
-紫罗兰
-【时间地点】05/15/23:星期五，05:50pm|位置:客厅沙发张伟对面
-【状态】
-- 关系: 合租室友
-- 好感度: 60
-- 兴奋值: 30
-- 色色状态: 正常
-- 内心: 这家伙终于出来了...
-“别发愣了，过来坐吧。”`,
+                template: getTemplate('chatContinue'),
                 customPrompt: ''
             }
         };
@@ -1280,11 +936,41 @@ PluginSystem.register('story-config', {
         return this.getAISettings();
     },
 
+   
+
+    getAISettings() {
+        const stored = localStorage.getItem('story_ai_settings');
+        if (stored) {
+            try {
+                return JSON.parse(stored);
+            } catch (e) {}
+        }
+        return this._getDefaultAISettings();
+    },
+
+    saveAISettings(settings) {
+        localStorage.setItem('story_ai_settings', JSON.stringify(settings));
+    },
     saveWorldAISettings(worldId, settings) {
         localStorage.setItem(`story_ai_settings_${worldId}`, JSON.stringify(settings));
     },
 
     getAISetting(key, worldId = null) {
+        const promptManager = window.PromptManagerPlugin;
+        
+        const templateCategories = ['storyStart', 'storyChoice', 'storyFree', 'storyContinue', 'generateChoices', 'chatStart', 'chatContinue'];
+        
+        if (templateCategories.includes(key) && promptManager) {
+            const template = promptManager.getTemplate(key, 'default');
+            return {
+                title: promptManager.getPresets(key)?.name || key,
+                enabled: true,
+                template: template,
+                temperature: 0.7,
+                customPrompt: ''
+            };
+        }
+        
         let settings = worldId ? this.getWorldAISettings(worldId) : this.getAISettings();
         if (!settings) {
             settings = this._getDefaultAISettings();
@@ -1303,9 +989,15 @@ PluginSystem.register('story-config', {
         }
         const storyStart = aiSettings?.storyStart;
         if (storyStart?.template) {
-            return storyStart.template.split('\n')[0] || '你是一个故事生成AI。';
+            return storyStart.template.split('\n')[0] || '';
         }
-        return '你是一个故事生成AI。请用故事的方式呈现内容。';
+        
+        const promptManager = window.PromptManagerPlugin;
+        if (!promptManager) {
+            throw new Error('提示词管理插件未加载');
+        }
+        
+        return promptManager.getStylePreset('default').systemRole;
     },
 
     getTimeAPI() {
@@ -1559,13 +1251,16 @@ PluginSystem.register('story-config', {
 
     async generateSceneSummary(content, choice) {
         try {
-            const prompt = `请用一句话简洁概括以下故事情节的核心内容（30字以内）：
-
-${content.substring(0, 500)}
-
-${choice ? `[用户选择了：${choice}]` : ''}
-
-只需要返回一个简洁的总结，不需要其他内容。`;
+            const promptManager = window.PromptManagerPlugin;
+            
+            if (!promptManager) {
+                throw new Error('提示词管理插件未加载');
+            }
+            
+            const prompt = promptManager.getTemplateWithPreset('sceneSummary', 'default', {
+                '故事内容': content.substring(0, 500),
+                '用户选择': choice ? `[用户选择了：${choice}]` : ''
+            });
             
             const result = await ai.call(prompt, { 
                 system: '你是一个故事总结助手，用简洁的语言概括情节。',
@@ -1718,21 +1413,17 @@ template = template.replace('[故事内容]', content);
             
             const charNames = story.characters?.map(c => c.name).join('、') || '角色';
             
-            const prompt = `请根据以下故事内容生成一个简短的故事标题（5-15个字）：
-
-【故事开头】：
-${firstScene.substring(0, 300)}
-
-【故事结尾】：
-${lastScene.substring(0, 300)}
-
-【出场角色】：${charNames}
-
-要求：
-1. 标题要能概括故事的核心内容或主题
-2. 字数控制在5-15个字之间
-3. 不要包含引号或其他符号
-4. 直接返回标题，不要其他内容`;
+            const promptManager = window.PromptManagerPlugin;
+            
+            if (!promptManager) {
+                throw new Error('提示词管理插件未加载');
+            }
+            
+            const prompt = promptManager.getTemplateWithPreset('storyTitle', 'default', {
+                '故事开头': firstScene.substring(0, 300),
+                '故事结尾': lastScene.substring(0, 300),
+                '出场角色': charNames
+            });
 
             const result = await ai.call(prompt, { 
                 system: '你是一个故事标题生成助手，根据故事内容生成简洁有力的标题。',

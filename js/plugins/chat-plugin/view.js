@@ -776,8 +776,76 @@ ViewCallbacks.chat._hideLoading = function() {
     LoadingManager.hide();
 };
 
+ViewCallbacks.chat._onAdultTagsDetected = function(checkResult) {
+    if (!checkResult || !checkResult.matchedTags || checkResult.matchedTags.length === 0) return;
+    
+    const main = document.getElementById('mainContent');
+    if (!main) return;
+    
+    const tagsHtml = checkResult.matchedTags.slice(0, 3).map(tag => 
+        `<span style="display: inline-block; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 4px 10px; border-radius: 12px; font-size: 0.75rem; margin: 2px;">${tag}</span>`
+    ).join('');
+    
+    const moreCount = checkResult.matchedTags.length - 3;
+    const moreHtml = moreCount > 0 ? `<span style="color: #666; font-size: 0.75rem;">+${moreCount}个</span>` : '';
+    
+    const notification = document.createElement('div');
+    notification.id = 'adult-tags-notification';
+    notification.style.cssText = `
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        padding: 12px 16px;
+        border-radius: 12px;
+        box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+        z-index: 10000;
+        max-width: 300px;
+        animation: slideIn 0.3s ease;
+    `;
+    notification.innerHTML = `
+        <div style="font-weight: 600; margin-bottom: 8px; font-size: 0.85rem;">
+            💡 玩法提醒
+        </div>
+        <div style="font-size: 0.8rem; margin-bottom: 8px;">
+            检测到可能适合的玩法：
+        </div>
+        <div style="margin-bottom: 8px;">
+            ${tagsHtml}${moreHtml}
+        </div>
+        <div style="font-size: 0.7rem; opacity: 0.8;">
+            当前阶段: ${checkResult.stageName} | 尺度: ${checkResult.scale}
+        </div>
+    `;
+    
+    document.body.appendChild(notification);
+    
+    setTimeout(() => {
+        notification.style.animation = 'slideOut 0.3s ease';
+        setTimeout(() => notification.remove(), 300);
+    }, 5000);
+};
+
+if (!document.getElementById('adult-tags-style')) {
+    const style = document.createElement('style');
+    style.id = 'adult-tags-style';
+    style.textContent = `
+        @keyframes slideIn {
+            from { transform: translateX(100%); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
+        @keyframes slideOut {
+            from { transform: translateX(0); opacity: 1; }
+            to { transform: translateX(100%); opacity: 0; }
+        }
+    `;
+    document.head.appendChild(style);
+}
+
 if (window.ChatPlugin) {
     window.ChatPlugin._callbacks = window.ChatPlugin._callbacks || {};
     window.ChatPlugin._callbacks.showLoading = ViewCallbacks.chat._showLoading;
     window.ChatPlugin._callbacks.hideLoading = ViewCallbacks.chat._hideLoading;
+    window.ChatPlugin._callbacks.onAdultTagsDetected = ViewCallbacks.chat._onAdultTagsDetected;
 }

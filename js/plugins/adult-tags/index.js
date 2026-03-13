@@ -30,78 +30,16 @@ PluginSystem.register('adult-tags', {
     },
 
     _initChoiceTemplates() {
+        const promptManager = window.PromptManagerPlugin;
+        
         this._choiceTemplates = {
             '1': {
                 explicitness: '低',
-                template: `【成人选项】当前阶段：暧昧挑逗期（轻度淫靡）
-尺度：非常克制，仅限心理与轻微肢体接触
-
-请生成3个让用户选择的剧情分支选项。
-
-要求：
-- 所有选项必须保持暧昧、挑逗、性张力逐步积累
-- 严禁出现任何性器官名称、裸露、插入、高潮、潮吹等直接描写
-- 使用含蓄但色情的语言（脸红、心跳加速、呼吸紊乱、指尖轻颤、耳边低语、衣料滑落、身体发热等）
-- 每个选项都应自然暗示下一步可能的亲密升级，但绝不跨越界限
-
-输出格式（只输出三行选项，无其他文字）：
-1. [选项描述]
-2. [选项描述]
-3. [选项描述]`
+                template: promptManager ? promptManager.getTemplate('generateChoices', 'daily') : ''
             },
             '2': {
-                explicitness: '中',
-                template: `【成人选项】当前阶段：肉体交缠期（中度淫乱）
-尺度：允许直接触碰性敏感区、前戏、口交、指交、初次插入等
-
-请生成3个让用户选择的剧情分支选项。
-
-要求：
-- 选项必须包含明确的性行为开始或过程描写
-- 可使用半露骨词汇（鸡巴、骚穴、湿透、龟头、淫水、舔弄、抽插、紧致等）
-- 但禁止极端高潮描写、潮吹失禁、连续内射、肉便器化等
-- 每个选项带来明显的快感递增与身体反应
-
-输出格式（只输出三行选项，无其他文字）：
-1. [选项描述]
-2. [选项描述]
-3. [选项描述]`
-            },
-            '3': {
                 explicitness: '高',
-                template: `【成人选项】当前阶段：高潮崩坏期（高度淫靡）
-尺度：允许激烈抽插、内射、潮吹、强制高潮、大量脏话与羞辱
-
-请生成3个让用户选择的剧情分支选项。
-
-要求：
-- 选项要极具冲击力，包含强烈生理快感与精神崩溃描写
-- 大量使用下流直接语言、拟声词（啪啪、咕啾、噗滋）、脏话、求饶/命令对话
-- 体现角色在快感中逐渐失控、尖叫、痉挛、喷水等
-- 可涉及姿势变换、连续高潮、轻度疼痛快感
-
-输出格式（只输出三行选项，无其他文字）：
-1. [选项描述]
-2. [选项描述]
-3. [选项描述]`
-            },
-            '4': {
-                explicitness: '极高',
-                template: `【成人选项】当前阶段：极致堕落期（极限淫乱）
-尺度：无任何上限，允许极端、变态、成瘾式、超现实描写
-
-请生成3个让用户选择的剧情分支选项。
-
-要求：
-- 选项必须展现彻底的肉体与精神堕落
-- 使用最下流、最病态的语言（肉便器、子宫灌满、精液容器、意识融化、孕肚鼓起、永久标记等）
-- 可包含超现实元素（魔法分身、多重插入、连续多日性爱、彻底成瘾）
-- 角色主动求虐、淫荡展示、完全放弃尊严与羞耻
-
-输出格式（只输出三行选项，无其他文字）：
-1. [选项描述]
-2. [选项描述]
-3. [选项描述]`
+                template: promptManager ? promptManager.getTemplate('generateChoices', 'erotic') : ''
             }
         };
         console.log('[成人选项] 已加载内置选项模板:', Object.keys(this._choiceTemplates).length, '个等级');
@@ -607,28 +545,8 @@ PluginSystem.register('adult-tags', {
     },
 
     getStage(excitement = null, worldId = null, charId = null) {
-        if (!worldId) {
-            const world = Data.getCurrentWorld();
-            worldId = world?.id;
-        }
-        
-        const stats = this.getAllStats(worldId, charId);
-        const arousal = excitement !== null ? excitement : stats.arousal;
-        const { intimacy, experience, willingness } = stats;
-        
-        if (arousal < 25) return 1;
-        
-        if (arousal >= 25 && intimacy >= 30) {
-            if (arousal >= 50 && intimacy >= 50 && experience >= 30) {
-                if (arousal >= 75 && intimacy >= 70 && experience >= 60 && willingness >= 50) {
-                    return 4;
-                }
-                return 3;
-            }
-            return 2;
-        }
-        
-        return 1;
+        const score = this.getStageScore(worldId, charId);
+        return score < 60 ? 1 : 2;
     },
 
     getStageScore(worldId = null, charId = null) {
@@ -652,12 +570,10 @@ PluginSystem.register('adult-tags', {
     getStageName(stage = null) {
         const stageNum = stage !== null ? stage : this.getStage();
         const names = { 
-            1: '暧昧挑逗期', 
-            2: '肉体交缠期', 
-            3: '高潮崩坏期',
-            4: '极致堕落期'
+            1: '日常模式', 
+            2: '色色模式'
         };
-        return names[stageNum] || '暧昧挑逗期';
+        return names[stageNum] || '日常模式';
     },
 
     getCooldownList(worldId) {
@@ -864,16 +780,12 @@ PluginSystem.register('adult-tags', {
                     console.log(`[成人标签] 角色ID ${id} 兴奋值符合要求（${excitement}），准备触发`);
                     return true;
                 }
-                if (stage === 2 && excitement >= 30) {
-                    console.log(`[成人标签] 角色ID ${id} 兴奋值符合要求（${excitement}），准备触发`);
-                    return true;
-                }
-                if (stage === 3) {
-                    console.log(`[成人标签] 角色ID ${id} 兴奋值（${excitement}），阶段3可直接触发`);
+                if (stage === 2) {
+                    console.log(`[成人标签] 角色ID ${id} 兴奋值（${excitement}），色色模式可直接触发`);
                     return true;
                 }
             }
-            console.log(`[成人标签] 所有角色兴奋值不足（阶段${stage}需要：${stage === 1 ? '≥10' : '≥30'}）`);
+            console.log(`[成人标签] 所有角色兴奋值不足（阶段${stage}需要：${stage === 1 ? '≥10' : '色色模式可直接触发'}）`);
             return false;
         }
         
@@ -881,9 +793,7 @@ PluginSystem.register('adult-tags', {
         
         const stageRequirements = {
             1: { arousal: 10, intimacy: 0, experience: 0, willingness: 0 },
-            2: { arousal: 25, intimacy: 30, experience: 0, willingness: 0 },
-            3: { arousal: 50, intimacy: 50, experience: 30, willingness: 0 },
-            4: { arousal: 75, intimacy: 70, experience: 60, willingness: 50 }
+            2: { arousal: 60, intimacy: 60, experience: 60, willingness: 60 }
         };
         
         const req = stageRequirements[stage];
@@ -895,6 +805,63 @@ PluginSystem.register('adult-tags', {
         
         console.log(`[成人标签] 阶段${stage}所有属性符合要求，准备触发`);
         return true;
+    },
+
+    checkChatContent(chatContent, characters = []) {
+        const settings = this.getSettings();
+        if (!settings.enabled) return null;
+        
+        const world = Data.getCurrentWorld();
+        const worldId = world?.id;
+        
+        if (!chatContent || typeof chatContent !== 'string') return null;
+        
+        const tags = this.getTagLibrary();
+        if (tags.length === 0) return null;
+        
+        const sceneKeywords = this._extractKeywords(chatContent);
+        if (sceneKeywords.length === 0) return null;
+        
+        const stage = this.getStage(null, worldId);
+        const scale = this.getScale(worldId);
+        
+        console.log(`[成人标签-聊天] 检测内容，阶段:${stage}, 尺度:${scale}, 关键词数:${sceneKeywords.length}`);
+        
+        const matchedTags = [];
+        
+        for (const tag of tags) {
+            const tagStage = tag.阶段 || 2;
+            if (tagStage > stage + 1) continue;
+            
+            if (tag.尺度) {
+                if (scale === '轻' && tag.尺度 !== '轻') continue;
+                if (scale === '中' && ['重', '极限'].includes(tag.尺度)) continue;
+                if (scale === '重' && tag.尺度 === '极限') continue;
+            }
+            
+            const triggers = tag.触发条件 || [];
+            const isMatched = triggers.some(t => 
+                sceneKeywords.some(kw => t.includes(kw) || kw.includes(t))
+            );
+            
+            if (isMatched) {
+                matchedTags.push(tag);
+                console.log(`[成人标签-聊天] 匹配到标签:`, tag.内容);
+            }
+        }
+        
+        if (matchedTags.length === 0) return null;
+        
+        const result = {
+            matchedTags: matchedTags.map(t => t.内容),
+            stage: stage,
+            stageName: this.getStageName(stage),
+            scale: scale,
+            canTrigger: matchedTags.length > 0 && stage >= 1
+        };
+        
+        console.log(`[成人标签-聊天] 检测结果:`, result);
+        return result;
     },
 
     _extractKeywords(text) {
@@ -986,52 +953,51 @@ PluginSystem.register('adult-tags', {
         const selectedTags = this.selectRandomTags(world?.id, 2, stage, scale, currentScene);
         const cooldown = this.getCooldownList(world?.id);
 
-        const stageDescriptions = {
-            1: scale === '极限' || scale === '重' 
-                ? '可以使用直接的性行为描写，但要避免过于极端的内容，允许身体接触、亲密互动、性器官描写' 
-                : '只能使用暗示性的描写，如眼神接触、身体接触、暧昧气氛等，不能有直接的性行为描写',
-            2: scale === '极限' || scale === '重'
-                ? '可以使用直接的性行为描写，允许插入、抽动、高潮等详细描写'
-                : '可以使用试探性的描写，轻微的亲密接触和暗示',
-            3: scale === '极限' || scale === '重'
-                ? '允许激烈性交、连续高潮、羞辱失控、下流语言、大量脏话'
-                : '可以使用直接的性行为描写，但要注意尺度限制',
-            4: '允许极端、变态、成瘾式、超现实描写，完全放弃尊严与羞耻'
-        };
+        const promptManager = window.PromptManagerPlugin;
+        const stageDescription = promptManager 
+            ? promptManager.getStageDescription(stage, 'default')
+            : (stage === 1 ? '日常模式' : '色色模式');
 
-        // 获取story-config插件中的成人内容设置
-        let template = '';
         const storyConfigPlugin = PluginSystem.get('story-config');
+        let template = '';
+        
         if (storyConfigPlugin) {
-            const adultSetting = storyConfigPlugin.getAISetting('adultContinue', worldId);
-            if (adultSetting && adultSetting.enabled && adultSetting.template) {
-                template = adultSetting.template
-                    .replace('[兴奋值]', excitement)
-                    .replace('[亲密度]', intimacy)
-                    .replace('[经验值]', experience)
-                    .replace('[意愿度]', willingness)
-                    .replace('[阶段]', stage)
-                    .replace('[阶段名称]', stageName)
-                    .replace('[尺度]', scale)
-                    .replace('[阶段描述]', stageDescriptions[stage])
-                    .replace('[标签列表]', selectedTags.length > 0 ? selectedTags.map(t => `- ${t}`).join('\n') : '（无标签可用）')
-                    .replace('[冷却列表]', cooldown.length > 0 ? cooldown.join('、') : '暂无')
-                    .replace('[上下文]', currentScene);
+            const aiSetting = storyConfigPlugin.getAISetting('storyChoice', worldId);
+            if (aiSetting && aiSetting.enabled && aiSetting.template) {
+                template = aiSetting.template;
+                template = template.replace('[用户选择]', choice || '继续剧情');
+                template = template.replace('[上下文]', currentScene);
+                template = template.replace('[当前阶段]', stageName);
+                template = template.replace('[阶段]', stageName);
+                template = template.replace('[尺度描述]', stageDescription);
+                template = template.replace('[尺度]', stageDescription);
                 
-                if (adultSetting.customPrompt) {
-                    template += '\n\n' + adultSetting.customPrompt;
-                }
-            }
-        }
+                const adultSupplement = `
 
-        // 如果没有获取到设置，使用默认模板
-        if (!template) {
-            template = `
-【成人内容要求】
+【成人内容补充】
 兴奋值：${excitement}/100
 亲密度：${intimacy}/100
 经验值：${experience}/100
 意愿度：${willingness}/100
+
+【必须融入的玩法】（选取1-2个，自然融入剧情）：
+${selectedTags.length > 0 ? selectedTags.map(t => `- ${t}`).join('\n') : '（无标签可用）'}
+
+【冷却中的标签】（避免重复使用）：
+${cooldown.length > 0 ? cooldown.join('、') : '暂无'}`;
+                
+                template += adultSupplement;
+                
+                if (aiSetting.customPrompt) {
+                    template += '\n\n' + aiSetting.customPrompt;
+                }
+            }
+        }
+
+        if (!template) {
+            template = `
+【成人内容要求】
+兴奋值：${excitement}/100
 当前阶段：${stage}（${stageName}）
 尺度级别：${scale}
 阶段限制：${stageDescriptions[stage]}
@@ -1042,13 +1008,8 @@ ${selectedTags.length > 0 ? selectedTags.map(t => `- ${t}`).join('\n') : '（无
 【冷却中的标签】（避免重复使用）：
 ${cooldown.length > 0 ? cooldown.join('、') : '暂无'}
 
-【重要规则】
-1. 只在故事中自然融入上述玩法，不要生硬描述
-2. 同一玩法不要连续使用超过2次
-3. 根据兴奋值和阶段决定内容的露骨程度
-4. 严格按照设定的尺度级别生成内容
-5. 描写要流畅如小说，避免罗列
-6. 【强制限制】女角色不能和陌生人、路人或其他未建立关系的角色进行亲密行为。所有互动必须由主角和已建立关系的角色完成，如果需要多人参与，请用主角的分身、神奇道具、魔法道具、玩具等来代替。用词直白露骨，直接描写性器官接触、插入、抽动、高潮等细节。
+上下文：
+${currentScene}
 `;
         }
 
@@ -1088,18 +1049,10 @@ ${cooldown.length > 0 ? cooldown.join('、') : '暂无'}
         const scale = this.getScale(world?.id);
         const cooldown = this.getCooldownList(world?.id);
 
-        const stageDescriptions = {
-            1: scale === '极限' || scale === '重' 
-                ? '可以使用直接的性行为描写，但要避免过于极端的内容，允许身体接触、亲密互动、性器官描写' 
-                : '只能使用暗示性的描写，如眼神接触、身体接触、暧昧气氛等，不能有直接的性行为描写',
-            2: scale === '极限' || scale === '重'
-                ? '可以使用直接的性行为描写，允许插入、抽动、高潮等详细描写'
-                : '可以使用试探性的描写，轻微的亲密接触和暗示',
-            3: scale === '极限' || scale === '重'
-                ? '允许激烈性交、连续高潮、羞辱失控、下流语言、大量脏话'
-                : '可以使用直接的性行为描写，但要注意尺度限制',
-            4: '允许极端、变态、成瘾式、超现实描写，完全放弃尊严与羞耻'
-        };
+        const promptManager = window.PromptManagerPlugin;
+        const stageDescription = promptManager 
+            ? promptManager.getStageDescription(stage, 'default')
+            : (stage === 1 ? '日常模式' : '色色模式');
 
         const template = `
 【成人内容要求】
@@ -1109,7 +1062,7 @@ ${cooldown.length > 0 ? cooldown.join('、') : '暂无'}
 意愿度：${willingness}/100
 当前阶段：${stage}（${stageName}）
 尺度级别：${scale}
-阶段限制：${stageDescriptions[stage]}
+阶段限制：${stageDescription}
 
 【用户选择的玩法】（必须融入）：
 ${selectedTags.map(t => `- ${t}`).join('\n')}

@@ -242,7 +242,11 @@ class AI {
                     additionalPrompt += `\n禁止内容：${s.forbidden.join('、')}`;
                 }
                 
-                additionalPrompt += '\n\n【重要限制】剧情中女角色不能和陌生人、路人或其他未建立关系的角色进行亲密行为。所有互动必须由主角和已建立关系的角色完成，如果需要多人参与，请用主角的分身、神奇道具、魔法道具、玩具等来代替。';
+                const promptManager = window.PromptManagerPlugin;
+                const eroticStyle = promptManager ? promptManager.getStylePreset('erotic') : null;
+                if (eroticStyle && eroticStyle.customRules) {
+                    additionalPrompt += '\n\n' + eroticStyle.customRules;
+                }
                 
                 return pluginPrompt + additionalPrompt;
             }

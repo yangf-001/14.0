@@ -252,13 +252,17 @@ PluginSystem.register('chat-plugin', {
 
         let prompt = '';
         
-        if (aiSetting && aiSetting.enabled) {
-            let template = aiSetting.template || '';
-            if (aiSetting.customPrompt) {
-                template += '\n\n' + aiSetting.customPrompt;
-            }
-            prompt = template;
-        } else {
+        const promptManager = window.PromptManagerPlugin;
+        
+        if (promptManager) {
+            prompt = promptManager.getTemplate('chatContinue', 'default') || '';
+        }
+        
+        if (aiSetting && aiSetting.enabled && aiSetting.customPrompt) {
+            prompt += '\n\n' + aiSetting.customPrompt;
+        }
+        
+        if (!prompt) {
             throw new Error('请先在AI设置中配置"聊天继续"模板');
         }
         
@@ -289,11 +293,11 @@ PluginSystem.register('chat-plugin', {
 
         if (charList.length > 1) {
             const charNames = charList.map(c => c.name).join('、');
-            prompt += `\n\n【重要】这是多人对话，参与者包括：${charNames}。请让多个角色分别发言，每行以"角色名："开头，例如：
-林诗雅：你好呀，今天有空吗？
-陈轩：嗯，我正好有时间。
-
-这样可以清晰区分不同角色的对话。`;
+            const promptManager = window.PromptManagerPlugin;
+            const multiCharTemplate = promptManager ? promptManager.getTemplate('multiCharChat', 'default') : '';
+            if (multiCharTemplate) {
+                prompt += '\n\n' + multiCharTemplate.replace('[角色列表]', charNames);
+            }
         }
         
         const diaryContext = this._getDiaryContext(charList, worldId);
@@ -538,6 +542,18 @@ PluginSystem.register('chat-plugin', {
             
             this._saveCharacterChatState(aiCharacters, parsedMessages, world.id);
             this._saveCharacterDiaries(aiCharacters, messages, world.id);
+
+            const chatContent = parsedMessages.map(m => m.content).join(' ');
+            const adultTagsPlugin = window.AdultTagsPlugin;
+            if (adultTagsPlugin) {
+                const checkResult = adultTagsPlugin.checkChatContent(chatContent, aiCharacters);
+                if (checkResult && checkResult.matchedTags && checkResult.matchedTags.length > 0) {
+                    console.log('[聊天-成人标签] 检测到匹配标签:', checkResult.matchedTags);
+                    if (this._callbacks?.onAdultTagsDetected) {
+                        this._callbacks.onAdultTagsDetected(checkResult);
+                    }
+                }
+            }
 
             if (this._callbacks?.hideLoading) {
                 this._callbacks.hideLoading();

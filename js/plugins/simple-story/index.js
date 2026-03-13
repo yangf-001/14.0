@@ -407,25 +407,16 @@ PluginSystem.register('simple-story', {
         
         await new Promise(resolve => setTimeout(resolve, 100));
         
-        const prompt = `你是一个色情故事生成AI。
-
-请根据以下词条生成一个简短故事的**开头**，详细描写动作场景。
-
-角色：${charNames}
-词条：${tags.map(t => t.title).join('、')}
-
-要求：
-1. 详细描写动作、表情、触感
-2. 150-250字
-3. 必须融入词条元素
-4. 故事结束后给出2个选项让用户选择
-5. 格式：
-【故事】
-（内容）
-
-【选项】
-1. xxx
-2. xxx`;
+        const promptManager = window.PromptManagerPlugin;
+        
+        if (!promptManager) {
+            throw new Error('提示词管理插件未加载');
+        }
+        
+        const prompt = promptManager.getTemplateWithPreset('simpleStory', 'default', {
+            '角色列表': charNames,
+            '词条': tags.map(t => t.title).join('、')
+        });
 
         try {
             this._showLoading();
@@ -471,37 +462,16 @@ PluginSystem.register('simple-story', {
             ? this._storyScenes[this._storyScenes.length - 1].content 
             : '';
         
-        const prompt = `你现在是色情小说作者，文风下流细腻、感官强烈。
-
-请根据用户选择**继续**故事，**必须**从上一段故事的结尾继续发展，**绝对不能**重复之前的内容。
-
-角色：${charNames}
-之前的故事：
-${historyText}
-
-**上一段故事的结尾：**
-${lastContent}
-
-**用户的新选择：**
-${choice}
-
-要求：
-1. **必须从上一段故事的结尾继续发展**，不能重复之前的任何内容
-2. 输出一段完整的150-250字剧情（从当前状态直接推进，不要总结前文）
-3. 性爱重点描写性器官触感、声音、体液、抽插节奏、呻吟脏话、身体反应
-4. 语言要直接露骨，使用"鸡巴""骚穴""淫水""操""射"等词
-5. 剧情在本段内形成一个小高潮或转折，但整体故事仍可继续
-6. **必须写出新的剧情发展**，有新的动作、新的场景变化、新的身体反应
-7. 结尾给出两个选择（每条10字以内）
-8. 格式：
-【故事】
-（内容）
-
-【选项】
-1. xxx
-2. xxx
-
-**注意**：你**必须**写出与之前不同的新剧情！`;
+        const promptManager = window.PromptManagerPlugin;
+        
+        if (!promptManager) {
+            throw new Error('提示词管理插件未加载');
+        }
+        
+        const prompt = promptManager.getTemplateWithPreset('storyChoice', 'default', {
+            '用户选择': choice,
+            '上下文': `之前的故事：\n${historyText}\n\n上一段故事的结尾：\n${lastContent}`
+        });
 
         try {
             this._showLoading('正在生成故事...');

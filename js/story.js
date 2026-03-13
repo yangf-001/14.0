@@ -121,20 +121,18 @@ const Story = {
                 template += '\n\n' + aiSetting.customPrompt;
             }
             return template;
-        } else {
-            return `根据以下历史剧情，继续生成新的故事：
-
-【出场角色】${charNames}
-【故事背景】${world.name}
-
-${historyContext}
-
-请生成下一段故事内容（200-500字），自然地承接上面的剧情。注意：
-1. 响应用户的开始请求
-2. 根据角色设定发展故事
-3. 适当埋下后续剧情的伏笔
-4. 如果故事中有明确的时间推进（如几小时后、几天后等），请在故事结束后另起一行输出【时间变化：X天】或【时间变化：X月】。如果时间没有明显变化，输出【时间变化：0天】`;
         }
+        
+        const promptManager = window.PromptManagerPlugin;
+        if (promptManager) {
+            return promptManager.getTemplateWithPreset('storyContinue', 'default', {
+                '角色列表': charNames,
+                '世界名': world.name,
+                '历史剧情': historyContext
+            });
+        }
+        
+        throw new Error('请先在AI设置中配置"继续故事"模板');
     },
 
     _buildNewStoryPrompt(plugin, selectedChars, config, settings, playerCharInfo, currentStoryNodeData) {
@@ -164,8 +162,6 @@ ${historyContext}
         const simpleStoryPlugin = PluginSystem.get('simple-story');
         if (simpleStoryPlugin && typeof simpleStoryPlugin.isSimpleStoryMode === 'function') {
             return simpleStoryPlugin.isSimpleStoryMode();
-        } else if (window.getSimpleStoryMode) {
-            return window.getSimpleStoryMode();
         }
         return false;
     },
@@ -401,38 +397,53 @@ ${historyContext}
         const plugin = this._getPlugin();
         
         if (choice) {
-            if (isItemUse) {
-                const aiSetting = plugin.getAISetting('itemStory', world.id);
-                const context = plugin.getStoryGenerator().buildContext(this.current, characters, settings);
-                const charNames = characters.map(c => c.name).join('、');
-                const targetChar = options.targetChar;
-                const userChar = options.userChar;
-                const item = options.item;
-                
+            const context = plugin.getStoryGenerator().buildContext(this.current, characters, settings);
+            const charNames = characters.map(c => c.name).join('、');
+            
+            const aiSetting = plugin.getAISetting('storyChoice', world.id);
+            if (aiSetting && aiSetting.enabled) {
                 let template = aiSetting.template || '';
-                template = template.replace('[上下文]', context);
-                template = template.replace('[角色]', userChar ? `${userChar.name}对${targetChar.name}` : targetChar.name);
-                template = template.replace('[物品名]', item.name);
-                template = template.replace('[物品效果]', JSON.stringify(item.effects || {}));
-                template = template.replace('[物品描述]', item.description || '');
                 
-                systemPrompt = plugin.getWorldSystemPrompt(world.id);
-                
-                if (aiSetting.customPrompt) {
-                    template += '\n\n' + aiSetting.customPrompt;
+                if (isItemUse) {
+                    const targetChar = options.targetChar;
+                    const userChar = options.userChar;
+                    const item = options.item;
+                    const itemChoice = userChar 
+                        ? `${userChar.name}对${targetChar.name}使用了【${item.name}】（效果：${JSON.stringify(item.effects || {})}）`
+                        : `${targetChar.name}使用了【${item.name}】（效果：${JSON.stringify(item.effects || {})}）`;
+                    template = template.replace('[用户选择]', itemChoice);
+                } else if (isIntimate) {
+                    template = template.replace('[用户选择]', `亲密互动：${choice}`);
+                } else {
+                    template = template.replace('[用户选择]', choice);
                 }
                 
-                prompt = template;
-            } else if (isIntimate) {
-                const aiSetting = plugin.getAISetting('intimateContinue', world.id);
-                const context = plugin.getStoryGenerator().buildContext(this.current, characters, settings);
-                const charNames = characters.map(c => c.name).join('、');
-                
-                let template = aiSetting.template || '';
-                template = template.replace('[亲密互动内容]', choice);
                 template = template.replace('[上下文]', context);
                 template = template.replace('[角色列表]', charNames);
                 
+                const charRatio = options.charRatio || this.current.charRatio || 80;
+                const allChars = Data.getCharacters(world.id);
+                const selectedCharIds = options.characters || [];
+                const selectedNames = allChars.filter(c => selectedCharIds.includes(c.id)).map(c => c.name);
+                const otherNames = allChars.filter(c => !selectedCharIds.includes(c.id)).map(c => c.name);
+                
+                let charRatioText = '';
+                if (selectedNames.length > 0 && otherNames.length > 0) {
+                    charRatioText = `重点角色：${selectedNames.join('、')}（占比约${charRatio}%）\n其他角色：${otherNames.join('、')}（占比约${100 - charRatio}%）\n注意：所有角色都可以出现在剧情中，但重点角色的戏份应该更多。`;
+                }
+                template = template.replace('[角色比例设置]', charRatioText);
+                
+                const adultPlugin = window.AdultTagsPlugin;
+                if (adultPlugin && plugin.getStoryGenerator()._getStageDescription) {
+                    const stats = adultPlugin.getAllStats(world.id) || { arousal: 0, intimacy: 0, experience: 0, willingness: 0 };
+                    const stage = adultPlugin.getStage(stats.arousal, world.id) || 1;
+                    const stageInfo = plugin.getStoryGenerator()._getStageDescription(stage);
+                    template = template.replace('[当前阶段]', stageInfo.name);
+                    template = template.replace('[阶段]', stageInfo.name);
+                    template = template.replace('[尺度描述]', stageInfo.description);
+                    template = template.replace('[尺度]', stageInfo.description);
+                }
+                
                 systemPrompt = plugin.getWorldSystemPrompt(world.id);
                 
                 if (aiSetting.customPrompt) {
@@ -440,37 +451,6 @@ ${historyContext}
                 }
                 
                 prompt = template;
-            } else {
-                const context = plugin.getStoryGenerator().buildContext(this.current, characters, settings);
-                const charNames = characters.map(c => c.name).join('、');
-                
-                const aiSetting = plugin.getAISetting('storyChoice', world.id);
-                if (aiSetting && aiSetting.enabled) {
-                    let template = aiSetting.template || '';
-                    template = template.replace('[用户选择]', choice);
-                    template = template.replace('[上下文]', context);
-                    template = template.replace('[角色列表]', charNames);
-                    
-                    const charRatio = options.charRatio || this.current.charRatio || 80;
-                    const allChars = Data.getCharacters(world.id);
-                    const selectedCharIds = options.characters || [];
-                    const selectedNames = allChars.filter(c => selectedCharIds.includes(c.id)).map(c => c.name);
-                    const otherNames = allChars.filter(c => !selectedCharIds.includes(c.id)).map(c => c.name);
-                    
-                    let charRatioText = '';
-                    if (selectedNames.length > 0 && otherNames.length > 0) {
-                        charRatioText = `重点角色：${selectedNames.join('、')}（占比约${charRatio}%）\n其他角色：${otherNames.join('、')}（占比约${100 - charRatio}%）\n注意：所有角色都可以出现在剧情中，但重点角色的戏份应该更多。`;
-                    }
-                    template = template.replace('[角色比例设置]', charRatioText);
-                    
-                    systemPrompt = plugin.getWorldSystemPrompt(world.id);
-                    
-                    if (aiSetting.customPrompt) {
-                        template += '\n\n' + aiSetting.customPrompt;
-                    }
-                    
-                    prompt = template;
-                }
             }
         } else {
             const context = plugin.getStoryGenerator().buildContext(this.current, characters, settings);
@@ -498,6 +478,17 @@ ${historyContext}
                     template = template.replace('[角色变化]', options.charChangeNote);
                 }
                 
+                const adultPlugin = window.AdultTagsPlugin;
+                if (adultPlugin && plugin.getStoryGenerator()._getStageDescription) {
+                    const stats = adultPlugin.getAllStats(world.id) || { arousal: 0, intimacy: 0, experience: 0, willingness: 0 };
+                    const stage = adultPlugin.getStage(stats.arousal, world.id) || 1;
+                    const stageInfo = plugin.getStoryGenerator()._getStageDescription(stage);
+                    template = template.replace('[当前阶段]', stageInfo.name);
+                    template = template.replace('[阶段]', stageInfo.name);
+                    template = template.replace('[尺度描述]', stageInfo.description);
+                    template = template.replace('[尺度]', stageInfo.description);
+                }
+                
                 systemPrompt = plugin.getWorldSystemPrompt(world.id);
                 
                 if (aiSetting.customPrompt) {
@@ -512,11 +503,9 @@ ${historyContext}
         let simpleStoryMode = false;
         if (simpleStoryPlugin && typeof simpleStoryPlugin.isSimpleStoryMode === 'function') {
             simpleStoryMode = simpleStoryPlugin.isSimpleStoryMode();
-        } else if (window.getSimpleStoryMode) {
-            simpleStoryMode = window.getSimpleStoryMode();
-        }
-        
-        // 触发故事生成前事件
+            }
+            
+            // 触发故事生成前事件
         PluginSystem.triggerPluginEvent('beforeStoryGenerate', {
             prompt: prompt,
             simpleStoryMode: simpleStoryMode

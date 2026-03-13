@@ -374,12 +374,21 @@ const HentaiPluginHub = {
     buildIntimatePrompt(elements, extraContext = '') {
         const basePrompt = this.buildPrompt(elements, {});
         
-        const fullPrompt = `${basePrompt}
-
-【亲密互动要求】
+        const promptManager = window.PromptManagerPlugin;
+        const intimateTemplate = promptManager ? promptManager.getTemplate('intimateInteraction', 'default') : '';
+        
+        let fullPrompt = basePrompt;
+        if (intimateTemplate) {
+            fullPrompt += '\n\n' + intimateTemplate;
+            if (extraContext) {
+                fullPrompt = fullPrompt.replace('[额外上下文]', extraContext);
+            }
+        } else {
+            fullPrompt += `\n\n【亲密互动要求】
 ${extraContext ? extraContext + '\n' : ''}用词直白露骨，直接描写性器官接触、插入、抽动、高潮等细节。
 描写要流畅如小说，避免罗列。
 只描述亲密互动过程，自然融入剧情。`;
+        }
 
         return fullPrompt;
     },

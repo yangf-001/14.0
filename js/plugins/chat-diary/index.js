@@ -28,24 +28,16 @@ PluginSystem.register('chat-diary', {
             return null;
         }
 
-        const assistant = {
-            name: '日记小助手',
-            profile: {
-                personality: '感性、细腻、善于记录',
-                background: '我是专门负责管理角色日记的小助手，帮助你记录角色的成长和经历。'
-            }
-        };
-
-        let prompt = `你是${assistant.name}，${assistant.profile.background}。\n\n`;
-        prompt += `根据以下聊天内容，为${character.name}生成一篇日记。\n\n`;
-        prompt += `聊天内容:\n${chatContent}\n\n`;
-        prompt += `请以${character.name}的视角，记录这次聊天的内容和感受。\n\n`;
-        prompt += `要求:\n`;
-        prompt += `1. 日记要符合${character.name}的性格和说话方式\n`;
-        prompt += `2. 记录聊天的关键内容和情感变化\n`;
-        prompt += `3. 语言要自然，符合日记格式\n`;
-        prompt += `4. 100-300字左右\n`;
-        prompt += `5. 直接输出日记内容，不要添加任何格式前缀`;
+        const promptManager = window.PromptManagerPlugin;
+        
+        if (!promptManager) {
+            throw new Error('提示词管理插件未加载');
+        }
+        
+        const prompt = promptManager.getTemplateWithPreset('diary', 'default', {
+            '角色名': character.name,
+            '聊天内容': chatContent
+        });
 
         try {
             const response = await ai.call(prompt, {

@@ -35,6 +35,7 @@ const Router = {
             case 'simple-story': Pages.renderSimpleStory(main); break;
             case 'chat': await Pages.renderChat(main); break;
             case 'story-config': Pages.renderStoryConfig(main); break;
+            case 'prompt-manager': Pages.renderPromptManager(main); break;
             case 'storage': Storage.renderStorage(main); break;
             case 'settings': Pages.renderSettings(main); break;
             case 'plugins': Pages.renderPlugins(main); break;

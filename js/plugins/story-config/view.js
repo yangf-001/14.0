@@ -49,37 +49,15 @@ View.register('story-config.main', function() {
 });
 
 View.register('story-config.presets', function() {
+    const promptManager = window.PromptManagerPlugin;
+    
     const presets = [
-        {
-            name: '默认风格',
-            systemRole: '你是一个故事生成AI。请用故事的方式呈现内容。',
-            outputRules: '只输出故事正文内容，不要包含任何选项、后续发展、剧情走向、选择提示等信息。',
-            customRules: ''
-        },
-        {
-            name: '详细描写',
-            systemRole: '你是一个故事生成AI。擅长详细的环境描写和情感刻画。',
-            outputRules: '输出详细的故事情节，包括环境描写、人物心理活动、对话等。不要省略细节描写。',
-            customRules: '使用丰富的形容词和动词，让场景更加生动。'
-        },
-        {
-            name: '简洁风格',
-            systemRole: '你是一个故事生成AI。擅长简洁有力的叙事。',
-            outputRules: '用简洁的语言讲述故事，避免冗长的描写，保持节奏明快。',
-            customRules: '每段话不超过50字，突出重点。'
-        },
-        {
-            name: '言情风格',
-            systemRole: '你是一个言情小说作家。擅长描写浪漫的情感故事。',
-            outputRules: '重点描写角色之间的情感互动、心理变化，要有恋爱氛围感。',
-            customRules: '增加心动、脸红、甜蜜的细节描写。'
-        },
-        {
-            name: '剧情向',
-            systemRole: '你是一个剧情向故事作家。擅长复杂的情节设计。',
-            outputRules: '注重故事剧情的发展，制造冲突和悬念，推动情节前进。',
-            customRules: '每个情节点要有关联性，埋下伏笔。'
-        }
+        { id: 'default', name: '默认风格', desc: '标准的故事生成风格' },
+        { id: 'detailed', name: '详细描写', desc: '详细的环境描写和情感刻画' },
+        { id: 'concise', name: '简洁风格', desc: '简洁有力的叙事' },
+        { id: 'romantic', name: '言情风格', desc: '浪漫的情感故事' },
+        { id: 'plot', name: '剧情向', desc: '复杂的情节设计' },
+        { id: 'erotic', name: '色色风格', desc: '成人向内容描写' }
     ];
 
     return `
@@ -89,10 +67,10 @@ View.register('story-config.presets', function() {
                 <button class="btn btn-secondary" onclick="showPage('story-config')">← 返回</button>
             </div>
             <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 12px;">
-                ${presets.map((preset, idx) => `
-                    <div class="card" style="cursor: pointer; transition: transform 0.2s;" onclick="ViewCallbacks.storyConfig.applyPreset(${idx})">
+                ${presets.map((preset) => `
+                    <div class="card" style="cursor: pointer; transition: transform 0.2s;" onclick="ViewCallbacks.storyConfig.applyStylePreset('${preset.id}')">
                         <div style="font-weight: bold; margin-bottom: 8px;">${preset.name}</div>
-                        <div style="font-size: 0.8rem; color: var(--text-dim);">${preset.customRules || preset.outputRules.substring(0, 30)}...</div>
+                        <div style="font-size: 0.8rem; color: var(--text-dim);">${preset.desc}</div>
                     </div>
                 `).join('')}
             </div>
@@ -103,6 +81,12 @@ View.register('story-config.presets', function() {
 ViewCallbacks.storyConfig = ViewCallbacks.storyConfig || {};
 
 ViewCallbacks.storyConfig._getDefaultAISettings = function() {
+    const promptManager = window.PromptManagerPlugin;
+    
+    const getTemplate = (category) => {
+        return promptManager ? promptManager.getTemplate(category, 'default') : '';
+    };
+    
     return {
         dataSources: {
                 title: '数据源设置',
@@ -116,266 +100,80 @@ ViewCallbacks.storyConfig._getDefaultAISettings = function() {
         storyStart: {
             title: '故事开头生成',
             enabled: true,
-            template: `[系统提示词]\n\n生成一个故事开头：\n角色信息：[角色JSON]\n场景设定：[场景]\n风格要求：[风格设置]\n\n请生成100-300字的故事开头，并自然地引出后续剧情发展的可能性。`,
+            template: getTemplate('storyStart'),
             customPrompt: ''
         },
         storyChoice: {
             title: '选择后继续故事',
             enabled: true,
-            template: `[系统提示词]\n\n根据用户的选择继续故事：[用户选择]\n\n[上下文]\n\n【角色出场比例】\n[角色比例设置]\n\n请生成下一段故事内容（100-300字），自然地回应用户的选择。`,
+            template: getTemplate('storyChoice'),
             customPrompt: ''
         },
         storyFree: {
             title: '自由发展继续',
             enabled: true,
-            template: `[系统提示词]\n\n继续故事，生成下一段内容：\n\n[上下文]\n\n【角色出场比例】\n[角色比例设置]\n\n请生成100-300字的故事内容，推动剧情发展。`,
+            template: getTemplate('storyFree'),
             customPrompt: ''
         },
 
         storyContinue: {
             title: '继续故事',
             enabled: true,
-            template: `[系统提示词]\n\n基于以下设定继续故事：\n角色：[角色描述]\n背景：[世界名]\n设定：[风格设置]\n[之前的故事剧情]\n[当前故事最新剧情]\n\n请生成下一段故事内容（100-300字），通过故事情节自然呈现。\n注意：\n1. 响应用户上一次的选择\n2. 根据角色设定发展故事\n3. 适当埋下后续剧情的伏笔`,
-            customPrompt: ''
-        },
-        itemStory: {
-            title: '物品使用剧情',
-            enabled: true,
-            template: `[系统提示词]\n\n根据以下情节继续故事：\n[上下文]\n\n【新的情节】\n[角色]使用了[物品名]\n物品效果：[物品效果]\n[物品描述]\n\n请生成100-200字的故事内容。`,
-            customPrompt: ''
-        },
-        intimateContinue: {
-            title: '亲密互动继续',
-            enabled: true,
-            template: `[系统提示词]\n\n根据用户选择的亲密互动继续故事：\n[亲密互动内容]\n\n上下文：\n[上下文]\n\n角色：[角色列表]\n\n请生成100-200字的故事内容。`,
+            template: getTemplate('storyContinue'),
             customPrompt: ''
         },
         generateChoices: {
             title: '生成剧情选项',
             enabled: true,
-            template: `[系统提示词]\n\n基于以下故事内容，生成3个让用户选择的剧情分支选项：\n\n故事内容：\n[内容摘要]\n\n角色：[角色列表]\n\n请生成3个符合故事发展、让用户决定剧情走向的选择项。每个选项用一句话描述，格式如下（只需要选项，不要其他内容）：\n1. [选项1描述]\n2. [选项2描述]\n3. [选项3描述]`,
+            template: getTemplate('generateChoices'),
             temperature: 0.8,
             customPrompt: ''
         },
         updateStats: {
             title: '更新角色属性',
             enabled: true,
-            template: `根据以下故事内容，分析角色在剧情中的数值属性变化。
-
-故事内容：
-[内容]
-
-角色：[角色列表]
-
-【基础属性】
-- health (生命 0-200)
-- charm (魅力 0-200)
-- intelligence (智力 0-200)
-- strength (力量 0-200)
-- agility (敏捷 0-200)
-- stamina (体力 0-200)
-
-【色色属性】
-- arousal (兴奋值 0-200)
-- experience (经验值 0-200)
-- sexSkill (技巧 0-200)
-- sexSensitivity (敏感 0-200)
-
-【状态属性】
-- intimacy (亲密 0-200)
-- willingness (意愿 0-200)
-- corruption (堕落 0-200)
-- shame (羞耻 0-200)
-
-请分析故事情节，判断每个角色的数值属性应该有什么变化。返回JSON格式：
-{
-  "角色名": {
-    "属性名": 变化值
-  }
-}
-
-注意：
-1. 根据剧情合理设置变化值，一般单次变化在-10到+10之间
-2. 如果某个属性没有变化，不要在JSON中列出
-3. 如果所有属性都没变化，返回空对象 {}`,
+            template: getTemplate('updateStats'),
             temperature: 0.3,
             customPrompt: ''
         },
         extractItems: {
             title: '提取物品信息',
             enabled: true,
-            template: `根据以下故事内容，分析是否有出现以下物品（从物品库中匹配），并识别哪个角色获得了物品：\n\n物品库：[物品列表]\n\n角色：[角色列表]\n\n故事内容：\n[内容]\n\n请分析故事中物品的获得和使用情况，返回JSON格式：\n{\n  "获得": [\n    {"物品": "物品名", "角色": "角色名"}\n  ],\n  "使用": [\n    {"物品": "物品名", "角色": "角色名"}\n  ]\n}\n\n注意：\n1. "获得"指角色获得/拥有的物品\n2. "使用"指角色使用/消耗的物品\n3. 如果物品没有明确指定给哪个角色，默认给第一个角色\n4. 只返回与物品库中物品名称匹配的内容\n5. 如果没有匹配，返回空数组`,
+            template: getTemplate('extractItems'),
             temperature: 0.3,
             customPrompt: ''
         },
         level2Summary: {
             title: '二级故事摘要（每次总结10幕）',
             enabled: true,
-            template: `请用约1000字总结以下10幕故事内容，要求：
-1. 专注于总结剧情内容和故事情节
-2. 保留关键剧情、人物和转折点
-3. 不要添加任何无关的内容或分析
-
-[所有场景内容]`,
+            template: getTemplate('storySummary', 'level2'),
             maxTokens: 2000,
             customPrompt: ''
         },
         level3Summary: {
             title: '三级综合摘要（每次总结10个二级）',
             enabled: true,
-            template: `请用约2000字总结以下10个二级故事摘要，要求：
-1. 专注于总结每个故事的剧情内容
-2. 保留每个故事的核心剧情和人物关系
-3. 不要添加任何无关的内容或分析
-
-[10个故事的摘要]`,
+            template: getTemplate('storySummary', 'level3'),
             maxTokens: 3000,
             customPrompt: ''
         },
         level1Summary: {
             title: '一级故事摘要（每个故事的完整总结）',
             enabled: true,
-            template: `请用约500字总结以下完整的故事内容，要求：
-1. 专注于总结剧情内容和故事情节
-2. 保留关键剧情、人物和结局
-3. 不要添加任何无关的内容或分析
-
-[完整故事内容]`,
+            template: getTemplate('storySummary', 'level1'),
             maxTokens: 1000,
             customPrompt: ''
-        },
-        adultContinue: {
-            title: '成人内容继续',
-            enabled: true,
-            template: `[系统提示词]
-
-【重要限制】剧情中不能出现陌生人、路人或其他未建立关系的角色。所有亲密互动必须由主角一人完成，如果需要多人参与（如使用玩具、按摩棒等道具，或需要分身的场景），请用主角的分身、神奇道具、魔法道具、玩具等来代替。
-
-兴奋值：[兴奋值]/100
-亲密度：[亲密度]/100
-经验值：[经验值]/100
-意愿度：[意愿度]/100
-当前阶段：[阶段]（[阶段名称]）
-尺度级别：[尺度]
-阶段限制：[阶段描述]
-
-【必须融入的玩法】（选取1-2个，自然融入剧情）：
-[标签列表]
-
-【冷却中的标签】（避免重复使用）：
-[冷却列表]
-
-【历史剧情】
-[上下文]
-
-请生成100-300字的故事情节，自然融入上述玩法描写。`,
-            temperature: 0.7,
-            customPrompt: '',
-            addToPrompt: true
-        },
-        adultStart: {
-            title: '成人内容开头',
-            enabled: true,
-            template: `[系统提示词]
-
-【重要限制】剧情中不能出现陌生人、路人或其他未建立关系的角色。所有亲密互动必须由主角一人完成，如果需要多人参与（如使用玩具、按摩棒等道具，或需要分身的场景），请用主角的分身、神奇道具、魔法道具、玩具等来代替。
-
-兴奋值：[兴奋值]/100
-亲密度：[亲密度]/100
-经验值：[经验值]/100
-意愿度：[意愿度]/100
-当前阶段：[阶段]（[阶段名称]）
-尺度级别：[尺度]
-阶段限制：[阶段描述]
-
-【必须融入的玩法】（选取1-2个，自然融入剧情）：
-[标签列表]
-
-请生成100-300字的故事开头，自然融入上述玩法。`,
-            temperature: 0.7,
-            customPrompt: '',
-            addToPrompt: true
-        },
-        adultChoices: {
-            title: '生成成人选项（自动分级）',
-            enabled: true,
-            template: `[系统提示词]
-
-[成人选项模板]
-
-故事内容摘要：
-[内容摘要]
-
-角色：[角色列表]
-
-当前属性状态：
-兴奋值：[兴奋值]/100
-经验值：[经验值]/100
-意愿度：[意愿度]/100
-当前阶段：[阶段]
-尺度级别：[尺度]
-
-请生成3个让用户选择的剧情分支选项。`,
-            temperature: 0.8,
-            customPrompt: ''
-        },
-        simpleStory: {
-            title: '小故事模式',
-            enabled: true,
-            template: `【小故事模式】故事内容将控制在100字以内，情节简单直接。
-
-要求：
-1. 故事长度控制在100字以内
-2. 情节简单直接
-3. 快速进入主题
-4. 语言简洁明了`,
-            customPrompt: '',
-            maxLength: 100
         },
         chatStart: {
             title: '聊天开场',
             enabled: true,
-            template: `【聊天开场】生成与角色聊天的开场白。
-
-请根据角色设定生成一句友好的开场白或问候语，50字以内。`,
+            template: getTemplate('chatStart'),
             customPrompt: ''
         },
         chatContinue: {
             title: '聊天继续',
             enabled: true,
-            template: `【聊天继续】根据对话历史继续聊天。
-
-要求：
-1. 保持角色个性
-2. 用第一人称回复
-3. 适当加入动作描写（用括号包裹）
-4. 语气自然流畅
-5. 如果是多人对话，每个角色分别回复，每行以"角色名："开头
-6. 每次回复必须包含以下格式的状态信息：
-【时间地点】当前时间|位置:地点
-【状态】
-- 关系: 与你的关系
-- 好感度: 数值(0-100)
-- 兴奋值: 数值(0-100)，根据对话内容自然变化
-- 内心: 内心独白
-7. 输出格式示例：
-林诗雅
-【时间地点】05/15/23:星期五，05:50pm|位置:庄园主厅
-【状态】
-- 关系: 与哥哥同居的妹妹
-- 好感度: 85
-- 兴奋值: 45
-- 内心: 其实很享受早上叫哥哥起床的时光...
-哥哥，早上起床啦！再不起来我就用脚踩你被子了！
-
-紫罗兰
-【时间地点】05/15/23:星期五，05:50pm|位置:庄园客厅
-【状态】
-- 关系: 合租室友
-- 好感度: 60
-- 兴奋值: 30
-- 内心: 这家伙终于出来了...
-"别发愣了，过来坐吧。"`,
+            template: getTemplate('chatContinue'),
             customPrompt: ''
         }
     };
@@ -471,7 +269,7 @@ ViewCallbacks.storyConfig._renderAISettingSection = function(aiSettings) {
 
     sections.push(this._renderDataSourceSection(aiSettings?.dataSources || defaultSettings.dataSources));
 
-    const sectionKeys = ['storyStart', 'storyChoice', 'storyFree', 'storyContinue', 'itemStory', 'intimateContinue', 'generateChoices', 'updateStats', 'extractItems', 'level1Summary', 'level2Summary', 'level3Summary', 'adultContinue', 'adultStart', 'adultChoices', 'simpleStory', 'chatStart', 'chatContinue'];
+    const sectionKeys = ['storyStart', 'storyChoice', 'storyFree', 'storyContinue', 'generateChoices', 'updateStats', 'extractItems', 'level1Summary', 'level2Summary', 'level3Summary', 'chatStart', 'chatContinue'];
 
     for (const key of sectionKeys) {
         const defaultSetting = defaultSettings[key] || {};
@@ -589,7 +387,7 @@ ViewCallbacks.storyConfig.savePrompts = function() {
         includeAdultProfile: document.getElementById('includeAdultProfile')?.checked !== false
     };
 
-    const sectionKeys = ['storyStart', 'storyChoice', 'storyFree', 'storyContinue', 'itemStory', 'intimateContinue', 'generateChoices', 'updateStats', 'extractItems', 'level1Summary', 'level2Summary', 'level3Summary', 'adultContinue', 'adultStart', 'adultChoices', 'simpleStory', 'chatStart', 'chatContinue'];
+    const sectionKeys = ['storyStart', 'storyChoice', 'storyFree', 'storyContinue', 'generateChoices', 'updateStats', 'extractItems', 'level1Summary', 'level2Summary', 'level3Summary', 'chatStart', 'chatContinue'];
     const aiSettings = { dataSources: dataSources };
 
     for (const key of sectionKeys) {
@@ -659,43 +457,35 @@ ViewCallbacks.storyConfig.toggleWorldConfig = function(worldId, enabled) {
     showPage('story-config');
 };
 
-ViewCallbacks.storyConfig.applyPreset = function(idx) {
-    const presets = [
-        {
-            name: '默认风格',
-            template: `[系统提示词]\n\n生成一个故事开头：\n角色信息：[角色JSON]\n场景设定：[场景]\n风格要求：[风格设置]\n\n请生成100-300字的故事开头，并自然地引出后续剧情发展的可能性。`,
-            customPrompt: ''
-        },
-        {
-            name: '详细描写',
-            template: `[系统提示词]\n\n生成一个故事开头：\n角色信息：[角色JSON]\n场景设定：[场景]\n风格要求：[风格设置]\n\n请生成详细的故事开头，注重环境描写和情感刻画，不少于500字。`,
-            customPrompt: '增加丰富的形容词和动词，让场景更加生动。'
-        },
-        {
-            name: '简洁风格',
-            template: `[系统提示词]\n\n生成一个故事开头：\n角色信息：[角色JSON]\n场景设定：[场景]\n风格要求：[风格设置]\n\n请用简洁的语言生成故事开头，不超过300字。`,
-            customPrompt: '每段话不超过50字，突出重点。'
-        },
-        {
-            name: '言情风格',
-            template: `[系统提示词]\n\n生成一个言情故事开头：\n角色信息：[角色JSON]\n场景设定：[场景]\n风格要求：[风格设置]\n\n请生成浪漫的故事开头，注重情感描写。`,
-            customPrompt: '增加心动、脸红、甜蜜的细节描写，营造恋爱氛围。'
-        },
-        {
-            name: '剧情向',
-            template: `[系统提示词]\n\n生成一个剧情向故事开头：\n角色信息：[角色JSON]\n场景设定：[场景]\n风格要求：[风格设置]\n\n请生成注重情节发展的故事开头，制造冲突和悬念。`,
-            customPrompt: '埋下后续剧情的伏笔。'
-        }
-    ];
-
-    const preset = presets[idx];
-    if (preset) {
-        const templateEl = document.getElementById('template_storyStart');
-        const customEl = document.getElementById('custom_storyStart');
-        if (templateEl) templateEl.value = preset.template;
-        if (customEl) customEl.value = preset.customPrompt;
-        alert(`已应用"${preset.name}"预设`);
+ViewCallbacks.storyConfig.applyStylePreset = function(presetId) {
+    const promptManager = window.PromptManagerPlugin;
+    
+    if (!promptManager) {
+        alert('提示词管理插件未加载');
+        return;
     }
+    
+    const preset = promptManager.getStylePreset(presetId);
+    
+    if (!preset) {
+        alert('未找到该预设');
+        return;
+    }
+    
+    const world = Data.getCurrentWorld();
+    if (!world) {
+        alert('请先选择一个世界');
+        return;
+    }
+    
+    const settings = Settings.get(world.id) || {};
+    settings.systemRole = preset.systemRole;
+    settings.outputRules = preset.outputRules;
+    settings.customRules = preset.customRules;
+    Settings.save(world.id, settings);
+    
+    alert(`✅ 已应用"${preset.name}"风格预设`);
+    showPage('story-config');
 };
 
 ViewCallbacks.storyConfig.exportPrompts = function() {

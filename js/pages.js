@@ -24,6 +24,14 @@ const Pages = {
         }
     },
 
+    renderPromptManager(main) {
+        if (typeof PromptManagerView !== 'undefined' && PromptManagerView.render) {
+            PromptManagerView.render();
+        } else {
+            main.innerHTML = '<div class="empty">提示词管理插件未加载</div>';
+        }
+    },
+
     renderHome(main, right) {
         const world = Data.getCurrentWorld();
         
@@ -348,10 +356,7 @@ const Pages = {
                     <button class="btn btn-secondary" onclick="showCharacterAttributes()" title="查看角色属性">👤 角色</button>
                     <button class="btn btn-secondary" onclick="showStoryCharSelector()" title="选择参与角色">🎭 角色</button>
                     <button class="btn btn-secondary" onclick="getRecommendedChars()" title="根据剧情推荐角色">💡 推荐</button>
-                    <label style="display: flex; align-items: center; gap: 4px; padding: 6px 10px; background: var(--accent); color: var(--bg); border-radius: 6px; cursor: pointer; font-size: 0.75rem;">
-                        <input type="checkbox" id="simpleStoryModeContinue" style="width: 14px; height: 14px;" onchange="toggleSimpleStoryMode(this.checked)">
-                        小故事
-                    </label>
+
                     <button class="btn btn-secondary" onclick="restartStory()" style="margin-left: auto;">🔄 重新开始</button>
                 </div>
                 <div id="storyCharSelector" style="display: none; margin-top: 16px; padding: 12px; background: var(--card-bg); border-radius: 8px;">
@@ -439,13 +444,7 @@ const Pages = {
                         <label>场景设定（可选）</label>
                         <input type="text" id="sceneInput" placeholder="例如：浪漫的烛光晚餐、雨中的相遇...">
                     </div>
-                    <div style="margin-top: 12px;">
-                        <label style="display: flex; align-items: center; gap: 8px; cursor: pointer; padding: 8px 12px; background: var(--card); border-radius: 6px;">
-                            <input type="checkbox" id="simpleStoryModeStart" style="width: 16px; height: 16px;">
-                            <span style="font-weight: 500;">⚡ 小故事模式</span>
-                            <small style="color: var(--text-dim); font-size: 0.75rem; margin-left: 8px;">减少提示词，输出100字以内，加快速度</small>
-                        </label>
-                    </div>
+
                     <div style="display: flex; gap: 8px; margin-top: 16px;">
                         <button class="btn btn-secondary" onclick="showWorldEditModal()" style="flex: 1;">🎮 世界编辑</button>
                         <button class="btn" onclick="startStory()" style="flex: 1;">▶️ 开始/继续故事</button>
@@ -927,17 +926,6 @@ window.saveAdultSettings = function() {
 
 window.changeAutoSaveInterval = function(value) {
     Data.setAutoSaveInterval(parseInt(value));
-};
-
-window.toggleSimpleStoryMode = function(checked) {
-    window.simpleStoryMode = checked;
-    console.log('[小故事模式] 已' + (checked ? '启用' : '禁用'));
-};
-
-window.getSimpleStoryMode = function() {
-    const startCheckbox = document.getElementById('simpleStoryModeStart');
-    const continueCheckbox = document.getElementById('simpleStoryModeContinue');
-    return (startCheckbox && startCheckbox.checked) || (continueCheckbox && continueCheckbox.checked);
 };
 
 window.selectStoryNode = function(nodeName) {

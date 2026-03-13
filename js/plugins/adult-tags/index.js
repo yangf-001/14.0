@@ -957,8 +957,6 @@ PluginSystem.register('adult-tags', {
         const stageDescription = promptManager 
             ? promptManager.getStageDescription(stage, 'default')
             : (stage === 1 ? '日常模式' : '色色模式');
-
-        const promptManager = window.PromptManagerPlugin;
         let template = '';
         
         if (promptManager) {

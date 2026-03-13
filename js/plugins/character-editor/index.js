@@ -152,6 +152,7 @@ const PresetCharacterLibrary = {
         this.characters = {};
         this.aiSettings = {};
         this.storyStarts = {};
+        
         for (const worldName of this.worlds) {
             this.characters[worldName] = [];
             this.aiSettings[worldName] = null;
@@ -159,6 +160,60 @@ const PresetCharacterLibrary = {
         }
         
         console.log('[角色编辑器] 使用离线预设库:', this.worlds.length, '个世界观');
+        
+        // 尝试加载角色和AI配置（网络请求）
+        this._loadOfflineWorldDetails();
+    },
+    
+    async _loadOfflineWorldDetails() {
+        const basePath = this.getBasePath();
+        
+        for (const worldName of this.worlds) {
+            try {
+                const worldPath = basePath + encodeURIComponent(worldName) + '/';
+                const response = await fetch(worldPath);
+                if (!response.ok) continue;
+                
+                const html = await response.text();
+                const parser = new DOMParser();
+                const doc = parser.parseFromString(html, 'text/html');
+                
+                const links = doc.querySelectorAll('a');
+                const subFolders = {};
+                
+                links.forEach(link => {
+                    const href = link.getAttribute('href');
+                    if (href) {
+                        if (href.endsWith('/') && href !== '../') {
+                            let folderName = href.replace(/\/$/, '');
+                            try { folderName = decodeURIComponent(folderName); } catch (e) {}
+                            subFolders[folderName] = href;
+                        } else if (href.endsWith('.json')) {
+                            let fileName = href.replace('.json', '');
+                            try { fileName = decodeURIComponent(fileName); } catch (e) {}
+                            if (fileName.includes('提示词') || fileName.includes('settings') || fileName.includes('setting')) {
+                                this.aiSettings[worldName] = {
+                                    name: fileName,
+                                    path: worldPath + href
+                                };
+                            } else {
+                                this.characters[worldName].push({
+                                    name: fileName,
+                                    path: worldPath + href
+                                });
+                            }
+                        }
+                    }
+                });
+                
+                if (subFolders['剧情节点']) {
+                    await this.loadStoryStartsFromFolder(worldName, worldPath + subFolders['剧情节点']);
+                }
+            } catch (e) {
+                console.warn(`[角色编辑器] 加载 ${worldName} 详情失败:`, e);
+            }
+        }
+        
         this._saveToStorage();
         this.showWorldSelector();
     },

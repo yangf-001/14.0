@@ -12,8 +12,7 @@ const Story = {
         }
     },
     
-    async start(config) {
-        await this._ensurePluginsInitialized();
+    _validateStartConfig(config) {
         const world = Data.getCurrentWorld();
         if (!world) throw new Error('请先选择一个世界');
         
@@ -35,14 +34,10 @@ const Story = {
             }
         }
         
-        if (window.TimePlugin) {
-            window.TimePlugin.initAllCharactersAge(world.id);
-        }
-        
-        this._resetExcitementOnNewStory(world.id);
-        
-        const settings = Settings.get(world.id);
-        
+        return { world, characters, storyNodeName, currentStoryNodeData };
+    },
+
+    _selectCharacters(characters, config) {
         const mainChars = characters.filter(c => c.role === '主角' || c.role === '女主');
         const selectedChars = config.characters?.length 
             ? characters.filter(c => config.characters.includes(c.id))
@@ -60,15 +55,13 @@ const Story = {
             }
         }
         
-        const plugin = this._getPlugin();
-        if (!plugin) throw new Error('故事配置插件未加载');
-        
-        let prompt = '';
-        let isResume = false;
-        
-        const archives = plugin.getArchives(world.id);
-        const level3Archives = plugin.getLevel3Archives(world.id);
-        const level2Archives = plugin.getLevel2Archives(world.id);
+        return { selectedChars, playerCharInfo };
+    },
+
+    _buildHistoryContext(plugin, worldId) {
+        const archives = plugin.getArchives(worldId);
+        const level3Archives = plugin.getLevel3Archives(worldId);
+        const level2Archives = plugin.getLevel2Archives(worldId);
         
         let historyContext = '';
         if (level3Archives.length > 0) {
@@ -97,7 +90,8 @@ const Story = {
             }
         }
         
-        const manualSummary = localStorage.getItem(`story_manual_summary_${world.id}`);
+        let isResume = false;
+        const manualSummary = localStorage.getItem(`story_manual_summary_${worldId}`);
         if (manualSummary && manualSummary.trim()) {
             if (lastSummary) {
                 historyContext += '\n【之前保存的剧情总结】\n' + manualSummary;
@@ -110,23 +104,25 @@ const Story = {
             isResume = true;
         }
         
-        if (isResume) {
-            const charNames = selectedChars.map(c => c.name).join('、');
+        return { historyContext, isResume };
+    },
+
+    _buildResumePrompt(plugin, world, selectedChars, historyContext) {
+        const charNames = selectedChars.map(c => c.name).join('、');
+        
+        const aiSetting = plugin.getAISetting('storyContinue', world.id);
+        if (aiSetting && aiSetting.enabled) {
+            let template = aiSetting.template || '';
+            template = template.replace('[角色列表]', charNames);
+            template = template.replace('[世界名]', world.name);
+            template = template.replace('[历史剧情]', historyContext);
             
-            const aiSetting = plugin.getAISetting('storyContinue', world.id);
-            if (aiSetting && aiSetting.enabled) {
-                let template = aiSetting.template || '';
-                template = template.replace('[角色列表]', charNames);
-                template = template.replace('[世界名]', world.name);
-                template = template.replace('[历史剧情]', historyContext);
-                
-                systemPrompt = plugin.getWorldSystemPrompt(world.id);
-                if (aiSetting.customPrompt) {
-                    template += '\n\n' + aiSetting.customPrompt;
-                }
-                prompt = template;
-            } else {
-                prompt = `根据以下历史剧情，继续生成新的故事：
+            if (aiSetting.customPrompt) {
+                template += '\n\n' + aiSetting.customPrompt;
+            }
+            return template;
+        } else {
+            return `根据以下历史剧情，继续生成新的故事：
 
 【出场角色】${charNames}
 【故事背景】${world.name}
@@ -138,29 +134,186 @@ ${historyContext}
 2. 根据角色设定发展故事
 3. 适当埋下后续剧情的伏笔
 4. 如果故事中有明确的时间推进（如几小时后、几天后等），请在故事结束后另起一行输出【时间变化：X天】或【时间变化：X月】。如果时间没有明显变化，输出【时间变化：0天】`;
-            }
+        }
+    },
+
+    _buildNewStoryPrompt(plugin, selectedChars, config, settings, playerCharInfo, currentStoryNodeData) {
+        let prompt = plugin.getStoryGenerator().buildStartPrompt(selectedChars, config.scene, settings, playerCharInfo, config.charRatio);
+        
+        if (currentStoryNodeData && currentStoryNodeData.customStartScene) {
+            const customScene = currentStoryNodeData.customStartScene;
+            const stageInfo = currentStoryNodeData.startStage ? `\n【当前剧情阶段】${currentStoryNodeData.startStage}` : '';
+            prompt = prompt.replace(
+                /【场景设定】.*$/m,
+                `【场景设定】${customScene}${stageInfo}`
+            );
+        }
+        
+        return prompt;
+    },
+
+    _buildStartPrompt(plugin, world, selectedChars, config, settings, playerCharInfo, historyContext, isResume, currentStoryNodeData) {
+        if (isResume) {
+            return this._buildResumePrompt(plugin, world, selectedChars, historyContext);
         } else {
-            prompt = plugin.getStoryGenerator().buildStartPrompt(selectedChars, config.scene, settings, playerCharInfo, config.charRatio);
+            return this._buildNewStoryPrompt(plugin, selectedChars, config, settings, playerCharInfo, currentStoryNodeData);
+        }
+    },
+
+    _checkSimpleStoryMode() {
+        const simpleStoryPlugin = PluginSystem.get('simple-story');
+        if (simpleStoryPlugin && typeof simpleStoryPlugin.isSimpleStoryMode === 'function') {
+            return simpleStoryPlugin.isSimpleStoryMode();
+        } else if (window.getSimpleStoryMode) {
+            return window.getSimpleStoryMode();
+        }
+        return false;
+    },
+
+    async _updateCharacterStats(worldId, storyContent) {
+        const allChars = Data.getCharacters(worldId);
+        const oldStats = {};
+        for (const char of allChars) {
+            const dbChar = Data.getCharacter(worldId, char.id);
+            oldStats[char.id] = { ...(dbChar?.stats || char.stats || {}) };
+        }
+        
+        await window.CharacterStatsPlugin?.updateCharacterStats(storyContent, allChars, worldId);
+        
+        const statChanges = {};
+        for (const char of allChars) {
+            const dbChar = Data.getCharacter(worldId, char.id);
+            const newStats = dbChar?.stats || {};
+            const oldCharStats = oldStats[char.id] || {};
+            const changes = {};
             
-            if (currentStoryNodeData && currentStoryNodeData.customStartScene) {
-                const customScene = currentStoryNodeData.customStartScene;
-                const stageInfo = currentStoryNodeData.startStage ? `\n【当前剧情阶段】${currentStoryNodeData.startStage}` : '';
-                prompt = prompt.replace(
-                    /【场景设定】.*$/m,
-                    `【场景设定】${customScene}${stageInfo}`
-                );
+            for (const [key, value] of Object.entries(newStats)) {
+                const oldValue = oldCharStats[key] || 0;
+                const diff = value - oldValue;
+                if (diff !== 0) {
+                    changes[key] = diff;
+                }
+            }
+            
+            if (Object.keys(changes).length > 0) {
+                statChanges[char.name] = changes;
             }
         }
         
-        const simpleStoryPlugin = PluginSystem.get('simple-story');
-        let simpleStoryMode = false;
-        if (simpleStoryPlugin && typeof simpleStoryPlugin.isSimpleStoryMode === 'function') {
-            simpleStoryMode = simpleStoryPlugin.isSimpleStoryMode();
-        } else if (window.getSimpleStoryMode) {
-            simpleStoryMode = window.getSimpleStoryMode();
+        return statChanges;
+    },
+
+    async _handleTimeChange(worldId, content, plugin, maxTimeJump = 1) {
+        const timePlugin = window.WorldTimePlugin;
+        if (timePlugin && plugin) {
+            const timeChange = plugin.extractTimeChange(content);
+            if (timeChange > 0) {
+                const actualTimeChange = Math.min(timeChange, maxTimeJump);
+                timePlugin.advanceTime(worldId, actualTimeChange);
+                console.log(`[时间推进] 开场白时间推进 ${actualTimeChange} 天${timeChange > maxTimeJump ? `（限制最大值${maxTimeJump}天）` : ''}`);
+            } else {
+                console.log(`[时间] 开场白未指定时间变化，时间保持不变`);
+            }
+        }
+    },
+
+    _createStoryObject(world, selectedChars, settings, playerCharInfo, config, storyNodeName, cleanContent, isResume) {
+        return {
+            id: Data._genId(),
+            worldId: world.id,
+            startTime: Date.now(),
+            storyNode: storyNodeName,
+            characters: selectedChars.map(c => ({
+                id: c.id,
+                name: c.name,
+                profile: c.profile || {},
+                adultProfile: c.adultProfile || {},
+                stats: c.stats || {}
+            })),
+            playerChar: playerCharInfo || this.current?.playerChar,
+            scene: config.scene || this.current?.scene,
+            settings: settings,
+            charRatio: config.charRatio || 80,
+            scenes: [{ 
+                content: cleanContent, 
+                choice: null,
+                choices: [],
+                timestamp: Date.now(),
+                summary: ''
+            }],
+            status: 'ongoing',
+            round: 1,
+            isResume: isResume
+        };
+    },
+
+    async _processGeneratedStory(content, world, selectedChars, settings, playerCharInfo, config, storyNodeName, isResume) {
+        const plugin = this._getPlugin();
+        
+        await this._handleTimeChange(world.id, content, plugin, 1);
+        
+        const cleanContent = plugin.getStoryGenerator().cleanStoryContent(content);
+        
+        this.current = this._createStoryObject(world, selectedChars, settings, playerCharInfo, config, storyNodeName, cleanContent, isResume);
+        
+        const firstSummary = await plugin.generateSceneSummary(cleanContent, null);
+        this.current.scenes[0].summary = firstSummary;
+        
+        const choices = await plugin.getStoryGenerator().generateChoices(content, selectedChars, settings);
+        this.current.scenes[0].choices = choices;
+        
+        const statChanges = await this._updateCharacterStats(world.id, cleanContent);
+        this.current.scenes[0].statChanges = statChanges;
+        
+        const allChars = Data.getCharacters(world.id);
+        await plugin.getStoryGenerator().extractItemsFromStory(cleanContent, allChars, world.id);
+        
+        await plugin.getStoryGenerator().updateCharacterRelationships(cleanContent, allChars, world.id);
+        
+        let protagonistAgeValue = 18;
+        const displayTime = window.WorldTimePlugin?.getDisplayTime(world.id);
+        if (displayTime) {
+            protagonistAgeValue = displayTime.protagonistAge;
         }
         
-        // 触发故事生成前事件
+        PluginSystem.triggerPluginEvent('storyStarted', {
+            worldId: world.id,
+            characters: selectedChars.map(c => c.name),
+            scene: config.scene,
+            protagonistAge: protagonistAgeValue
+        });
+        
+        PluginSystem.triggerPluginEvent('sceneGenerated', {
+            sceneIndex: 0,
+            content: content,
+            choice: null
+        });
+    },
+
+    async start(config) {
+        await this._ensurePluginsInitialized();
+        
+        const { world, characters, storyNodeName, currentStoryNodeData } = this._validateStartConfig(config);
+        
+        if (window.TimePlugin) {
+            window.TimePlugin.initAllCharactersAge(world.id);
+        }
+        
+        this._resetExcitementOnNewStory(world.id);
+        
+        const settings = Settings.get(world.id);
+        
+        const { selectedChars, playerCharInfo } = this._selectCharacters(characters, config);
+        
+        const plugin = this._getPlugin();
+        if (!plugin) throw new Error('故事配置插件未加载');
+        
+        const { historyContext, isResume } = this._buildHistoryContext(plugin, world.id);
+        
+        const prompt = this._buildStartPrompt(plugin, world, selectedChars, config, settings, playerCharInfo, historyContext, isResume, currentStoryNodeData);
+        
+        const simpleStoryMode = this._checkSimpleStoryMode();
+        
         PluginSystem.triggerPluginEvent('beforeStoryGenerate', {
             prompt: prompt,
             simpleStoryMode: simpleStoryMode
@@ -191,115 +344,12 @@ ${historyContext}
         try {
             let content = await ai.generateStory(prompt, settings);
             
-            // 触发故事生成后事件
             PluginSystem.triggerPluginEvent('afterStoryGenerate', {
                 content: content,
                 simpleStoryMode: simpleStoryMode
             });
             
-            const plugin = this._getPlugin();
-            const timePlugin = window.WorldTimePlugin;
-            if (timePlugin && plugin) {
-                const timeChange = plugin.extractTimeChange(content);
-                if (timeChange > 0) {
-                    const maxTimeJump = 1;
-                    const actualTimeChange = Math.min(timeChange, maxTimeJump);
-                    timePlugin.advanceTime(world.id, actualTimeChange);
-                    console.log(`[时间推进] 开场白时间推进 ${actualTimeChange} 天${timeChange > maxTimeJump ? `（限制最大值${maxTimeJump}天）` : ''}`);
-                } else {
-                    console.log(`[时间] 开场白未指定时间变化，时间保持不变`);
-                }
-            }
-            
-            const cleanContent = plugin.getStoryGenerator().cleanStoryContent(content);
-            
-            this.current = {
-                id: Data._genId(),
-                worldId: world.id,
-                startTime: Date.now(),
-                storyNode: storyNodeName,
-                characters: selectedChars.map(c => ({
-                    id: c.id,
-                    name: c.name,
-                    profile: c.profile || {},
-                    adultProfile: c.adultProfile || {},
-                    stats: c.stats || {}
-                })),
-                playerChar: playerCharInfo || this.current?.playerChar,
-                scene: config.scene || this.current?.scene,
-                settings: settings,
-                charRatio: config.charRatio || 80,
-                scenes: [{ 
-                    content: cleanContent, 
-                    choice: null,
-                    choices: [],
-                    timestamp: Date.now(),
-                    summary: ''
-                }],
-                status: 'ongoing',
-                round: 1,
-                isResume: isResume
-            };
-            
-            const firstSummary = await plugin.generateSceneSummary(cleanContent, null);
-            this.current.scenes[0].summary = firstSummary;
-            
-            const choices = await plugin.getStoryGenerator().generateChoices(content, selectedChars, settings);
-            this.current.scenes[0].choices = choices;
-            
-            const allChars = Data.getCharacters(world.id);
-            const oldStatsStart = {};
-            for (const char of allChars) {
-                const dbChar = Data.getCharacter(world.id, char.id);
-                oldStatsStart[char.id] = { ...(dbChar?.stats || char.stats || {}) };
-            }
-            
-            await window.CharacterStatsPlugin?.updateCharacterStats(cleanContent, allChars, world.id);
-            
-            const statChangesStart = {};
-            for (const char of allChars) {
-                const dbChar = Data.getCharacter(world.id, char.id);
-                const newStats = dbChar?.stats || {};
-                const oldCharStats = oldStatsStart[char.id] || {};
-                const changes = {};
-                
-                for (const [key, value] of Object.entries(newStats)) {
-                    const oldValue = oldCharStats[key] || 0;
-                    const diff = value - oldValue;
-                    if (diff !== 0) {
-                        changes[key] = diff;
-                    }
-                }
-                
-                if (Object.keys(changes).length > 0) {
-                    statChangesStart[char.name] = changes;
-                }
-            }
-            
-            this.current.scenes[0].statChanges = statChangesStart;
-            
-            await plugin.getStoryGenerator().extractItemsFromStory(cleanContent, allChars, world.id);
-            
-            await plugin.getStoryGenerator().updateCharacterRelationships(cleanContent, allChars, world.id);
-            
-            let protagonistAgeValue = 18;
-            const displayTime = window.WorldTimePlugin?.getDisplayTime(world.id);
-            if (displayTime) {
-                protagonistAgeValue = displayTime.protagonistAge;
-            }
-            
-            PluginSystem.triggerPluginEvent('storyStarted', {
-                worldId: world.id,
-                characters: selectedChars.map(c => c.name),
-                scene: config.scene,
-                protagonistAge: protagonistAgeValue
-            });
-            
-            PluginSystem.triggerPluginEvent('sceneGenerated', {
-                sceneIndex: 0,
-                content: content,
-                choice: null
-            });
+            await this._processGeneratedStory(content, world, selectedChars, settings, playerCharInfo, config, storyNodeName, isResume);
             
             Data.saveStory(world.id, this.current);
             this._hideLoading();

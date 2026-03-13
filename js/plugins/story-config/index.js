@@ -280,14 +280,6 @@ PluginSystem.register('story-config', {
         const world = Data.getCurrentWorld();
         const worldId = world?.id;
         
-        const adultPlugin = window.AdultTagsPlugin;
-        if (adultPlugin) {
-            const adultChoice = await this._generateAdultChoices(content, characters, worldId);
-            if (adultChoice) {
-                return adultChoice;
-            }
-        }
-        
         const aiSetting = this.getAISetting('generateChoices', worldId);
         const ds = this.getDataSources(worldId);
 
@@ -298,6 +290,19 @@ PluginSystem.register('story-config', {
         const charNames = characters.map(c => c.name).join('、');
 
         let systemPrompt = this.getWorldSystemPrompt(worldId) || '';
+        
+        const adultPlugin = window.AdultTagsPlugin;
+        let stats = { arousal: 0, intimacy: 0, experience: 0, willingness: 0 };
+        let stage = 1;
+        
+        if (adultPlugin) {
+            stats = adultPlugin.getAllStats(worldId) || stats;
+            stage = adultPlugin.getStage(stats.arousal, worldId) || 1;
+        } else {
+            stage = this._getStageFromStats(stats);
+        }
+        
+        const stageInfo = this._getStageDescription(stage);
 
         const contentLength = ds.storyContentLength || 800;
         const contentToUse = contentLength > 0 ? content.substring(0, contentLength) : content;
@@ -308,6 +313,18 @@ PluginSystem.register('story-config', {
         template = template.replace('[内容]', contentToUse);
         template = template.replace('[角色列表]', charNames);
         template = template.replace('[角色]', charNames);
+        template = template.replace('[兴奋值]', stats.arousal || 0);
+        template = template.replace('[亲密度]', stats.intimacy || 0);
+        template = template.replace('[经验值]', stats.experience || 0);
+        template = template.replace('[意愿度]', stats.willingness || 0);
+        template = template.replace('[当前阶段]', stageInfo.name);
+        template = template.replace('[阶段]', stageInfo.name);
+        template = template.replace('[尺度描述]', stageInfo.description);
+        template = template.replace('[尺度]', stageInfo.description);
+        template = template.replace('[选项1要求]', stageInfo.option1);
+        template = template.replace('[选项2要求]', stageInfo.option2);
+        template = template.replace('[选项3要求]', stageInfo.option3);
+        template = template.replace('[选项4要求]', stageInfo.option4);
 
         if (aiSetting.customPrompt) {
             template += '\n\n' + aiSetting.customPrompt;
@@ -382,7 +399,7 @@ PluginSystem.register('story-config', {
         });
     },
 
-    _getAdultChoiceTemplate(stage) {
+    _getStageFromStats(stats) {
         const templates = {
             1: `[系统提示词]\n\n基于当前故事内容，生成4个让用户选择的剧情分支选项。要求：2个正常纯爱选项 + 1个轻度色情选项 + 1个重度淫荡选项。\n当前阶段：暧昧挑逗期（轻度淫靡）\n尺度：非常克制，仅限心理与轻微肢体接触\n\n故事内容摘要：\n[内容摘要]\n\n角色：[角色列表]\n\n要求：\n- 选项1-2：纯爱选项，保持暧昧、挑逗、性张力逐步积累，严禁出现任何性器官名称、裸露、插入、高潮、潮吹等直接描写\n- 选项3：轻度色情选项，可有轻微身体接触暗示\n- 选项4：淫荡选项，可有较开放的性暗示\n\n输出格式（只输出四行选项，无其他文字）：\n1. [选项描述]\n2. [选项描述]\n3. [选项描述]\n4. [选项描述]`,
 
@@ -412,6 +429,44 @@ PluginSystem.register('story-config', {
             return 2;
         }
         return 1;
+    },
+
+    _getStageDescription(stage) {
+        const descriptions = {
+            1: {
+                name: '暧昧挑逗期（轻度淫靡）',
+                description: '非常克制，仅限心理与轻微肢体接触',
+                option1: '纯爱选项，保持暧昧、挑逗、性张力逐步积累，严禁出现任何性器官名称、裸露、插入、高潮、潮吹等直接描写',
+                option2: '纯爱选项，保持暧昧、挑逗、性张力逐步积累，严禁出现任何性器官名称、裸露、插入、高潮、潮吹等直接描写',
+                option3: '轻度色情选项，可有轻微身体接触暗示',
+                option4: '淫荡选项，可有较开放的性暗示'
+            },
+            2: {
+                name: '肉体交缠期（中度淫乱）',
+                description: '允许直接触碰性敏感区、前戏、口交、指交、初次插入等',
+                option1: '纯爱选项，保持温馨浪漫的亲密描写',
+                option2: '纯爱选项，保持温馨浪漫的亲密描写',
+                option3: '轻度色情选项，包含直接触碰性敏感区描写',
+                option4: '淫荡选项，包含更深入的性行为描写'
+            },
+            3: {
+                name: '高潮崩坏期（高度淫靡）',
+                description: '允许激烈抽插、内射、潮吹、强制高潮、大量脏话与羞辱',
+                option1: '纯爱选项，可有亲密描写但保持一定克制',
+                option2: '纯爱选项，可有亲密描写但保持一定克制',
+                option3: '轻度色情选项，包含直接性行为描写',
+                option4: '淫荡选项，包含极端高潮、潮喷等描写'
+            },
+            4: {
+                name: '极致堕落期（极限淫乱）',
+                description: '无任何上限，允许极端、变态、成瘾式、超现实描写',
+                option1: '纯爱选项，即使在极限阶段也保持一定情感描写',
+                option2: '纯爱选项，即使在极限阶段也保持一定情感描写',
+                option3: '轻度色情选项，包含极端性行为描写',
+                option4: '淫荡选项，包含最极端、最变态的描写'
+            }
+        };
+        return descriptions[stage] || descriptions[1];
     },
 
     async _generateAdultChoices(content, characters, worldId) {

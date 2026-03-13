@@ -209,6 +209,14 @@ const PresetCharacterLibrary = {
                 if (subFolders['剧情节点']) {
                     await this.loadStoryStartsFromFolder(worldName, worldPath + subFolders['剧情节点']);
                 }
+                
+                if (subFolders['角色']) {
+                    await this.loadCharactersFromFolder(worldName, worldPath + subFolders['角色']);
+                }
+                
+                if (subFolders['AI配置']) {
+                    await this.loadAISettingsFromFolder(worldName, worldPath + subFolders['AI配置']);
+                }
             } catch (e) {
                 console.warn(`[角色编辑器] 加载 ${worldName} 详情失败:`, e);
             }

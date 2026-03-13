@@ -14,6 +14,71 @@ PluginSystem.register('simple-story', {
     _currentRound: 0,
     _storageKey: 'simple_story_tags',
     
+    // 硬编码文件路径，避免依赖目录索引
+    _categoryFiles: {
+        '姿势': [
+            '01_基础体位.txt', '02_后入体位.txt', '03_传教士体位.txt', '04_女上位.txt', '05_69姿势.txt',
+            '06_站立姿势.txt', '07_侧卧姿势.txt', '08_椅子姿势.txt', '09_桌面姿势.txt', '10_浴室姿势.txt',
+            '11_沙发姿势.txt', '12_床铺姿势.txt', '13_户外姿势.txt', '14_楼梯姿势.txt', '15_椅子姿势.txt',
+            '16_厨房姿势.txt', '17_组合姿势.txt', '18_按摩姿势.txt', '19_口交姿势.txt', '20_后庭姿势.txt'
+        ],
+        '表情': [
+            '01_含羞.txt', '02_期待.txt', '03_享受.txt', '04_痛苦.txt', '05_惊讶.txt',
+            '06_拒绝.txt', '07_舒服.txt', '08_陶醉.txt', '09_迷恋.txt', '10_慵懒.txt',
+            '11_紧张.txt', '12_别扭.txt', '13_哭泣.txt', '14_挑逗.txt', '15_浪叫.txt',
+            '16_酥麻.txt', '17_高潮.txt', '18_失神.txt', '19_幸福.txt', '20_勾引.txt'
+        ],
+        '服装': [
+            '01_露乳服装设计.txt', '02_情趣服装.txt', '03_服装设计.txt', '04_反差服装.txt', '05_角色扮演服装.txt',
+            '06_丝袜系列.txt', '07_紧身乳胶衣.txt', '08_水手海军风格.txt', '09_和服浴衣.txt', '10_情趣睡裙.txt',
+            '11_情趣套装.txt', '12_情趣胸罩.txt', '13_丁字裤系列.txt', '14_情趣泳装.txt', '15_派对服装.txt',
+            '16_女王服装.txt', '17_囚犯服装.txt', '18_动漫角色.txt', '19_圣诞节日.txt', '20_贵族服饰.txt'
+        ],
+        '玩法': [
+            '01_SM束缚玩法.txt', '02_户外公共玩法.txt', '03_鬼魂主题玩法.txt', '04_角色扮演玩法.txt', '05_校园缩小玩法.txt',
+            '06_校园情景玩法.txt', '07_奇幻魔法玩法.txt', '08_公共场所玩法.txt', '09_角色扮演日常玩法.txt', '10_羞耻日常玩法.txt',
+            '11_户外自然玩法.txt', '12_自慰场景玩法.txt', '13_隐蔽自慰玩法.txt', '14_日常训练挑战.txt', '15_乳交玩法.txt',
+            '16_口交技巧.txt', '17_颜射内射.txt', '18_潮吹喷水.txt', '19_调教指令.txt', '20_放置惩罚.txt',
+            '21_户外自慰.txt', '22_公共场合自慰.txt', '23_壁尻.txt', '24_火车旅行.txt', '25_露出直播.txt',
+            '26_公共物品自慰.txt', '27_远程控制.txt', '28_伴侣辅助.txt', '29_公共厕所.txt', '30_地铁肉便器.txt',
+            '31_路人诱惑直播.txt', '32_日常露出.txt', '33_随机路人诱惑.txt', '34_次日精液罐.txt', '35_露出挑逗直播.txt',
+            '36_半公共辅助.txt', '37_公共场合辅助.txt', '38_极端火车.txt', '39_直播互动.txt', '40_壁尻精液罐.txt',
+            '41_声音露出玩法.txt', '42_动物扮演玩法.txt', '43_光荣洞玩法.txt', '44_失禁玩法.txt', '45_闷骚日常玩法.txt',
+            '46_运动裸体玩法.txt', '47_超能力玩法.txt', '48_常识错乱玩法.txt', '49_异物插入玩法.txt', '50_食物玩法.txt',
+            '51_公共场所任务玩法.txt', '52_色气世界观.txt', '53_职场运动玩法.txt', '54_隔音场所玩法.txt', '55_职业任务玩法.txt',
+            '56_路人参与玩法.txt', '57_重口味体液玩法.txt', '58_气味玩法.txt', '59_尾巴肛塞玩法.txt', '60_产卵玩法.txt',
+            '61_无意识露出玩法.txt', '62_职业尿失禁玩法.txt', '63_深夜场所玩法.txt', '64_自我监听玩法.txt', '65_重口味体液玩法2.txt',
+            '66_动物参与玩法.txt', '67_纯幻想奇幻玩法.txt', '68_痔疮肛交玩法.txt', '69_尿失禁口交玩法.txt', '70_巧合道具插入玩法.txt',
+            '71_传承道具玩法.txt', '72_露出任务玩法.txt', '73_洞猜游戏玩法.txt', '74_懵懂性教育玩法.txt', '75_男性性教育玩法.txt',
+            '76_车多人玩法.txt', '77_无意识隐性色情玩法.txt', '78_超级柔韧玩法.txt', '79_一男多女玩法.txt', '80_家庭禁忌玩法.txt'
+        ],
+        '道具': [
+            '01_入门级按摩棒.txt', '02_基础入门款.txt', '03_跳蛋系列.txt', '04_乳夹系列.txt', '05_乳夹震动.txt',
+            '06_阴蒂玩具.txt', '07_肛塞系列.txt', '08_仿真阴茎.txt', '09_辅助道具.txt', '10_润滑液.txt',
+            '11_飞机杯.txt', '12_夹子系列.txt', '13_辅助工具.txt', '14_缩阴球.txt', '15_后庭训练.txt',
+            '16_人形道具.txt', '17_疼痛道具.txt', '18_辅助器具.txt', '19_乳胶系列.txt', '20_清洁配件.txt',
+            '21_套装组合.txt'
+        ],
+        '节日': [
+            '01_情人节.txt', '02_七夕节.txt', '03_圣诞节.txt', '04_元旦.txt', '05_春节.txt',
+            '06_元宵节.txt', '07_白色情人节.txt', '08_520网络情人节.txt', '09_生日.txt', '10_纪念日.txt',
+            '11_万圣节.txt', '12_感恩节.txt', '13_复活节.txt', '14_愚人节.txt', '15_劳动节.txt',
+            '16_国庆节.txt', '17_中秋节.txt', '18_端午节.txt', '19_儿童节.txt', '20_平安夜.txt'
+        ],
+        '挑战': [
+            '01_30秒挑战.txt', '02_1分钟挑战.txt', '03_5分钟挑战.txt', '04_高潮挑战.txt', '05_连续高潮挑战.txt',
+            '06_延时挑战.txt', '07_不射挑战.txt', '08_姿势数量挑战.txt', '09_言语挑战.txt', '10_公共场所挑战.txt',
+            '11_水下挑战.txt', '12_蒙眼挑战.txt', '13_禁言挑战.txt', '14_捆绑挑战.txt', '15_冰火挑战.txt',
+            '16_静音挑战.txt', '17_站立挑战.txt', '18_负重挑战.txt', '19_24小时挑战.txt', '20_终极挑战.txt'
+        ],
+        '异族娘': [
+            '01_狐妖娘.txt', '02_猫娘.txt', '03_兔娘.txt', '04_龙娘.txt', '05_人鱼娘.txt',
+            '06_精灵娘.txt', '07_天使娘.txt', '08_恶魔娘.txt', '09_女仆娘.txt', '10_蜥蜴娘.txt',
+            '11_蛇娘.txt', '12_蝴蝶娘.txt', '13_狼娘.txt', '14_豹娘.txt', '15_鹰娘.txt',
+            '16_蜘蛛娘.txt', '17_兔子娘.txt', '18_狐狸娘.txt', '19_南瓜娘.txt', '20_猫头鹰娘.txt'
+        ]
+    },
+    
     init() {
         console.log('Simple-story plugin loaded');
         this._loadFromStorage();
@@ -226,23 +291,19 @@ PluginSystem.register('simple-story', {
         
         const tags = [];
         try {
-            const response = await fetch(`${this._userContentPath}/${category}/`);
-            const text = await response.text();
+            const files = this._categoryFiles[category] || [];
             
-            const fileMatches = text.match(/href="([^"]+\.txt)"/g) || [];
-            
-            for (const fileMatch of fileMatches) {
-                const filePath = fileMatch.match(/href="([^"]+)"/);
-                if (filePath && filePath[1]) {
-                    const fullPath = `${this._userContentPath}/${category}/${filePath[1]}`;
-                    try {
-                        const fileResponse = await fetch(fullPath);
+            for (const fileName of files) {
+                const fullPath = `${this._userContentPath}/${category}/${fileName}`;
+                try {
+                    const fileResponse = await fetch(fullPath);
+                    if (fileResponse.ok) {
                         const fileContent = await fileResponse.text();
                         const items = this._parseTagFile(fileContent);
                         tags.push(...items);
-                    } catch (e) {
-                        console.warn(`[小故事] 加载文件失败: ${fullPath}`, e);
                     }
+                } catch (e) {
+                    console.warn(`[小故事] 加载文件失败: ${fullPath}`, e);
                 }
             }
             

@@ -1,0 +1,22 @@
+{
+  "name": "风之精灵的降临",
+  "startStage": "相遇",
+  "customStartScene": "主角林逸在山顶上时，一阵清风吹过。风之精灵风（自由）随风而来，她的身体轻盈如羽毛，周身环绕着自由的气流，仿佛随时可以随风而去...",
+  "initialStats": {
+    "health": 100,
+    "charm": 75,
+    "intelligence": 50,
+    "strength": 45,
+    "agility": 70,
+    "stamina": 45,
+    "arousal": 0,
+    "experience": 0,
+    "sexSkill": 0,
+    "sexSensitivity": 50,
+    "intimacy": 10,
+    "willingness": 50,
+    "corruption": 0,
+    "shame": 50
+  },
+  "description": "风之精灵风（自由）首次登场，与主角林逸相遇"
+}

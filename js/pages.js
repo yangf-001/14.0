@@ -325,7 +325,7 @@ const Pages = {
                             ${s.choices && s.choices.length > 0 && i === scenesToShow.length - 1 ? `
                                 <div class="choices" style="margin-top: 16px;">
                                     <div style="font-size: 0.8rem; color: var(--text-dim); margin-bottom: 8px;">请选择剧情走向：</div>
-                                    ${s.choices.map((c, j) => `
+                                    ${s.choices.slice(0, 4).map((c, j) => `
                                         <button class="choice-btn" onclick="makeChoice('${c.replace(/'/g, "\\'")}')">${j + 1}. ${c}</button>
                                     `).join('')}
                                     <button class="choice-btn" onclick="showCustomChoiceInput()" style="background: var(--accent); color: var(--bg);">✏️ 自定义</button>

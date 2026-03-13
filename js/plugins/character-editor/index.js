@@ -75,6 +75,13 @@ const PresetCharacterLibrary = {
     },
     
     async scan() {
+        // 先尝试从缓存加载
+        if (await this._tryLoadFromCache()) {
+            console.log('[角色编辑器] 使用缓存的预设库');
+            this.showWorldSelector();
+            return;
+        }
+        
         this.worlds = [];
         this.characters = {};
         
@@ -109,10 +116,51 @@ const PresetCharacterLibrary = {
             
             console.log('Preset library scanned:', this.worlds.length, 'worlds');
             this._saveToStorage();
+            this.showWorldSelector();
         } catch (e) {
             console.error('Failed to scan preset library:', e);
-            alert('加载预设库失败，请确保通过服务器访问（而非 file://）\n错误: ' + e.message);
+            console.log('[角色编辑器] 网络加载失败，尝试使用离线预设...');
+            this._loadOfflineWorlds();
         }
+    },
+    
+    _loadOfflineWorlds() {
+        this.worlds = [
+            '七元素-纯爱',
+            '仙尊-纯爱',
+            '好兄弟-纯爱',
+            '社恐-纯爱',
+            '巨龙-纯爱',
+            '转世咸鱼-纯爱',
+            '纯爱灭杀-纯爱',
+            '死宅-后宫',
+            '卡通-后宫',
+            '怪物女友-后宫',
+            '人妻太太-后宫',
+            '修仙系统-后宫',
+            '校霸复仇-后宫',
+            '精灵妈妈-后宫',
+            '魔物工具人-后宫',
+            '物件成精-后宫',
+            '常识混乱-后宫',
+            '渡劫失败-后宫',
+            '骚气世界-后宫',
+            '社恐变强-后宫',
+            '千变万化-后宫'
+        ];
+        
+        this.characters = {};
+        this.aiSettings = {};
+        this.storyStarts = {};
+        for (const worldName of this.worlds) {
+            this.characters[worldName] = [];
+            this.aiSettings[worldName] = null;
+            this.storyStarts[worldName] = [];
+        }
+        
+        console.log('[角色编辑器] 使用离线预设库:', this.worlds.length, '个世界观');
+        this._saveToStorage();
+        this.showWorldSelector();
     },
     
     getBasePath() {
@@ -125,6 +173,26 @@ const PresetCharacterLibrary = {
         }
         
         return './js/plugins/character-editor/世界观/';
+    },
+
+    async _tryLoadFromCache() {
+        try {
+            const stored = localStorage.getItem('character_editor_presets');
+            if (stored) {
+                const data = JSON.parse(stored);
+                if (data.worlds && data.worlds.length > 0) {
+                    console.log('[角色编辑器] 从缓存加载预设库:', data.worlds.length, '个世界观');
+                    this.worlds = data.worlds || [];
+                    this.characters = data.characters || {};
+                    this.aiSettings = data.aiSettings || {};
+                    this.storyStarts = data.storyStarts || {};
+                    return true;
+                }
+            }
+        } catch (e) {
+            console.warn('[角色编辑器] 读取缓存失败:', e);
+        }
+        return false;
     },
     
     getWorldPath(worldName) {

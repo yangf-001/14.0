@@ -1,0 +1,22 @@
+{
+  "name": "火之精灵的降临",
+  "startStage": "相遇",
+  "customStartScene": "主角林逸在探索元素精灵世界的途中，遇到了一团炽热的火焰。火之精灵火（毁灭）从火焰中走出，她全身散发着炽热的气息，如同燃烧的烈焰一般...",
+  "initialStats": {
+    "health": 100,
+    "charm": 75,
+    "intelligence": 50,
+    "strength": 70,
+    "agility": 55,
+    "stamina": 70,
+    "arousal": 0,
+    "experience": 0,
+    "sexSkill": 0,
+    "sexSensitivity": 50,
+    "intimacy": 10,
+    "willingness": 50,
+    "corruption": 0,
+    "shame": 50
+  },
+  "description": "火之精灵火（毁灭）首次登场，与主角林逸相遇"
+}

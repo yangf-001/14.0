@@ -1,0 +1,102 @@
+{
+  "aiSettings": {
+    "dataSources": {
+      "title": "数据源设置",
+      "enabled": true,
+      "charFields": [
+        "name",
+        "role",
+        "gender",
+        "age",
+        "profile.race",
+        "profile.occupation",
+        "profile.height",
+        "profile.appearance",
+        "profile.personality",
+        "profile.hobby",
+        "profile.favorite",
+        "profile.dislike",
+        "profile.backstory",
+        "profile.catchphrase",
+        "adultProfile.sexuality",
+        "adultProfile.sensitiveParts",
+        "adultProfile.fetish",
+        "adultProfile.fantasy",
+        "adultProfile.limits",
+        "adultProfile.fantasies",
+        "stats.arousal",
+        "stats.affection",
+        "stats.endurance",
+        "stats.charisma",
+        "stats.luck",
+        "relationship"
+      ],
+      "storyContentLength": 0,
+      "historyScenes": 0,
+      "charDescriptionLength": "medium",
+      "includeAdultProfile": true
+    },
+    "storyStart": {
+      "title": "故事开头生成",
+      "enabled": true,
+      "template": "[系统提示词]\n\n【世界观】元素精灵恋爱奇幻《光与暗的永恒之舞》\n\n【元素精灵体系】\n- 光精灵：象征希望与治愈，代表温暖与光明\n- 暗精灵：象征吞噬与神秘，代表黑暗与深渊\n- 火精灵：象征毁灭与热情，代表燃烧与激情\n- 水精灵：象征适应与包容，代表变化与柔和\n- 风精灵：象征自由与飘忽，代表轻盈与多变\n- 土精灵：象征稳固与厚重，代表大地与承载\n- 雷精灵：象征震撼与力量，代表闪电与威严\n\n- 主角[主角名]：普通人类，因某种原因与元素精灵相遇\n- 元素精灵[精灵名]：七元素精灵之一，拥有对应元素的特性\n\n【当前剧情阶段】相遇阶段\n主角在现实世界中偶然遇见了元素精灵...\n\n角色信息：[角色JSON]\n场景设定：[场景]\n风格要求：[风格设置]\n\n请生成150-300字的故事开头：\n- 展现奇幻元素世界观\n- 体现主角与元素精灵的相遇\n- 埋下两者产生情愫的伏笔\n- 营造奇幻浪漫的氛围",
+      "customPrompt": "",
+      "_expanded": false
+    },
+    "storyChoice": {
+      "title": "选择后继续故事",
+      "enabled": true,
+      "template": "[系统提示词]\n\n【世界观】元素精灵恋爱奇幻《光与暗的永恒之舞》\n当前剧情背景：[背景描述]\n\n【角色出场比例】\n[角色比例设置]\n\n【当前剧情阶段】[阶段名称]\n- 相遇：主角与元素精灵初次相遇\n- 了解：逐渐了解元素精灵的特性和背景\n- 亲近：两者关系逐渐升温\n- 危机：面对元素精灵的危机\n- 告白：主角或精灵表明心意\n- 守护：共同面对困难，守护彼此\n\n用户选择：[用户选择]\n\n请生成150-300字的故事内容：\n- 体现奇幻世界观的特点\n- 展现元素精灵的特性\n- 推动两者关系发展\n- 营造适当的氛围（甜蜜/危机/感人）",
+      "customPrompt": "",
+      "_expanded": false
+    },
+    "storyFree": {
+      "title": "自由发展继续",
+      "enabled": true,
+      "template": "[系统提示词]\n\n【世界观】元素精灵恋爱奇幻《光与暗的永恒之舞》\n继续故事，生成下一段内容：\n\n【上下文】\n[上下文]\n\n【角色出场比例】\n[角色比例设置]\n\n【当前剧情阶段】[阶段名称]\n- 相遇：主角与元素精灵初次相遇\n- 了解：逐渐了解元素精灵的特性和背景\n- 亲近：两者关系逐渐升温\n- 危机：面对元素精灵的危机\n- 告白：主角或精灵表明心意\n- 守护：共同面对困难，守护彼此\n\n请生成150-300字的故事内容：\n- 推动剧情发展\n- 体现角色的性格特点\n- 展现元素精灵的特性\n- 营造适当的氛围",
+      "customPrompt": "",
+      "_expanded": false
+    },
+    "storyContinue": {
+      "title": "继续故事",
+      "enabled": true,
+      "template": "[系统提示词]\n\n【世界观】元素精灵恋爱奇幻《光与暗的永恒之舞》\n\n继续推进故事。\n\n当前剧情阶段：[阶段名称]\n- 如果是普通剧情：用正常的奇幻恋爱风格\n- 如果是高度性张力/色情阶段：用极其淫秽、细节丰富的笔法描写\n\n背景与世界观：[世界名]\n风格与尺度：[风格设置]\n\n前文：\n[之前的故事剧情]\n最新一幕：\n[当前故事最新剧情]\n用户选择/指令：[用户最新输入]\n\n生成下一段150-350字内容：\n- 若进入性爱，则大幅增加肉戏比例，极尽淫靡\n- 若还在铺垫，则极力渲染性张力、身体反应、心理淫乱\n- 元素精灵的特殊属性（如光、风、水等）可以融入亲密互动\n- 适当埋下更变态/更激烈玩法的伏笔",
+      "customPrompt": "",
+      "_expanded": false,
+      "temperature": 0.8
+    },
+    "intimateContinue": {
+      "title": "亲密互动继续",
+      "enabled": true,
+      "template": "[系统提示词]\n\n【世界观】元素精灵恋爱奇幻《光与暗的永恒之舞》\n现在进入极度私密、淫靡的互动延续阶段。\n\n【元素精灵特性】\n[精灵名]作为[元素]精灵，拥有以下特性：\n- [元素特性描述]\n\n【当前互动内容】\n[亲密互动内容]\n\n【角色当前性癖与状态】\n主角[主角名]：[性癖描述]\n[精灵名]：[性癖描述]\n\n【上下文】\n[上下文]\n\n要求：\n- 至少包含250字以上的性器官直接互动描写\n- 大量使用脏话、对白、羞辱/宠溺混合语言\n- 详细刻画体液、气味、温度、黏腻感、抽动/痉挛\n- 元素精灵的特殊属性（如光芒、水流、火焰等）融入亲密描写是特色\n- 体现角色在快感中逐渐失去理智的过程\n\n生成200-400字色情高密度段落，结尾留下让用户继续选择的悬念。",
+      "customPrompt": "",
+      "_expanded": false,
+      "temperature": 0.8
+    },
+    "generateChoices": {
+      "title": "生成剧情选项",
+      "enabled": true,
+      "template": "[系统提示词]\n\n【世界观】元素精灵恋爱奇幻《光与暗的永恒之舞》\n基于当前极度色情的剧情节点，生成3个让用户选择的**下一轮性爱/堕落/玩法**分支。\n\n当前最色情的状态摘要：\n[内容摘要]\n\n【角色当前状态】\n[主角名] - 兴奋值:[兴奋值] 经验值:[经验值]\n[精灵名] - 兴奋值:[兴奋值] 经验值:[经验值]\n\n【角色性癖】\n[主角名]：[性癖列表]\n[精灵名]：[性癖列表]\n\n【当前阶段限制】[阶段描述]\n\n必须符合角色当前性癖、兴奋值、阶段限制。\n\n格式（只输出选项，不要其他废话）：\n1. [极度色情的行为/姿势/玩法描述] \n2. [另一种高刺激玩法] \n3. [带有羞辱/控制/新道具的选项]",
+      "customPrompt": "",
+      "_expanded": false,
+      "temperature": 0.9
+    },
+    "updateStats": {
+      "title": "更新角色属性",
+      "enabled": true,
+      "template": "根据以下故事内容，分析角色在剧情中的数值属性变化。\n\n【世界观】元素精灵恋爱奇幻《光与暗的永恒之舞》\n\n故事内容：\n[内容]\n\n角色列表：\n- [主角名](人类主角)\n- [精灵名](元素精灵)\n\n可用属性：\n- arousal (欲望 0-200)\n- affection (好感 0-200)\n- endurance (耐力 0-200)\n- charisma (魅力 0-200)\n- luck (运气 0-200)\n\n请分析故事情节，判断每个角色的数值属性应该有什么变化。返回JSON格式：\n{\n  \"[主角名]\": {\n    \"属性名\": 变化值\n  },\n  \"[精灵名]\": {\n    \"属性名\": 变化值\n  }\n}\n\n注意：\n1. 根据剧情合理设置变化值，一般单次变化在-20到+20之间\n2. 如果某个属性没有变化，不要在JSON中列出\n3. 如果所有属性都没变化，返回空对象 {}",
+      "customPrompt": "",
+      "_expanded": false,
+      "temperature": 0.3
+    },
+    "adultChoices": {
+      "title": "生成成人选项（自动分级）",
+      "enabled": true,
+      "template": "[系统提示词]\n\n【世界观】元素精灵恋爱奇幻《光与暗的永恒之舞》\n\n[成人选项模板]\n\n故事内容摘要：\n[内容摘要]\n\n角色当前状态：\n- [主角名]：兴奋值:[兴奋值]/100 经验值:[经验值]/100 意愿度:[意愿度]/100\n- [精灵名]：兴奋值:[兴奋值]/100 经验值:[经验值]/100 意愿度:[意愿度]/100\n\n当前阶段：[阶段]\n尺度级别：[尺度]\n\n请生成3个让用户选择的剧情分支选项。",
+      "temperature": 0.8,
+      "customPrompt": "",
+      "_expanded": false
+    }
+  },
+  "exportTime": 1773331200000
+}

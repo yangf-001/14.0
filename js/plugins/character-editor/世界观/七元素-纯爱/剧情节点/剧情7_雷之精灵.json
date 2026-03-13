@@ -1,0 +1,22 @@
+{
+  "name": "雷之精灵的降临",
+  "startStage": "相遇",
+  "customStartScene": "主角林逸在雷雨天外出时，天空突然划过一道耀眼的闪电。雷之精灵雷（震撼）伴随着雷声出现，她的全身环绕着震撼的雷电，如同正义的使者一般...",
+  "initialStats": {
+    "health": 100,
+    "charm": 70,
+    "intelligence": 50,
+    "strength": 65,
+    "agility": 60,
+    "stamina": 65,
+    "arousal": 0,
+    "experience": 0,
+    "sexSkill": 0,
+    "sexSensitivity": 50,
+    "intimacy": 10,
+    "willingness": 50,
+    "corruption": 0,
+    "shame": 50
+  },
+  "description": "雷之精灵雷（震撼）首次登场，与主角林逸相遇"
+}

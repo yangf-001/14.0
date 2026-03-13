@@ -1,0 +1,22 @@
+{
+  "name": "土之精灵的降临",
+  "startStage": "相遇",
+  "customStartScene": "主角林逸在郊外徒步时，大地突然轻微震动。土之精灵土（稳固）从地面缓缓升起，她的全身散发着厚重的气息，如同大地母亲一般...",
+  "initialStats": {
+    "health": 100,
+    "charm": 65,
+    "intelligence": 50,
+    "strength": 80,
+    "agility": 40,
+    "stamina": 80,
+    "arousal": 0,
+    "experience": 0,
+    "sexSkill": 0,
+    "sexSensitivity": 50,
+    "intimacy": 10,
+    "willingness": 50,
+    "corruption": 0,
+    "shame": 50
+  },
+  "description": "土之精灵土（稳固）首次登场，与主角林逸相遇"
+}

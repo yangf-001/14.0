@@ -1,0 +1,22 @@
+{
+  "name": "水之精灵的降临",
+  "startStage": "相遇",
+  "customStartScene": "主角林逸在一条小溪边休息时，水面突然泛起波纹。水之精灵水（适应）从水中缓缓走出，她的全身被柔和的水流环绕，如同水的化身一般...",
+  "initialStats": {
+    "health": 100,
+    "charm": 70,
+    "intelligence": 50,
+    "strength": 50,
+    "agility": 60,
+    "stamina": 50,
+    "arousal": 0,
+    "experience": 0,
+    "sexSkill": 0,
+    "sexSensitivity": 50,
+    "intimacy": 10,
+    "willingness": 50,
+    "corruption": 0,
+    "shame": 50
+  },
+  "description": "水之精灵水（适应）首次登场，与主角林逸相遇"
+}

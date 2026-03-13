@@ -86,7 +86,8 @@ const PresetCharacterLibrary = {
         this.characters = {};
         
         const basePath = this.getBasePath();
-        console.log('Scanning preset library at:', basePath);
+        console.log('[角色编辑器] 扫描预设库，路径:', basePath);
+        console.log('[角色编辑器] 当前页面:', window.location.href);
         
         try {
             const response = await fetch(basePath);
@@ -233,6 +234,11 @@ const PresetCharacterLibrary = {
         if (isIndex) {
             const baseDir = path.substring(0, path.lastIndexOf('/'));
             return baseDir + '/js/plugins/character-editor/世界观/';
+        }
+        
+        const pathLower = path.toLowerCase();
+        if (pathLower.includes('/character-editor/') || pathLower.includes('/plugins/character-editor')) {
+            return './js/plugins/character-editor/世界观/';
         }
         
         return './js/plugins/character-editor/世界观/';

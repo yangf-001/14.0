@@ -252,7 +252,7 @@ class AI {
             }
         }
         
-        throw new Error('请先在AI设置中配置系统提示词');
+        throw new Error('系统提示词未配置');
     }
 
     clearCache() {

@@ -186,7 +186,6 @@ PluginSystem.register('chat-plugin', {
         const worldId = world?.id;
         
         const plugin = PluginSystem.get('story-config');
-        const aiSetting = plugin?.getAISetting('chatContinue', worldId);
         
         const charList = Array.isArray(aiCharacters) ? aiCharacters : (aiCharacters ? [aiCharacters] : []);
         let charInfo = '';
@@ -258,12 +257,8 @@ PluginSystem.register('chat-plugin', {
             prompt = promptManager.getTemplate('chatContinue', 'default') || '';
         }
         
-        if (aiSetting && aiSetting.enabled && aiSetting.customPrompt) {
-            prompt += '\n\n' + aiSetting.customPrompt;
-        }
-        
         if (!prompt) {
-            throw new Error('请先在AI设置中配置"聊天继续"模板');
+            throw new Error('提示词管理插件未加载或未配置聊天继续模板');
         }
         
         if (playerInfo) {

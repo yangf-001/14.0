@@ -6,6 +6,7 @@ PluginSystem.register('simple-story', {
     _categories: ['姿势', '表情', '服装', '玩法', '道具', '节日', '挑战', '异族娘'],
     _loadedTags: {},
     _currentStoryTags: null,
+    _usedTagIds: [],
     _isRunning: false,
     _worldId: null,
     _characters: null,
@@ -281,37 +282,42 @@ PluginSystem.register('simple-story', {
         return items;
     },
     
-    _getRandomTags(count = 3) {
+    _getRandomTags(count = 4) {
         const selectedCategories = [];
         const availableCategories = [...this._categories];
-        
+
         if (availableCategories.includes('玩法')) {
             selectedCategories.push('玩法');
             const playIndex = availableCategories.indexOf('玩法');
             availableCategories.splice(playIndex, 1);
         }
-        
+
         for (let i = 0; i < Math.min(count - 1, availableCategories.length); i++) {
             const randomIndex = Math.floor(Math.random() * availableCategories.length);
             const category = availableCategories.splice(randomIndex, 1)[0];
             selectedCategories.push(category);
         }
-        
+
         const result = [];
-        
+
         for (const category of selectedCategories) {
             const tags = this._loadedTags[category] || [];
             if (tags.length > 0) {
-                const randomIndex = Math.floor(Math.random() * tags.length);
-                const tag = tags[randomIndex];
+                const availableTags = tags.filter(t => !this._usedTagIds.includes(t.title));
+                const tagPool = availableTags.length > 0 ? availableTags : tags;
+                const randomIndex = Math.floor(Math.random() * tagPool.length);
+                const tag = tagPool[randomIndex];
                 result.push({
                     category: category,
                     title: tag.title,
                     description: tag.description
                 });
+                if (!this._usedTagIds.includes(tag.title)) {
+                    this._usedTagIds.push(tag.title);
+                }
             }
         }
-        
+
         return result;
     },
     
@@ -385,10 +391,11 @@ PluginSystem.register('simple-story', {
         this._characters = chars;
         this._storyScenes = [];
         this._currentRound = 0;
+        this._usedTagIds = [];
         
         await this._loadAllCategoryData();
         
-        const tags = this._getRandomTags(3);
+        const tags = this._getRandomTags(4);
         this._currentStoryTags = tags;
         
         await this._renderStartStory(tags);
@@ -540,6 +547,18 @@ PluginSystem.register('simple-story', {
                 }
                 
                 content = content.replace(/【故事】/, '').trim();
+            } else if (index === this._storyScenes.length - 1) {
+                // 如果没有选项，添加一个继续按钮
+                optionsHtml = `
+                    <div style="margin-top: 16px; display: flex; flex-direction: column; gap: 8px;">
+                        <button class="btn" onclick="SimpleStoryPlugin.makeChoice('继续故事')" style="text-align: left;">继续故事</button>
+                        <button class="btn btn-secondary" onclick="SimpleStoryPlugin.showCustomInput()" style="text-align: left;">✏️ 自定义</button>
+                        <div id="simpleStoryCustomInput" style="display: none; margin-top: 8px;">
+                            <input type="text" id="customChoiceText" placeholder="输入你的选择..." style="width: 100%; padding: 8px; border-radius: 4px; border: 1px solid var(--border); background: var(--bg); color: var(--text);" onkeypress="if(event.key==='Enter'){SimpleStoryPlugin.submitCustomChoice()}">
+                            <button class="btn" onclick="SimpleStoryPlugin.submitCustomChoice()" style="margin-top: 8px;">确定</button>
+                        </div>
+                    </div>
+                `;
             }
             
             return `

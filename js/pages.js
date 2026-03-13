@@ -162,6 +162,15 @@ const Pages = {
             return;
         }
         
+        let tagsCountHtml = `
+            <div id="tagsCountContainer" style="margin-top: 20px; padding: 12px; background: var(--card); border-radius: 8px;">
+                <div style="font-size: 0.8rem; color: var(--text-dim); margin-bottom: 10px;">📚 素材库词条统计</div>
+                <div id="tagsCountList" style="display: flex; flex-wrap: wrap; gap: 8px;">
+                    <span style="color: var(--text-dim); font-size: 0.75rem;">加载中...</span>
+                </div>
+            </div>
+        `;
+        
         main.innerHTML = `
             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
                 <div>
@@ -185,6 +194,8 @@ const Pages = {
                 <p style="margin-bottom: 20px; color: var(--text-dim);">每次从词条库随机抽取玩法相关词条，详细描写动作场景</p>
                 <button class="btn" id="startSimpleStoryBtn" style="font-size: 1.1rem; padding: 12px 32px;">🎲 开始小故事</button>
             </div>
+            
+            ${tagsCountHtml}
         `;
         
         setTimeout(() => {
@@ -193,6 +204,44 @@ const Pages = {
                 simpleStoryPlugin._initSimpleStoryPage();
             }
         }, 100);
+        
+        this._loadTagsCountAsync();
+    },
+    
+    async _loadTagsCountAsync() {
+        const simpleStoryPlugin = PluginSystem.get('simple-story');
+        if (!simpleStoryPlugin) return;
+        
+        try {
+            await simpleStoryPlugin._loadAllCategoryData();
+            
+            const categories = simpleStoryPlugin._categories;
+            const loadedTags = simpleStoryPlugin._loadedTags || {};
+            
+            const tagsCount = categories.map(cat => {
+                const count = loadedTags[cat] ? loadedTags[cat].length : 0;
+                return { name: cat, count };
+            }).filter(t => t.count > 0);
+            
+            const container = document.getElementById('tagsCountList');
+            if (container && tagsCount.length > 0) {
+                container.innerHTML = tagsCount.map(t => `
+                    <span style="display: inline-flex; align-items: center; gap: 4px; padding: 4px 10px; background: var(--bg); border-radius: 12px; font-size: 0.75rem;">
+                        <span style="color: var(--accent);">${t.name}</span>
+                        <span style="color: var(--text-dim);">×</span>
+                        <span style="font-weight: 600;">${t.count}</span>
+                    </span>
+                `).join('');
+            } else if (container) {
+                container.innerHTML = '<span style="color: var(--text-dim); font-size: 0.75rem;">暂无数据</span>';
+            }
+        } catch (e) {
+            console.warn('[小故事] 加载标签统计失败:', e);
+            const container = document.getElementById('tagsCountList');
+            if (container) {
+                container.innerHTML = '<span style="color: var(--text-dim); font-size: 0.75rem;">加载失败</span>';
+            }
+        }
     },
 
     renderStory(main) {

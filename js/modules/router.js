@@ -6,6 +6,7 @@ const mobileNavItems = [
     { page: 'simple-story', icon: '⚡', label: '小故事' },
     { page: 'chat', icon: '💬', label: '聊天' },
     { page: 'story-config', icon: '📝', label: 'AI设置' },
+    { page: 'prompt-manager', icon: '📋', label: '提示词' },
     { page: 'storage', icon: '📦', label: '存储库' },
     { page: 'settings', icon: '⚙️', label: '设置' },
     { page: 'plugins', icon: '🔌', label: '插件' }

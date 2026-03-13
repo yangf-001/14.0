@@ -141,24 +141,30 @@ PluginSystem.register('story-config', {
         
         const stageInfo = this._getStageDescription(stage);
 
-        let template = aiSetting.template || '';
-        template = template.replace('[系统提示词]', systemPrompt);
-        template = template.replace('[角色JSON]', JSON.stringify(charList));
-        template = template.replace('[角色信息]', JSON.stringify(charList));
-        template = template.replace('[场景]', scene || '任意');
-        template = template.replace('[场景设定]', scene || '任意');
-        template = template.replace('[风格设置]', ctx + pluginContext);
-        template = template.replace('[风格要求]', ctx + pluginContext);
-        template = template.replace('[当前阶段]', stageInfo.name);
-        template = template.replace('[阶段]', stageInfo.name);
-        template = template.replace('[尺度描述]', stageInfo.description);
-        template = template.replace('[尺度]', stageInfo.description);
+        const promptManager = window.PromptManagerPlugin;
+        if (!promptManager) {
+            throw new Error('提示词管理插件未加载');
+        }
+
+        let template = promptManager.getTemplateWithPreset('storyStart', 'default', {
+            '系统提示词': systemPrompt,
+            '角色JSON': JSON.stringify(charList),
+            '角色信息': JSON.stringify(charList),
+            '场景': scene || '任意',
+            '场景设定': scene || '任意',
+            '风格设置': ctx + pluginContext,
+            '风格要求': ctx + pluginContext,
+            '当前阶段': stageInfo.name,
+            '阶段': stageInfo.name,
+            '尺度描述': stageInfo.description,
+            '尺度': stageInfo.description,
+            '主角年龄': timeInfo && timeInfo.storyStartAge !== null ? String(timeInfo.protagonistAge) : '',
+            '故事年份': timeInfo && timeInfo.storyStartAge !== null ? String(timeInfo.year) : '',
+            '故事时间': timeInfo && timeInfo.storyStartAge !== null ? timeInfo.formatted : '',
+            '已过年数': timeInfo && timeInfo.storyStartAge !== null ? String(timeInfo.yearsPassed) : ''
+        });
 
         if (timeInfo && timeInfo.storyStartAge !== null) {
-            template = template.replace('[主角年龄]', String(timeInfo.protagonistAge));
-            template = template.replace('[故事年份]', String(timeInfo.year));
-            template = template.replace('[故事时间]', timeInfo.formatted);
-            template = template.replace('[已过年数]', String(timeInfo.yearsPassed));
             template += `\n\n【重要】故事时间设定：主角目前${timeInfo.protagonistAge}岁（故事从${timeInfo.storyStartAge}岁开始，至今已过${timeInfo.yearsPassed}年）。请根据这个年龄设定来编写合适的剧情。`;
         }
         
@@ -172,10 +178,6 @@ PluginSystem.register('story-config', {
             if (otherNames.length > 0) {
                 template += `\n\n【角色出场比例】\n重点角色：${selectedNames.join('、')}（占比约${ratio}%）\n其他角色：${otherNames.join('、')}（占比约${100 - ratio}%）\n注意：所有角色都可以出现在剧情中，但重点角色的戏份应该更多。`;
             }
-        }
-
-        if (aiSetting.customPrompt) {
-            template += '\n\n' + aiSetting.customPrompt;
         }
 
         if (timePlugin && worldId) {
@@ -269,26 +271,32 @@ PluginSystem.register('story-config', {
         
         const stageInfo = this._getStageDescription(stage);
 
-        let template = aiSetting.template || '';
-        template = template.replace('[系统提示词]', systemPrompt);
-        template = template.replace('[角色描述]', charDesc);
-        template = template.replace('[角色]', charDesc);
-        template = template.replace('[世界名]', world?.name || '自定义世界');
-        template = template.replace('[背景]', world?.name || '自定义世界');
-        template = template.replace('[风格设置]', ctx);
-        template = template.replace('[设定]', ctx);
-        template = template.replace('[之前的故事剧情]', historySection);
-        template = template.replace('[当前故事最新剧情]', currentHistoryText);
-        template = template.replace('[当前阶段]', stageInfo.name);
-        template = template.replace('[阶段]', stageInfo.name);
-        template = template.replace('[尺度描述]', stageInfo.description);
-        template = template.replace('[尺度]', stageInfo.description);
+        const promptManager = window.PromptManagerPlugin;
+        if (!promptManager) {
+            throw new Error('提示词管理插件未加载');
+        }
+
+        let template = promptManager.getTemplateWithPreset('storyContinue', 'default', {
+            '系统提示词': systemPrompt,
+            '角色描述': charDesc,
+            '角色': charDesc,
+            '世界名': world?.name || '自定义世界',
+            '背景': world?.name || '自定义世界',
+            '风格设置': ctx,
+            '设定': ctx,
+            '之前的故事剧情': historySection,
+            '当前故事最新剧情': currentHistoryText,
+            '当前阶段': stageInfo.name,
+            '阶段': stageInfo.name,
+            '尺度描述': stageInfo.description,
+            '尺度': stageInfo.description,
+            '主角年龄': timeInfo && timeInfo.storyStartAge !== null ? String(timeInfo.protagonistAge) : '',
+            '故事年份': timeInfo && timeInfo.storyStartAge !== null ? String(timeInfo.year) : '',
+            '故事时间': timeInfo && timeInfo.storyStartAge !== null ? timeInfo.formatted : '',
+            '已过年数': timeInfo && timeInfo.storyStartAge !== null ? String(timeInfo.yearsPassed) : ''
+        });
 
         if (timeInfo && timeInfo.storyStartAge !== null) {
-            template = template.replace('[主角年龄]', String(timeInfo.protagonistAge));
-            template = template.replace('[故事年份]', String(timeInfo.year));
-            template = template.replace('[故事时间]', timeInfo.formatted);
-            template = template.replace('[已过年数]', String(timeInfo.yearsPassed));
             template += `\n\n【当前故事时间】主角${timeInfo.protagonistAge}岁（从${timeInfo.storyStartAge}岁开始，已过${timeInfo.yearsPassed}年，${timeInfo.formatted}）`;
         }
         
@@ -302,10 +310,6 @@ PluginSystem.register('story-config', {
             if (otherNames.length > 0) {
                 template += `\n\n【角色出场比例】\n重点角色：${selectedNames.join('、')}（占比约${ratio}%）\n其他角色：${otherNames.join('、')}（占比约${100 - ratio}%）\n注意：所有角色都可以出现在剧情中，但重点角色的戏份应该更多。`;
             }
-        }
-
-        if (aiSetting.customPrompt) {
-            template += '\n\n' + aiSetting.customPrompt;
         }
 
         if (timePlugin && worldId) {
@@ -348,29 +352,32 @@ PluginSystem.register('story-config', {
 
         const contentLength = ds.storyContentLength || 800;
         const contentToUse = contentLength > 0 ? content.substring(0, contentLength) : content;
-        let template = aiSetting.template || '';
-        template = template.replace('[系统提示词]', systemPrompt);
-        template = template.replace('[内容摘要]', contentToUse);
-        template = template.replace('[故事内容]', contentToUse);
-        template = template.replace('[内容]', contentToUse);
-        template = template.replace('[角色列表]', charNames);
-        template = template.replace('[角色]', charNames);
-        template = template.replace('[兴奋值]', stats.arousal || 0);
-        template = template.replace('[亲密度]', stats.intimacy || 0);
-        template = template.replace('[经验值]', stats.experience || 0);
-        template = template.replace('[意愿度]', stats.willingness || 0);
-        template = template.replace('[当前阶段]', stageInfo.name);
-        template = template.replace('[阶段]', stageInfo.name);
-        template = template.replace('[尺度描述]', stageInfo.description);
-        template = template.replace('[尺度]', stageInfo.description);
-        template = template.replace('[选项1要求]', stageInfo.option1);
-        template = template.replace('[选项2要求]', stageInfo.option2);
-        template = template.replace('[选项3要求]', stageInfo.option3);
-        template = template.replace('[选项4要求]', stageInfo.option4);
 
-        if (aiSetting.customPrompt) {
-            template += '\n\n' + aiSetting.customPrompt;
+        const promptManager = window.PromptManagerPlugin;
+        if (!promptManager) {
+            throw new Error('提示词管理插件未加载');
         }
+
+        let template = promptManager.getTemplateWithPreset('generateChoices', 'default', {
+            '系统提示词': systemPrompt,
+            '内容摘要': contentToUse,
+            '故事内容': contentToUse,
+            '内容': contentToUse,
+            '角色列表': charNames,
+            '角色': charNames,
+            '兴奋值': stats.arousal || 0,
+            '亲密度': stats.intimacy || 0,
+            '经验值': stats.experience || 0,
+            '意愿度': stats.willingness || 0,
+            '当前阶段': stageInfo.name,
+            '阶段': stageInfo.name,
+            '尺度描述': stageInfo.description,
+            '尺度': stageInfo.description,
+            '选项1要求': stageInfo.option1,
+            '选项2要求': stageInfo.option2,
+            '选项3要求': stageInfo.option3,
+            '选项4要求': stageInfo.option4
+        });
 
         try {
             const result = await ai.call(template, {

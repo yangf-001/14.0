@@ -958,21 +958,20 @@ PluginSystem.register('adult-tags', {
             ? promptManager.getStageDescription(stage, 'default')
             : (stage === 1 ? '日常模式' : '色色模式');
 
-        const storyConfigPlugin = PluginSystem.get('story-config');
+        const promptManager = window.PromptManagerPlugin;
         let template = '';
         
-        if (storyConfigPlugin) {
-            const aiSetting = storyConfigPlugin.getAISetting('storyChoice', worldId);
-            if (aiSetting && aiSetting.enabled && aiSetting.template) {
-                template = aiSetting.template;
-                template = template.replace('[用户选择]', choice || '继续剧情');
-                template = template.replace('[上下文]', currentScene);
-                template = template.replace('[当前阶段]', stageName);
-                template = template.replace('[阶段]', stageName);
-                template = template.replace('[尺度描述]', stageDescription);
-                template = template.replace('[尺度]', stageDescription);
-                
-                const adultSupplement = `
+        if (promptManager) {
+            template = promptManager.getTemplateWithPreset('storyChoice', 'default', {
+                '用户选择': choice || '继续剧情',
+                '上下文': currentScene,
+                '当前阶段': stageName,
+                '阶段': stageName,
+                '尺度描述': stageDescription,
+                '尺度': stageDescription
+            });
+            
+            const adultSupplement = `
 
 【成人内容补充】
 兴奋值：${excitement}/100
@@ -985,13 +984,8 @@ ${selectedTags.length > 0 ? selectedTags.map(t => `- ${t}`).join('\n') : '（无
 
 【冷却中的标签】（避免重复使用）：
 ${cooldown.length > 0 ? cooldown.join('、') : '暂无'}`;
-                
-                template += adultSupplement;
-                
-                if (aiSetting.customPrompt) {
-                    template += '\n\n' + aiSetting.customPrompt;
-                }
-            }
+            
+            template += adultSupplement;
         }
 
         if (!template) {

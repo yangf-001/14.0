@@ -1,0 +1,22 @@
+{
+  "name": "仙泽疗伤",
+  "startStage": "相遇",
+  "customStartScene": "云寒在东方仙泽受伤，被麒麟林语所救。\n\n「这位公子...伤得好重。」林语为他疗伤。\n\n「...谢谢姑娘。」云寒睁开眼。\n\n「不客气。」林语微微一笑，「下次小心些。」\n\n「在下云寒...敢问姑娘芳名？」\n\n「林语。」她转身离去。",
+  "initialStats": {
+    "health": 100,
+    "charm": 86,
+    "intelligence": 86,
+    "strength": 40,
+    "agility": 55,
+    "stamina": 50,
+    "arousal": 10,
+    "experience": 15,
+    "sexSkill": 10,
+    "sexSensitivity": 35,
+    "intimacy": 5,
+    "willingness": 15,
+    "corruption": 0,
+    "shame": 8
+  },
+  "description": "云寒在东方仙泽受伤，被麒麟林语所救"
+}

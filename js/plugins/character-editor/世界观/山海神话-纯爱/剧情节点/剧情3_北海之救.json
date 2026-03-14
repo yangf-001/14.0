@@ -1,0 +1,22 @@
+{
+  "name": "北海之救",
+  "startStage": "相遇",
+  "customStartScene": "云寒在北海外海遭遇海难，被玄武玄冥所救。\n\n「醒了吗？」玄冥淡淡道。\n\n「...是您救了我？」云寒起身。\n\n「海底危险，下次别乱跑。」玄冥转身，「去吧。」\n\n「谢谢前辈。」云寒躬身道谢。",
+  "initialStats": {
+    "health": 100,
+    "charm": 85,
+    "intelligence": 88,
+    "strength": 40,
+    "agility": 50,
+    "stamina": 50,
+    "arousal": 10,
+    "experience": 15,
+    "sexSkill": 10,
+    "sexSensitivity": 35,
+    "intimacy": 3,
+    "willingness": 15,
+    "corruption": 0,
+    "shame": 8
+  },
+  "description": "云寒在北海外海遭遇海难，被玄武玄冥所救"
+}

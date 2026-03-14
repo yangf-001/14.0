@@ -489,7 +489,7 @@ PluginSystem.register('simple-story', {
         try {
             this._showLoading();
             
-            const plugin = PluginSystem.get('story-config');
+            const plugin = null;
             let systemPrompt = '';
             
             if (plugin && plugin.getWorldSystemPrompt) {
@@ -544,7 +544,7 @@ PluginSystem.register('simple-story', {
         try {
             this._showLoading('正在生成故事...');
             
-            const plugin = PluginSystem.get('story-config');
+            const plugin = null;
             let systemPrompt = '';
             
             if (plugin && plugin.getWorldSystemPrompt) {

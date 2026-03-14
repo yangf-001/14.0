@@ -1,0 +1,22 @@
+{
+  "name": "白虎抢亲",
+  "startStage": "相遇",
+  "customStartScene": "云寒误入庚金之域，被白虎白汐当成入侵者。\n\n「哪里来的人类？」白汐银眸如刀，「敢闯本王的地盘。」\n\n「在下只是迷路了...」云寒警惕道。\n\n「算了，滚吧。」白汐挥挥手，「下次别再闯进来。」\n\n云寒灰溜溜地离开，暗暗记下这个地方。",
+  "initialStats": {
+    "health": 100,
+    "charm": 83,
+    "intelligence": 80,
+    "strength": 45,
+    "agility": 65,
+    "stamina": 55,
+    "arousal": 12,
+    "experience": 15,
+    "sexSkill": 10,
+    "sexSensitivity": 38,
+    "intimacy": 3,
+    "willingness": 15,
+    "corruption": 0,
+    "shame": 8
+  },
+  "description": "云寒误入庚金之域，被白虎白汐驱逐"
+}

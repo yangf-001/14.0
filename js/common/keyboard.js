@@ -13,7 +13,7 @@ const Keyboard = {
         const isInput = target.tagName === 'TEXTAREA' || target.tagName === 'INPUT';
         
         if (isInput) {
-            if (e.key === 'Enter') {
+            if (e.key === 'Enter' && target.tagName !== 'TEXTAREA') {
                 e.preventDefault();
                 this._triggerShortcut('enter', target);
                 return;

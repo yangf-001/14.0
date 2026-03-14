@@ -1,0 +1,22 @@
+{
+  "name": "海边的织女",
+  "startStage": "相遇",
+  "customStartScene": "云寒在海边遇见正在纺织的番禺。\n\n「泪落成珠，织绡为衣。」番禺轻唱。\n\n「...姑娘好手艺。」云寒赞叹道。\n\n「你是...」番禺抬头，「人类？」\n\n云寒点头，番禺微微一笑，继续纺织。",
+  "initialStats": {
+    "health": 100,
+    "charm": 88,
+    "intelligence": 85,
+    "strength": 35,
+    "agility": 50,
+    "stamina": 48,
+    "arousal": 12,
+    "experience": 15,
+    "sexSkill": 10,
+    "sexSensitivity": 32,
+    "intimacy": 3,
+    "willingness": 12,
+    "corruption": 0,
+    "shame": 8
+  },
+  "description": "云寒在海边遇见正在纺织的番禺"
+}

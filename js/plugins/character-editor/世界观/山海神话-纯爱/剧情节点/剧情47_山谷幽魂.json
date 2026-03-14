@@ -1,0 +1,22 @@
+{
+  "name": "山谷幽魂",
+  "startStage": "相遇",
+  "customStartScene": "云寒在夜晚的山谷中遇见漂浮的浮游。\n\n「我是风，我是雾。」浮游飘忽不定。\n\n「...你是谁？」云寒警惕道。\n\n「浮游。」她轻声道，「飘荡了太久...」\n\n云寒看着这个虚无缥缈的存在。",
+  "initialStats": {
+    "health": 100,
+    "charm": 80,
+    "intelligence": 82,
+    "strength": 20,
+    "agility": 45,
+    "stamina": 30,
+    "arousal": 12,
+    "experience": 15,
+    "sexSkill": 10,
+    "sexSensitivity": 35,
+    "intimacy": 2,
+    "willingness": 12,
+    "corruption": 0,
+    "shame": 5
+  },
+  "description": "云寒在夜晚的山谷中遇见漂浮的浮游"
+}

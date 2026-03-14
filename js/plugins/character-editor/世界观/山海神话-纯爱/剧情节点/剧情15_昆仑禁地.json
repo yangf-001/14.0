@@ -1,0 +1,22 @@
+{
+  "name": "昆仑禁地",
+  "startStage": "相遇",
+  "customStartScene": "云寒误入昆仑山禁地。\n\n「何人敢闯昆仑？」陆吾出现在云寒面前。\n\n「在下只是迷路了...」云寒解释道。\n\n「昆仑山不是你想来就能来的。」陆吾淡淡道，「速速离去。」\n\n云寒离开昆仑山，暗暗记下这个地方。",
+  "initialStats": {
+    "health": 100,
+    "charm": 84,
+    "intelligence": 85,
+    "strength": 50,
+    "agility": 60,
+    "stamina": 55,
+    "arousal": 8,
+    "experience": 15,
+    "sexSkill": 10,
+    "sexSensitivity": 28,
+    "intimacy": 2,
+    "willingness": 10,
+    "corruption": 0,
+    "shame": 5
+  },
+  "description": "云寒误入昆仑山禁地，被陆吾驱逐"
+}

@@ -1,0 +1,22 @@
+{
+  "name": "光影交错",
+  "startStage": "相遇",
+  "customStartScene": "云寒在山谷中遇见光影。\n\n「光与暗，一体两面。」光影出现在云寒面前。\n\n「...姑娘是何人？」云寒警惕道。\n\n「我是光，也是暗。」光影微微一笑，「有趣的人类。」\n\n云寒看着她的双色眼眸，若有所思。",
+  "initialStats": {
+    "health": 100,
+    "charm": 88,
+    "intelligence": 88,
+    "strength": 45,
+    "agility": 60,
+    "stamina": 55,
+    "arousal": 10,
+    "experience": 15,
+    "sexSkill": 10,
+    "sexSensitivity": 30,
+    "intimacy": 3,
+    "willingness": 12,
+    "corruption": 0,
+    "shame": 5
+  },
+  "description": "云寒在山谷中遇见光影神兽"
+}

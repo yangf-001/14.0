@@ -1,0 +1,22 @@
+{
+  "name": "朝阳光芒",
+  "startStage": "相遇",
+  "customStartScene": "云寒在清晨的花丛中遇见蜉蝣。\n\n「朝生暮死，也要灿烂。」蜉蝣轻唱。\n\n「...」云寒看着这个脆弱的小生命。\n\n「今天，是我生命中最美的一天。」蜉蝣笑道。\n\n云寒心中一动，珍惜这短暂的相遇。",
+  "initialStats": {
+    "health": 100,
+    "charm": 80,
+    "intelligence": 75,
+    "strength": 15,
+    "agility": 30,
+    "stamina": 25,
+    "arousal": 15,
+    "experience": 15,
+    "sexSkill": 10,
+    "sexSensitivity": 38,
+    "intimacy": 3,
+    "willingness": 15,
+    "corruption": 0,
+    "shame": 8
+  },
+  "description": "云寒在清晨的花丛中遇见即将逝去的蜉蝣"
+}

@@ -1,0 +1,22 @@
+{
+  "name": "青鸾报恩",
+  "startStage": "相遇",
+  "customStartScene": "东海之滨，云寒觉醒血脉时气血暴走，幸得青鸾青璃出手相救。\n\n「小子，下次小心些。」青璃淡淡道。\n\n「多...谢仙子救命之恩。」云寒虚弱道。\n\n「去吧。」青璃转身离去。\n\n云寒看着她的背影，心中暗记恩情。",
+  "initialStats": {
+    "health": 100,
+    "charm": 85,
+    "intelligence": 85,
+    "strength": 40,
+    "agility": 60,
+    "stamina": 50,
+    "arousal": 15,
+    "experience": 15,
+    "sexSkill": 10,
+    "sexSensitivity": 40,
+    "intimacy": 5,
+    "willingness": 20,
+    "corruption": 0,
+    "shame": 10
+  },
+  "description": "云寒血脉觉醒失控，青鸾青璃出手相救，两人初次相遇"
+}

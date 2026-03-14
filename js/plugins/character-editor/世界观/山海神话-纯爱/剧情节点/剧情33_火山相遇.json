@@ -1,0 +1,22 @@
+{
+  "name": "火山相遇",
+  "startStage": "相遇",
+  "customStartScene": "云寒在火山附近遇见狻猊。\n\n「何人闯火山？」狻猊出现。\n\n「...在下只是路过。」云寒解释道。\n\n「火山危险，速速离去。」狻猊转身，「烟火人间，佛法无边。」",
+  "initialStats": {
+    "health": 100,
+    "charm": 86,
+    "intelligence": 84,
+    "strength": 50,
+    "agility": 58,
+    "stamina": 55,
+    "arousal": 10,
+    "experience": 15,
+    "sexSkill": 10,
+    "sexSensitivity": 28,
+    "intimacy": 2,
+    "willingness": 10,
+    "corruption": 0,
+    "shame": 5
+  },
+  "description": "云寒在火山附近遇见狻猊"
+}

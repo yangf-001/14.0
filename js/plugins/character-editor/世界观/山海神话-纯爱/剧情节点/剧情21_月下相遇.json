@@ -1,0 +1,22 @@
+{
+  "name": "月下相遇",
+  "startStage": "相遇",
+  "customStartScene": "云寒在山中遇见正在玩耍的玉兔。\n\n「兔兔？」云寒看着眼前的小可爱。\n\n「嘘...」玉兔竖起兔耳，「有人来了。」\n\n云寒看着可爱的玉兔，心中一动。\n\n「你是...」云寒轻声道。\n\n玉兔兔耳抖动转身离去。",
+  "initialStats": {
+    "health": 100,
+    "charm": 90,
+    "intelligence": 80,
+    "strength": 35,
+    "agility": 65,
+    "stamina": 50,
+    "arousal": 15,
+    "experience": 15,
+    "sexSkill": 10,
+    "sexSensitivity": 38,
+    "intimacy": 3,
+    "willingness": 15,
+    "corruption": 0,
+    "shame": 8
+  },
+  "description": "云寒在山中遇见正在玩耍的玉兔"
+}

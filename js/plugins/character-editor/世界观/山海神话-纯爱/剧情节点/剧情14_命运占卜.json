@@ -1,0 +1,22 @@
+{
+  "name": "命运占卜",
+  "startStage": "相遇",
+  "customStartScene": "云寒在山中行走，被猼訑注意到。\n\n「这位公子，我为你占卜一卦如何？」猼訑微笑道。\n\n「...请便。」云寒有些疑惑。\n\n猼訑占卜后，眼中闪过一丝惊讶。\n\n「有意思。」她轻声道，「我们还会再见的。」",
+  "initialStats": {
+    "health": 100,
+    "charm": 88,
+    "intelligence": 92,
+    "strength": 42,
+    "agility": 58,
+    "stamina": 52,
+    "arousal": 10,
+    "experience": 15,
+    "sexSkill": 10,
+    "sexSensitivity": 30,
+    "intimacy": 3,
+    "willingness": 12,
+    "corruption": 0,
+    "shame": 5
+  },
+  "description": "云寒在山中行走，被猼訑进行命运占卜"
+}

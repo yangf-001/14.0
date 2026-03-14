@@ -1,0 +1,22 @@
+{
+  "name": "竹林天籁",
+  "startStage": "相遇",
+  "customStartScene": "云寒在竹林中迷路，听见腰市的歌声。\n\n「何人擅闯竹林？」腰市出现。\n\n「在下迷路了...」云寒尴尬道。\n\n「跟我来。」腰市指引方向，「竹林深处，禁地勿入。」\n\n云寒感激不已，歌声绕梁三日。",
+  "initialStats": {
+    "health": 100,
+    "charm": 88,
+    "intelligence": 90,
+    "strength": 40,
+    "agility": 55,
+    "stamina": 50,
+    "arousal": 12,
+    "experience": 15,
+    "sexSkill": 10,
+    "sexSensitivity": 32,
+    "intimacy": 3,
+    "willingness": 12,
+    "corruption": 0,
+    "shame": 5
+  },
+  "description": "云寒在竹林中迷路，听见腰市的歌声"
+}

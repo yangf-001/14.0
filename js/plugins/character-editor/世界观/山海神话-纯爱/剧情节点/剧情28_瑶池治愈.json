@@ -1,0 +1,22 @@
+{
+  "name": "瑶池治愈",
+  "startStage": "相遇",
+  "customStartScene": "云寒在山中受伤，遇到瑶池。\n\n「受伤了？」瑶池出现。\n\n「...」云寒咬牙支撑。\n\n「过来。」瑶池引出泉水，「瑶池之水，能治百病。」\n\n云寒的伤口迅速愈合，感激不已。",
+  "initialStats": {
+    "health": 100,
+    "charm": 90,
+    "intelligence": 88,
+    "strength": 40,
+    "agility": 52,
+    "stamina": 50,
+    "arousal": 10,
+    "experience": 15,
+    "sexSkill": 10,
+    "sexSensitivity": 28,
+    "intimacy": 4,
+    "willingness": 12,
+    "corruption": 0,
+    "shame": 5
+  },
+  "description": "云寒在山中受伤，被瑶池的泉水治愈"
+}

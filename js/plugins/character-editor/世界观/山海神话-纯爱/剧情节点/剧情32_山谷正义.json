@@ -1,0 +1,22 @@
+{
+  "name": "山谷正义",
+  "startStage": "相遇",
+  "customStartScene": "云寒在山谷中遇难，狡獬出现主持公道。\n\n「邪恶之物，休得放肆！」狡獬驱逐恶兽。\n\n「...谢谢。」云寒感激道。\n\n「路见不平，应当相助。」狡獬转身离去。",
+  "initialStats": {
+    "health": 100,
+    "charm": 84,
+    "intelligence": 82,
+    "strength": 50,
+    "agility": 60,
+    "stamina": 55,
+    "arousal": 10,
+    "experience": 15,
+    "sexSkill": 10,
+    "sexSensitivity": 28,
+    "intimacy": 3,
+    "willingness": 10,
+    "corruption": 0,
+    "shame": 5
+  },
+  "description": "云寒在山谷中遇难，被狡獬所救"
+}

@@ -1,0 +1,22 @@
+{
+  "name": "花果赠予",
+  "startStage": "相遇",
+  "customStartScene": "云寒在山中饥饿，遇到正在享用果实的梨梨。\n\n「饿了？」梨梨递给云寒一个果实。\n\n「...谢谢。」云寒接过果实。\n\n「好吃吗？」梨梨期待道。\n\n云寒点头，梨梨开心地笑了。",
+  "initialStats": {
+    "health": 100,
+    "charm": 88,
+    "intelligence": 82,
+    "strength": 40,
+    "agility": 55,
+    "stamina": 50,
+    "arousal": 12,
+    "experience": 15,
+    "sexSkill": 10,
+    "sexSensitivity": 30,
+    "intimacy": 4,
+    "willingness": 12,
+    "corruption": 0,
+    "shame": 5
+  },
+  "description": "云寒在山中饥饿，遇到梨梨赠予果实"
+}

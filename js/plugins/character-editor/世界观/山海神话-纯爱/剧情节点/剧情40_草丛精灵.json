@@ -1,0 +1,22 @@
+{
+  "name": "草丛精灵",
+  "startStage": "相遇",
+  "customStartScene": "云寒在草丛中遇见正在跳跃的赤纽。\n\n「跳跳跳，跳得更远！」赤纽一边跳一边喊。\n\n「...」云寒看着这个精力充沛的小家伙。\n\n「人类，你会跳吗？」赤纽问道。\n\n云寒摇头，赤纽蹦蹦跳跳地跑远了。",
+  "initialStats": {
+    "health": 100,
+    "charm": 78,
+    "intelligence": 70,
+    "strength": 35,
+    "agility": 68,
+    "stamina": 55,
+    "arousal": 14,
+    "experience": 15,
+    "sexSkill": 10,
+    "sexSensitivity": 36,
+    "intimacy": 2,
+    "willingness": 12,
+    "corruption": 0,
+    "shame": 8
+  },
+  "description": "云寒在草丛中遇见正在跳跃的赤纽"
+}

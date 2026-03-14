@@ -1,0 +1,22 @@
+{
+  "name": "北海惊梦",
+  "startStage": "相遇",
+  "customStartScene": "云寒误入北海深处，惊扰了正在睡觉的鲲鹏。\n\n「何方人类，敢扰本座清梦？」巨大的鲲鹏出现在云寒面前。\n\n「在下无意冒犯...」云寒紧张道。\n\n「算了。」鲲鹏打了个哈欠，「人类，下次别再来打扰我睡觉。」\n\n云寒狼狈离开，暗暗记下这个地方。",
+  "initialStats": {
+    "health": 100,
+    "charm": 82,
+    "intelligence": 80,
+    "strength": 45,
+    "agility": 60,
+    "stamina": 55,
+    "arousal": 8,
+    "experience": 15,
+    "sexSkill": 10,
+    "sexSensitivity": 30,
+    "intimacy": 2,
+    "willingness": 10,
+    "corruption": 0,
+    "shame": 5
+  },
+  "description": "云寒误入北海深处，惊扰了正在睡觉的鲲鹏"
+}

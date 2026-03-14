@@ -1,0 +1,22 @@
+{
+  "name": "深山悟道",
+  "startStage": "相遇",
+  "customStartScene": "云寒在深山中遇见无仙。\n\n「一切皆为空。」无仙淡淡道。\n\n「...姑娘何意？」云寒问道。\n\n「你心中有太多执念。」无仙转身，「放下，才能解脱。」\n\n云寒若有所思。",
+  "initialStats": {
+    "health": 100,
+    "charm": 88,
+    "intelligence": 95,
+    "strength": 35,
+    "agility": 50,
+    "stamina": 45,
+    "arousal": 5,
+    "experience": 15,
+    "sexSkill": 10,
+    "sexSensitivity": 20,
+    "intimacy": 2,
+    "willingness": 8,
+    "corruption": 0,
+    "shame": 3
+  },
+  "description": "云寒在深山中遇见悟道的无仙"
+}

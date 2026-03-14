@@ -16,13 +16,7 @@ const Pages = {
         }
     },
 
-    renderStoryConfig(main) {
-        if (typeof View !== 'undefined' && View.render) {
-            main.innerHTML = View.render('story-config.main');
-        } else {
-            main.innerHTML = '<div class="empty">AI设置插件未加载</div>';
-        }
-    },
+
 
     renderPromptManager(main) {
         if (typeof PromptManagerView !== 'undefined' && PromptManagerView.render) {

@@ -1,11 +1,9 @@
 PluginSystem.register('prompt-manager', {
     description: 'AI提示词管理 - 统一管理所有AI提示词模板',
-    features: ['模板管理', '预设模板', '自定义模板', '阶段描写规则', '导入导出'],
+    features: ['模板管理', '预设模板', '自定义模板', '导入导出'],
     
     _presets: {},
     _templates: {},
-    _stylePresets: {},
-    _stageDescriptions: {},
     _loaded: false,
     
     async init() {
@@ -21,16 +19,14 @@ PluginSystem.register('prompt-manager', {
                 name: '故事开头模板',
                 description: '生成故事的开头，设定故事背景和初始情境',
                 presets: [
-                    { id: 'default', name: '默认模板', file: '故事生成/故事开头/默认模板.json' },
-                    { id: 'erotic', name: '色色故事', file: '故事生成/故事开头/色色故事.json' }
+                    { id: 'default', name: '默认模板', file: '故事生成/故事开头/默认模板.json' }
                 ]
             },
             storyChoice: {
                 name: '故事继续模板',
                 description: '根据用户选择继续故事发展',
                 presets: [
-                    { id: 'default', name: '默认模板', file: '故事生成/故事继续/默认模板.json' },
-                    { id: 'erotic', name: '色色模式', file: '故事生成/故事继续/色色模式.json' }
+                    { id: 'default', name: '默认模板', file: '故事生成/故事继续/默认模板.json' }
                 ]
             },
             storyFree: {
@@ -58,9 +54,7 @@ PluginSystem.register('prompt-manager', {
                 name: '选项生成模板',
                 description: '生成供用户选择的剧情分支选项',
                 presets: [
-                    { id: 'default', name: '默认模板', file: '选项生成/选项生成/默认模板.json' },
-                    { id: 'daily', name: '日常模式', file: '选项生成/选项生成/日常模式.json' },
-                    { id: 'erotic', name: '色色模式', file: '选项生成/选项生成/色色模式.json' }
+                    { id: 'default', name: '默认模板', file: '选项生成/选项生成/默认模板.json' }
                 ]
             },
             chatStart: {
@@ -82,13 +76,6 @@ PluginSystem.register('prompt-manager', {
                 description: '多人对话时的提示词模板',
                 presets: [
                     { id: 'default', name: '默认模板', file: '聊天对话/多人对话/默认模板.json' }
-                ]
-            },
-            intimateInteraction: {
-                name: '亲密互动模板',
-                description: '亲密互动时的提示词模板',
-                presets: [
-                    { id: 'default', name: '默认模板', file: '设置/亲密互动/默认模板.json' }
                 ]
             },
             diary: {
@@ -135,25 +122,8 @@ PluginSystem.register('prompt-manager', {
                     { id: 'level3', name: '三级摘要', file: '辅助功能/故事摘要/三级摘要.json' }
                 ]
             },
-            stylePreset: {
-                name: '风格预设',
-                description: '不同写作风格的预设',
-                presets: [
-                    { id: 'default', name: '默认风格', file: '设置/风格预设/默认风格.json' },
-                    { id: 'detailed', name: '详细描写', file: '设置/风格预设/详细描写.json' },
-                    { id: 'concise', name: '简洁风格', file: '设置/风格预设/简洁风格.json' },
-                    { id: 'romantic', name: '言情风格', file: '设置/风格预设/言情风格.json' },
-                    { id: 'plot', name: '剧情向', file: '设置/风格预设/剧情向.json' },
-                    { id: 'erotic', name: '色色风格', file: '设置/风格预设/色色风格.json' }
-                ]
-            },
-            stageDescription: {
-                name: '阶段描写规则',
-                description: '不同阶段的描写规则',
-                presets: [
-                    { id: 'default', name: '默认规则', file: '设置/阶段描写/默认规则.json' }
-                ]
-            }
+
+
         };
     },
     
@@ -170,11 +140,7 @@ PluginSystem.register('prompt-manager', {
                         const json = await response.json();
                         this._templates[category][preset.id] = json;
                         
-                        if (category === 'stylePreset') {
-                            this._stylePresets[preset.id] = json;
-                        } else if (category === 'stageDescription') {
-                            this._stageDescriptions[preset.id] = json;
-                        }
+
                     }
                 } catch (e) {
                     console.warn(`[提示词管理] 加载模板失败: ${preset.file}`, e);
@@ -186,9 +152,18 @@ PluginSystem.register('prompt-manager', {
         console.log('[提示词管理] 模板加载完成');
     },
     
-    getTemplate(category, presetId = 'default') {
+    getTemplate(category, presetId = 'default', stage = 1) {
         const customTemplate = this.loadCustomTemplate(category, presetId);
         if (customTemplate) {
+            if (typeof customTemplate === 'object') {
+                if (customTemplate.日常模式 && customTemplate.色色模式) {
+                    const mode = stage === 2 ? customTemplate.色色模式 : customTemplate.日常模式;
+                    return mode.描述 || JSON.stringify(mode);
+                } else if (customTemplate.描述) {
+                    return typeof customTemplate.描述 === 'string' ? customTemplate.描述 : JSON.stringify(customTemplate);
+                }
+                return JSON.stringify(customTemplate);
+            }
             return customTemplate;
         }
         
@@ -197,7 +172,15 @@ PluginSystem.register('prompt-manager', {
         
         if (typeof template === 'object') {
             if (template.template) {
-                return template.template;
+                if (typeof template.template === 'object') {
+                    if (template.template.日常模式 && template.template.色色模式) {
+                        const mode = stage === 2 ? template.template.色色模式 : template.template.日常模式;
+                        return mode.描述 || JSON.stringify(mode);
+                    } else if (template.template.描述) {
+                        return typeof template.template.描述 === 'string' ? template.template.描述 : JSON.stringify(template.template);
+                    }
+                }
+                return typeof template.template === 'string' ? template.template : JSON.stringify(template.template);
             }
             if (template.systemRole || template.outputRules || template.stages) {
                 return JSON.stringify(template);
@@ -208,16 +191,32 @@ PluginSystem.register('prompt-manager', {
         return template || '';
     },
     
-    getTemplateWithPreset(category, presetId, variables = {}) {
-        let template = this.getTemplate(category, presetId);
+    getTemplateFull(category, presetId = 'default') {
+        const customTemplate = this.loadCustomTemplateFull(category, presetId);
+        if (customTemplate) {
+            return customTemplate;
+        }
+        
+        const template = this._templates[category]?.[presetId];
         if (!template) return null;
         
         if (typeof template === 'object' && template.template) {
-            template = template.template;
+            return template;
+        }
+        
+        return null;
+    },
+    
+    getTemplateWithPreset(category, presetId, variables = {}, stage = 1) {
+        let template = this.getTemplate(category, presetId, stage);
+        if (!template) return null;
+        
+        if (typeof template === 'object' && template.描述) {
+            template = template.描述;
         }
         
         for (const [key, value] of Object.entries(variables)) {
-            template = template.replace(new RegExp(`\\[${key}\\]`, 'g'), value);
+            template = template.replace(new RegExp(`\[${key}\]`, 'g'), value);
         }
         
         return template;
@@ -230,20 +229,9 @@ PluginSystem.register('prompt-manager', {
         return this._presets[category] || null;
     },
     
-    getStylePreset(presetId = 'default') {
-        return this._stylePresets[presetId] || this._stylePresets['default'];
-    },
+
     
-    getStageDescription(stage, presetId = 'default') {
-        const preset = this._stageDescriptions[presetId] || this._stageDescriptions['default'];
-        if (!preset?.stages) return '';
-        return preset.stages[stage] || preset.stages['1'] || '';
-    },
-    
-    getStageName(stage, presetId = 'default') {
-        const names = { 1: '日常模式', 2: '色色模式' };
-        return names[stage] || names[1];
-    },
+
     
     saveCustomTemplate(category, presetId, template) {
         try {
@@ -267,6 +255,19 @@ PluginSystem.register('prompt-manager', {
             if (saved) {
                 const data = JSON.parse(saved);
                 return data.template;
+            }
+            return null;
+        } catch (e) {
+            return null;
+        }
+    },
+    
+    loadCustomTemplateFull(category, presetId) {
+        try {
+            const key = `prompt_${category}_${presetId}`;
+            const saved = localStorage.getItem(key);
+            if (saved) {
+                return JSON.parse(saved);
             }
             return null;
         } catch (e) {
@@ -305,7 +306,7 @@ PluginSystem.register('prompt-manager', {
                     results.custom++;
                 }
                 
-                if (template && template.trim()) {
+                if (template && typeof template === 'string' && template.trim()) {
                     results.loaded++;
                     results.details[category].presets[preset.id] = {
                         name: preset.name,
@@ -356,7 +357,7 @@ PluginSystem.register('prompt-manager', {
                 }
                 
                 const defaultTemplate = this.getTemplate(category, preset.id);
-                if (defaultTemplate && defaultTemplate.trim()) {
+                if (defaultTemplate && typeof defaultTemplate === 'string' && defaultTemplate.trim()) {
                     this.saveCustomTemplate(category, preset.id, defaultTemplate);
                     loaded++;
                 }
@@ -385,5 +386,32 @@ PluginSystem.register('prompt-manager', {
         console.log(`[提示词管理] 已重置 ${count} 个模板`);
         
         return count;
+    },
+    
+    importTemplates(data) {
+        if (!data || !data.templates) {
+            console.error('[提示词管理] 导入失败：数据格式错误');
+            return { success: false, message: '数据格式错误' };
+        }
+        
+        let imported = 0;
+        let skipped = 0;
+        
+        for (const [category, categoryData] of Object.entries(data.templates)) {
+            if (!categoryData.presets) continue;
+            
+            for (const [presetId, presetData] of Object.entries(categoryData.presets)) {
+                if (presetData.template) {
+                    this.saveCustomTemplate(category, presetId, presetData.template);
+                    imported++;
+                } else {
+                    skipped++;
+                }
+            }
+        }
+        
+        console.log(`[提示词管理] 导入完成：${imported} 个模板已导入，${skipped} 个跳过`);
+        
+        return { success: true, imported, skipped };
     }
 });

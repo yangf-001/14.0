@@ -1,0 +1,22 @@
+{
+  "name": "夜猫捕猎",
+  "startStage": "相遇",
+  "customStartScene": "云寒夜晚在山林中行走。\n\n「喵~」猫又出现在云寒面前。\n\n「...猫？」云寒警惕道。\n\n「人类，今晚的猎物是你。」猫又轻笑。\n\n云寒转身就跑，猫又在身后追逐。",
+  "initialStats": {
+    "health": 100,
+    "charm": 85,
+    "intelligence": 78,
+    "strength": 45,
+    "agility": 68,
+    "stamina": 55,
+    "arousal": 15,
+    "experience": 15,
+    "sexSkill": 10,
+    "sexSensitivity": 35,
+    "intimacy": 2,
+    "willingness": 12,
+    "corruption": 0,
+    "shame": 5
+  },
+  "description": "云寒夜晚在山林中遇见猫又"
+}

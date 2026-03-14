@@ -1,0 +1,22 @@
+{
+  "name": "夜晚吸血",
+  "startStage": "相遇",
+  "customStartScene": "云寒在夜晚被赤蚊发现。\n\n「你的血，很美味。」赤蚊出现在云寒面前。\n\n「...」云寒警惕道。\n\n「别怕，我不吸太多。」赤蚊轻笑。\n\n云寒看着这个妖艳的女子。",
+  "initialStats": {
+    "health": 100,
+    "charm": 82,
+    "intelligence": 75,
+    "strength": 35,
+    "agility": 50,
+    "stamina": 40,
+    "arousal": 15,
+    "experience": 15,
+    "sexSkill": 10,
+    "sexSensitivity": 38,
+    "intimacy": 2,
+    "willingness": 12,
+    "corruption": 0,
+    "shame": 8
+  },
+  "description": "云寒在夜晚被赤蚊发现"
+}

@@ -1,0 +1,22 @@
+{
+  "name": "山神之母",
+  "startStage": "相遇",
+  "customStartScene": "云寒在山中迷路，遇见丈仙。\n\n「孩子，迷路了？」丈仙温柔道。\n\n「...是的。」云寒尴尬道。\n\n「跟我来。」丈仙指引方向，「山中危险，小心。」\n\n云寒感激不已，连声道谢。",
+  "initialStats": {
+    "health": 100,
+    "charm": 88,
+    "intelligence": 90,
+    "strength": 40,
+    "agility": 50,
+    "stamina": 50,
+    "arousal": 8,
+    "experience": 15,
+    "sexSkill": 10,
+    "sexSensitivity": 25,
+    "intimacy": 3,
+    "willingness": 10,
+    "corruption": 0,
+    "shame": 5
+  },
+  "description": "云寒在山中迷路，遇见丈仙指引方向"
+}

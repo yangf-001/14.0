@@ -8,7 +8,7 @@ PluginSystem.register('character-stats', {
     },
 
     getAISetting(key, worldId) {
-        const plugin = PluginSystem.get('story-config');
+        const plugin = null;
         if (plugin) {
             return plugin.getAISetting(key, worldId);
         }

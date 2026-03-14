@@ -1,0 +1,22 @@
+{
+  "name": "黄河治水",
+  "startStage": "相遇",
+  "customStartScene": "黄河泛滥，云寒出手相助治水。\n\n「人类，竟敢干涉黄河之事？」应龙出现在云寒面前。\n\n「在下只是想帮百姓...」云寒解释道。\n\n「...有意思。」应龙淡淡道，「去吧。」\n\n云寒成功帮助百姓，应龙对其刮目相看。",
+  "initialStats": {
+    "health": 100,
+    "charm": 86,
+    "intelligence": 88,
+    "strength": 55,
+    "agility": 65,
+    "stamina": 60,
+    "arousal": 10,
+    "experience": 15,
+    "sexSkill": 10,
+    "sexSensitivity": 30,
+    "intimacy": 5,
+    "willingness": 15,
+    "corruption": 0,
+    "shame": 5
+  },
+  "description": "黄河泛滥，云寒出手相助治水，应龙对其刮目相看"
+}

@@ -1,0 +1,22 @@
+{
+  "name": "墨池画缘",
+  "startStage": "相遇",
+  "customStartScene": "云寒在山中遇见正在作画的狡墨。\n\n「此画甚妙。」云寒赞叹道。\n\n「你懂画？」狡墨抬头。\n\n「略懂一二。」云寒谦虚道。\n\n狡墨来了兴趣，与云寒讨论起来。",
+  "initialStats": {
+    "health": 100,
+    "charm": 86,
+    "intelligence": 88,
+    "strength": 40,
+    "agility": 55,
+    "stamina": 50,
+    "arousal": 10,
+    "experience": 15,
+    "sexSkill": 10,
+    "sexSensitivity": 28,
+    "intimacy": 4,
+    "willingness": 12,
+    "corruption": 0,
+    "shame": 5
+  },
+  "description": "云寒在山中遇见正在作画的狡墨"
+}

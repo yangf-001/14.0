@@ -1,0 +1,22 @@
+{
+  "name": "梦幻遗忘",
+  "startStage": "相遇",
+  "customStartScene": "云寒在山中遇见腓腓。\n\n「你是...」云寒看着眼前如梦似幻的女子。\n\n「腓腓。」她轻声道，「忘记一切，就不痛苦了。」\n\n云寒看着她楚楚动人的眼神，心中一动。\n\n「...我叫云寒。」\n\n腓腓微微一笑，转身离去。",
+  "initialStats": {
+    "health": 100,
+    "charm": 92,
+    "intelligence": 85,
+    "strength": 38,
+    "agility": 58,
+    "stamina": 48,
+    "arousal": 12,
+    "experience": 15,
+    "sexSkill": 10,
+    "sexSensitivity": 32,
+    "intimacy": 3,
+    "willingness": 12,
+    "corruption": 0,
+    "shame": 5
+  },
+  "description": "云寒在山中遇见腓腓"
+}

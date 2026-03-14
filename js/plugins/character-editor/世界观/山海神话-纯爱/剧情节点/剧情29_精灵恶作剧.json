@@ -1,0 +1,22 @@
+{
+  "name": "精灵恶作剧",
+  "startStage": "相遇",
+  "customStartScene": "云寒在森林中迷路，遇见正在恶作剧的精精。\n\n「人类？」精精出现，「好玩！」\n\n「...」云寒发现东西被藏起来了。\n\n「叫我一声姐姐就还给你。」精精嬉笑道。\n\n云寒无奈，只能妥协。",
+  "initialStats": {
+    "health": 100,
+    "charm": 85,
+    "intelligence": 75,
+    "strength": 38,
+    "agility": 65,
+    "stamina": 45,
+    "arousal": 15,
+    "experience": 15,
+    "sexSkill": 10,
+    "sexSensitivity": 35,
+    "intimacy": 3,
+    "willingness": 15,
+    "corruption": 0,
+    "shame": 8
+  },
+  "description": "云寒在森林中迷路，遇见正在恶作剧的精精"
+}

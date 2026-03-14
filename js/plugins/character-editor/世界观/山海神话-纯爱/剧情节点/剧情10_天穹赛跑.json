@@ -1,0 +1,22 @@
+{
+  "name": "天穹赛跑",
+  "startStage": "相遇",
+  "customStartScene": "云寒在草原上遇见天马奔跑。\n\n「人类，想跟我比试比试吗？」天马挑衅道。\n\n「有何不敢？」云寒笑道。\n\n一番比试后，天马对这个人类产生了兴趣。\n\n「你很有趣。」天马笑道，「下次再来比过。」",
+  "initialStats": {
+    "health": 100,
+    "charm": 84,
+    "intelligence": 78,
+    "strength": 50,
+    "agility": 70,
+    "stamina": 60,
+    "arousal": 12,
+    "experience": 15,
+    "sexSkill": 10,
+    "sexSensitivity": 32,
+    "intimacy": 4,
+    "willingness": 12,
+    "corruption": 0,
+    "shame": 5
+  },
+  "description": "云寒在草原上遇见天马奔跑，两人进行赛跑"
+}

@@ -3,7 +3,7 @@ const Story = {
     history: [],
     
     _getPlugin() {
-        return window.StoryConfigPlugin || PluginSystem.get('story-config');
+        return null;
     },
     
     async _ensurePluginsInitialized() {
@@ -109,32 +109,51 @@ const Story = {
 
     _buildResumePrompt(plugin, world, selectedChars, historyContext) {
         const charNames = selectedChars.map(c => c.name).join('、');
+        const playerChar = selectedChars.find(c => c.isPlayer) || selectedChars[0];
+        const stage = this._getTemplateStage(world.id, playerChar?.id);
         
         const promptManager = window.PromptManagerPlugin;
         if (promptManager) {
-            return promptManager.getTemplateWithPreset('storyContinue', 'default', {
+            const presetId = this._getTemplatePresetId('storyContinue', world.id, playerChar?.id);
+            return promptManager.getTemplateWithPreset('storyContinue', presetId, {
                 '角色列表': charNames,
                 '世界名': world.name,
                 '历史剧情': historyContext
-            });
+            }, stage);
         }
         
         throw new Error('提示词管理插件未加载');
     },
 
     _buildNewStoryPrompt(plugin, selectedChars, config, settings, playerCharInfo, currentStoryNodeData) {
-        let prompt = plugin.getStoryGenerator().buildStartPrompt(selectedChars, config.scene, settings, playerCharInfo, config.charRatio);
+        const charNames = selectedChars.map(c => c.name).join('、');
+        const playerChar = selectedChars.find(c => c.isPlayer) || selectedChars[0];
+        const world = Data.getCurrentWorld();
         
-        if (currentStoryNodeData && currentStoryNodeData.customStartScene) {
-            const customScene = currentStoryNodeData.customStartScene;
-            const stageInfo = currentStoryNodeData.startStage ? `\n【当前剧情阶段】${currentStoryNodeData.startStage}` : '';
-            prompt = prompt.replace(
-                /【场景设定】.*$/m,
-                `【场景设定】${customScene}${stageInfo}`
-            );
+        const promptManager = window.PromptManagerPlugin;
+        if (promptManager && world) {
+            const stage = this._getTemplateStage(world.id, playerChar?.id);
+            const presetId = this._getTemplatePresetId('storyStart', world.id, playerChar?.id);
+            let prompt = promptManager.getTemplateWithPreset('storyStart', presetId, {
+                '角色列表': charNames,
+                '场景': config.scene || '',
+                '角色JSON': JSON.stringify(selectedChars),
+                '风格设置': Settings.buildPromptContext(settings)
+            }, stage);
+            
+            if (currentStoryNodeData && currentStoryNodeData.customStartScene) {
+                const customScene = currentStoryNodeData.customStartScene;
+                const stageInfo = currentStoryNodeData.startStage ? `\n【当前剧情阶段】${currentStoryNodeData.startStage}` : '';
+                prompt = prompt.replace(
+                    /【场景设定】.*$/m,
+                    `【场景设定】${customScene}${stageInfo}`
+                );
+            }
+            
+            return prompt;
         }
         
-        return prompt;
+        throw new Error('提示词管理插件未加载或世界未选择');
     },
 
     _buildStartPrompt(plugin, world, selectedChars, config, settings, playerCharInfo, historyContext, isResume, currentStoryNodeData) {
@@ -386,30 +405,51 @@ const Story = {
         if (choice) {
             const context = plugin.getStoryGenerator().buildContext(this.current, characters, settings);
             const charNames = characters.map(c => c.name).join('、');
+            const playerChar = characters.find(c => c.isPlayer) || characters[0];
+            
+            let userChoiceText = choice;
+            if (isItemUse && options.item && options.targetChar) {
+                const charName = options.userChar ? options.userChar.name : '';
+                userChoiceText = `${charName}对${options.targetChar.name}使用了【${options.item.name}】（效果：${JSON.stringify(options.item.effects || {})}）`;
+            } else if (isIntimate) {
+                userChoiceText = `亲密互动：${choice}`;
+            }
             
             const promptManager = window.PromptManagerPlugin;
             if (promptManager) {
-                prompt = promptManager.getTemplateWithPreset('storyChoice', 'default', {
-                    '用户选择': isItemUse ? 
-                        (options.userChar ? `${options.userChar.name}对${options.targetChar.name}使用了【${options.item.name}】（效果：${JSON.stringify(options.item.effects || {})}）` : `${options.targetChar.name}使用了【${options.item.name}】（效果：${JSON.stringify(options.item.effects || {})}）`)
-                        : isIntimate ? `亲密互动：${choice}`
-                        : choice,
+                const stage = this._getTemplateStage(world.id, playerChar?.id);
+                const presetId = this._getTemplatePresetId('storyChoice', world.id, playerChar?.id);
+                
+                let extraPrompt = '';
+                if (isIntimate) {
+                    extraPrompt = '\n\n【亲密互动要求】\n请描述亲密互动过程，自然融入剧情。用词直白露骨，直接描写性器官接触、插入、抽动、高潮等细节；描写要流畅如小说，避免罗列；只描述亲密互动过程，自然融入剧情。';
+                } else if (isItemUse) {
+                    extraPrompt = '\n\n【物品使用要求】\n请根据物品效果生成相应的剧情，物品效果：' + JSON.stringify(options.item.effects || {});
+                }
+                
+                let basePrompt = promptManager.getTemplateWithPreset('storyChoice', presetId, {
+                    '用户选择': userChoiceText,
                     '上下文': context,
                     '角色列表': charNames
-                });
+                }, stage);
+                
+                prompt = basePrompt + extraPrompt;
                 
                 systemPrompt = plugin.getWorldSystemPrompt(world.id);
             }
         } else {
             const context = plugin.getStoryGenerator().buildContext(this.current, characters, settings);
             const charNames = characters.map(c => c.name).join('、');
+            const playerChar = characters.find(c => c.isPlayer) || characters[0];
             
             const promptManager = window.PromptManagerPlugin;
             if (promptManager) {
-                prompt = promptManager.getTemplateWithPreset('storyFree', 'default', {
+                const stage = this._getTemplateStage(world.id, playerChar?.id);
+                const presetId = this._getTemplatePresetId('storyFree', world.id, playerChar?.id);
+                prompt = promptManager.getTemplateWithPreset('storyFree', presetId, {
                     '上下文': context,
                     '角色列表': charNames
-                });
+                }, stage);
                 
                 systemPrompt = plugin.getWorldSystemPrompt(world.id);
             }
@@ -630,14 +670,17 @@ const Story = {
         let prompt;
         
         if (promptManager) {
-            prompt = promptManager.getTemplateWithPreset('generateChoices', 'default', {
+            const playerChar = currentStory.characters.find(c => c.isPlayer) || currentStory.characters[0];
+            const stage = this._getTemplateStage(world.id, playerChar?.id);
+            const presetId = this._getTemplatePresetId('generateChoices', world.id, playerChar?.id);
+            prompt = promptManager.getTemplateWithPreset('generateChoices', presetId, {
                 '内容摘要': lastContent,
                 '故事内容': lastContent,
                 '内容': lastContent,
                 '角色列表': charNames,
                 '角色': charNames,
                 '上下文备注': contextNote
-            });
+            }, stage);
         }
         
         const systemPrompt = this._getPlugin()?.getWorldSystemPrompt(world.id) || '';
@@ -648,9 +691,20 @@ const Story = {
             length: settings.output?.length || '中篇'
         });
         
-        const choices = result.split('\n')
-            .map(line => line.replace(/^\d+[.、]\s*/, '').trim())
-            .filter(line => line.length > 0 && line.length < 100);
+        // 解析新的选项格式："选项一"："xx"，"选项二"："xx"...
+        let choices = [];
+        const optionRegex = /"(选项[一二三四])"\s*：\s*"([^"]+)"/g;
+        let match;
+        while ((match = optionRegex.exec(result)) !== null) {
+            choices.push(match[2].trim());
+        }
+        
+        // 兼容旧格式
+        if (choices.length === 0) {
+            choices = result.split('\n')
+                .map(line => line.replace(/^\d+[.、]\s*/, '').trim())
+                .filter(line => line.length > 0 && line.length < 100);
+        }
         
         return choices.slice(0, 5);
     },
@@ -741,51 +795,79 @@ const Story = {
     },
 
     getArchives(worldId) {
-        const plugin = window.StoryConfigPlugin || PluginSystem.get('story-config');
-        return plugin ? plugin.getArchives(worldId) : [];
+        try {
+            return JSON.parse(localStorage.getItem(`story_archives_${worldId}`) || '[]');
+        } catch { return []; }
     },
     
     getArchivedStories(worldId) {
-        const plugin = window.StoryConfigPlugin || PluginSystem.get('story-config');
-        return plugin ? plugin.getArchivedStories(worldId) : [];
+        try {
+            return JSON.parse(localStorage.getItem(`story_archived_${worldId}`) || '[]');
+        } catch { return []; }
     },
     
     deleteArchive(archiveId) {
         const world = Data.getCurrentWorld();
         if (!world) return false;
-        const plugin = window.StoryConfigPlugin || PluginSystem.get('story-config');
-        return plugin ? plugin.deleteArchive(world.id, archiveId) : false;
+        const archives = this.getArchives(world.id);
+        const idx = archives.findIndex(a => a.id === archiveId);
+        if (idx !== -1) {
+            archives.splice(idx, 1);
+            localStorage.setItem(`story_archives_${world.id}`, JSON.stringify(archives));
+            return true;
+        }
+        return false;
     },
     
     deleteArchivedStory(archiveId) {
         const world = Data.getCurrentWorld();
         if (!world) return false;
-        const plugin = window.StoryConfigPlugin || PluginSystem.get('story-config');
-        return plugin ? plugin.deleteArchivedStory(world.id, archiveId) : false;
+        const archived = this.getArchivedStories(world.id);
+        const idx = archived.findIndex(a => a.id === archiveId);
+        if (idx !== -1) {
+            archived.splice(idx, 1);
+            localStorage.setItem(`story_archived_${world.id}`, JSON.stringify(archived));
+            return true;
+        }
+        return false;
     },
     
     deleteLevel2Story(archiveId) {
         const world = Data.getCurrentWorld();
         if (!world) return false;
-        const plugin = window.StoryConfigPlugin || PluginSystem.get('story-config');
-        return plugin ? plugin.deleteLevel2Story(world.id, archiveId) : false;
+        const level2 = this.getLevel2Archives(world.id);
+        const idx = level2.findIndex(a => a.id === archiveId);
+        if (idx !== -1) {
+            level2.splice(idx, 1);
+            localStorage.setItem(`story_level2_${world.id}`, JSON.stringify(level2));
+            return true;
+        }
+        return false;
     },
     
     deleteLevel3Story(archiveId) {
         const world = Data.getCurrentWorld();
         if (!world) return false;
-        const plugin = window.StoryConfigPlugin || PluginSystem.get('story-config');
-        return plugin ? plugin.deleteLevel3Story(world.id, archiveId) : false;
+        const level3 = this.getLevel3Archives(world.id);
+        const idx = level3.findIndex(a => a.id === archiveId);
+        if (idx !== -1) {
+            level3.splice(idx, 1);
+            localStorage.setItem(`story_level3_${world.id}`, JSON.stringify(level3));
+            return true;
+        }
+        return false;
     },
     
     getLevel2Archives(worldId) {
-        const plugin = window.StoryConfigPlugin || PluginSystem.get('story-config');
-        return plugin ? plugin.getLevel2Archives(worldId) : [];
+        try {
+            return JSON.parse(localStorage.getItem(`story_level2_${worldId}`) || '[]');
+        } catch { return []; }
     },
     
     getLevel3Archives(worldId) {
-        const plugin = window.StoryConfigPlugin || PluginSystem.get('story-config');
-        return plugin ? plugin.getLevel3Archives(worldId) : [];
+        try {
+            return JSON.parse(localStorage.getItem(`story_level3_${worldId}`) || '[]');
+        } catch { return []; }
     },
 
     load(worldId) {
@@ -869,11 +951,13 @@ const Story = {
                 let prompt;
                 const promptManager = window.PromptManagerPlugin;
                 if (promptManager) {
+                    const playerChar = selectedChars.find(c => c.isPlayer) || selectedChars[0];
+                    const stage = this._getTemplateStage(world.id, playerChar?.id);
                     prompt = promptManager.getTemplateWithPreset('storyContinue', 'default', {
                         '角色列表': charNames,
                         '世界名': world.name,
                         '历史剧情': historyContext
-                    });
+                    }, stage);
                 } else {
                     throw new Error('提示词管理插件未加载');
                 }
@@ -1004,13 +1088,15 @@ const Story = {
         
         const promptManager = window.PromptManagerPlugin;
         if (promptManager) {
+            const playerChar = this.current.characters.find(c => c.isPlayer) || this.current.characters[0];
+            const stage = this._getTemplateStage(worldId, playerChar?.id);
             const template = promptManager.getTemplateWithPreset('storyContinue', 'default', {
                 '角色描述': charDesc,
                 '世界名': world?.name || '自定义世界',
                 '风格设置': ctx,
                 '之前的故事剧情': finalHistorySection,
                 '当前故事最新剧情': ''
-            });
+            }, stage);
             return systemPrompt + template;
         }
         
@@ -1078,6 +1164,18 @@ const Story = {
         }
         
         return allChatHistory;
+    },
+    
+    _getTemplateStage(worldId, charId = null) {
+        const adultPlugin = window.AdultTagsPlugin;
+        if (adultPlugin) {
+            return adultPlugin.getStage(null, worldId, charId);
+        }
+        return 1;
+    },
+    
+    _getTemplatePresetId(category, worldId, charId = null) {
+        return 'default';
     },
 
     _checkAndApplyAdultTagsToStart(worldId, prompt) {

@@ -1,0 +1,22 @@
+{
+  "name": "山林追逐",
+  "startStage": "相遇",
+  "customStartScene": "云寒在山中遇见诸犍，被其当作猎物。\n\n「猎物，哪里跑！」诸犍追逐云寒。\n\n「姑娘，我不是什么猎物...」云寒解释道。\n\n「在老娘面前，没有猎物能跑掉。」诸犍笑道。\n\n最终云寒成功逃脱，暗暗记下这个厉害的角色。",
+  "initialStats": {
+    "health": 100,
+    "charm": 82,
+    "intelligence": 78,
+    "strength": 55,
+    "agility": 70,
+    "stamina": 60,
+    "arousal": 12,
+    "experience": 15,
+    "sexSkill": 10,
+    "sexSensitivity": 30,
+    "intimacy": 2,
+    "willingness": 10,
+    "corruption": 0,
+    "shame": 5
+  },
+  "description": "云寒在山中遇见诸犍，被其当作猎物追逐"
+}

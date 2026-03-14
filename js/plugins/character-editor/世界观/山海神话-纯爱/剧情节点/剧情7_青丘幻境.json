@@ -1,0 +1,22 @@
+{
+  "name": "青丘幻境",
+  "startStage": "相遇",
+  "customStartScene": "云寒路过青丘之国，被九尾狐朱六困在幻境中。\n\n「人类，欢迎来到我的世界。」朱六笑嘻嘻地看着被困住的云寒。\n\n「...你想怎样？」云寒警惕道。\n\n「陪我玩个游戏吧。」朱六眨眨眼，「赢了就放你走。」\n\n云寒无奈，只能陪她玩了起来。",
+  "initialStats": {
+    "health": 100,
+    "charm": 85,
+    "intelligence": 75,
+    "strength": 40,
+    "agility": 55,
+    "stamina": 50,
+    "arousal": 15,
+    "experience": 15,
+    "sexSkill": 10,
+    "sexSensitivity": 35,
+    "intimacy": 5,
+    "willingness": 15,
+    "corruption": 0,
+    "shame": 8
+  },
+  "description": "云寒路过青丘之国，被九尾狐朱六困在幻境中"
+}

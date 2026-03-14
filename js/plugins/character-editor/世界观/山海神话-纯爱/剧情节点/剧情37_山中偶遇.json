@@ -1,0 +1,22 @@
+{
+  "name": "山中偶遇",
+  "startStage": "相遇",
+  "customStartScene": "云寒在山中遇见楚楚动人的犭严 狚。\n\n「不要...伤害我...」犭严 狚弱弱道。\n\n「我不会伤害你的。」云寒温柔道。\n\n犭严 狚躲在树后，偷偷观察云寒。\n\n「...你叫什么？」\n\n「云寒。」\n\n犭严 狚轻轻点头，又躲了起来。",
+  "initialStats": {
+    "health": 100,
+    "charm": 86,
+    "intelligence": 75,
+    "strength": 32,
+    "agility": 60,
+    "stamina": 45,
+    "arousal": 12,
+    "experience": 15,
+    "sexSkill": 10,
+    "sexSensitivity": 35,
+    "intimacy": 2,
+    "willingness": 12,
+    "corruption": 0,
+    "shame": 10
+  },
+  "description": "云寒在山中遇见楚楚动人的犭严 狚"
+}

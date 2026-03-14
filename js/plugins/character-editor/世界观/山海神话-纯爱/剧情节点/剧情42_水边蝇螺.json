@@ -1,0 +1,22 @@
+{
+  "name": "水边蝇螺",
+  "startStage": "相遇",
+  "customStartScene": "云寒在池塘水边发现小小的蝇螺。\n\n「好...好小...」蝇螺看着云寒。\n\n「好...好大的人类...」蝇螺害羞道。\n\n云寒蹲下身子，轻轻打招呼。",
+  "initialStats": {
+    "health": 100,
+    "charm": 78,
+    "intelligence": 65,
+    "strength": 15,
+    "agility": 25,
+    "stamina": 25,
+    "arousal": 15,
+    "experience": 15,
+    "sexSkill": 10,
+    "sexSensitivity": 42,
+    "intimacy": 2,
+    "willingness": 15,
+    "corruption": 0,
+    "shame": 12
+  },
+  "description": "云寒在池塘水边发现小小的蝇螺"
+}

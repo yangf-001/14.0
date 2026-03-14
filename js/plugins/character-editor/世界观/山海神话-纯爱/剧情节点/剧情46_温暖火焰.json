@@ -1,0 +1,22 @@
+{
+  "name": "温暖火焰",
+  "startStage": "相遇",
+  "customStartScene": "云寒在山中寒冷时遇见窃脂。\n\n「有我在，就不会寒冷。」窃脂升起温暖的火焰。\n\n「...谢谢。」云寒感到温暖。\n\n「火焰，是生命的象征。」窃脂温柔道。\n\n云寒看着温暖的火焰，心中感激。",
+  "initialStats": {
+    "health": 100,
+    "charm": 86,
+    "intelligence": 84,
+    "strength": 42,
+    "agility": 55,
+    "stamina": 50,
+    "arousal": 10,
+    "experience": 15,
+    "sexSkill": 10,
+    "sexSensitivity": 30,
+    "intimacy": 3,
+    "willingness": 12,
+    "corruption": 0,
+    "shame": 5
+  },
+  "description": "云寒在山中寒冷时遇见窃脂"
+}

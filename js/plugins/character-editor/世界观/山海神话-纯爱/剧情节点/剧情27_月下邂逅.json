@@ -1,0 +1,22 @@
+{
+  "name": "月下邂逅",
+  "startStage": "相遇",
+  "customStartScene": "云寒在月圆之夜望月。\n\n「何人望月？」嫦娥出现在月光中。\n\n「...在下云寒。」云寒抬头，「月色真美。」\n\n嫦娥微微一笑：「月圆之夜，思念最长。」\n\n云寒看着月宫仙子，若有所思。",
+  "initialStats": {
+    "health": 100,
+    "charm": 92,
+    "intelligence": 86,
+    "strength": 38,
+    "agility": 52,
+    "stamina": 48,
+    "arousal": 12,
+    "experience": 15,
+    "sexSkill": 10,
+    "sexSensitivity": 30,
+    "intimacy": 3,
+    "willingness": 12,
+    "corruption": 0,
+    "shame": 5
+  },
+  "description": "云寒在月圆之夜望月，遇见嫦娥"
+}

@@ -185,7 +185,7 @@ PluginSystem.register('chat-plugin', {
         const world = Data.getCurrentWorld();
         const worldId = world?.id;
         
-        const plugin = PluginSystem.get('story-config');
+        const plugin = null;
         
         const charList = Array.isArray(aiCharacters) ? aiCharacters : (aiCharacters ? [aiCharacters] : []);
         let charInfo = '';

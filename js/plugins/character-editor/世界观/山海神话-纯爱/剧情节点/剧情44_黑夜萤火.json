@@ -1,0 +1,22 @@
+{
+  "name": "黑夜萤火",
+  "startStage": "相遇",
+  "customStartScene": "云寒在夜晚的山林中遇见发光的萤火。\n\n「黑夜中，也有光亮。」萤火闪烁着。\n\n「...好美。」云寒惊叹道。\n\n「黑夜才不可怕呢。」萤火笑道。\n\n云寒看着这小小的光亮，心中温暖。",
+  "initialStats": {
+    "health": 100,
+    "charm": 82,
+    "intelligence": 72,
+    "strength": 15,
+    "agility": 35,
+    "stamina": 30,
+    "arousal": 14,
+    "experience": 15,
+    "sexSkill": 10,
+    "sexSensitivity": 36,
+    "intimacy": 3,
+    "willingness": 14,
+    "corruption": 0,
+    "shame": 8
+  },
+  "description": "云寒在夜晚的山林中遇见发光的萤火虫精"
+}

@@ -1,0 +1,22 @@
+{
+  "name": "雷泽雷劫",
+  "startStage": "相遇",
+  "customStartScene": "云寒在雷泽附近遭遇雷暴。\n\n「何人敢闯雷泽？」夔牛出现在雷暴中。\n\n「在下只是路过...」云寒运转血脉抵挡。\n\n「罢了。」夔牛挥手散去雷暴，「速速离去。」\n\n云寒躬身离开，暗暗记下夔牛的力量。",
+  "initialStats": {
+    "health": 100,
+    "charm": 85,
+    "intelligence": 82,
+    "strength": 55,
+    "agility": 60,
+    "stamina": 55,
+    "arousal": 12,
+    "experience": 15,
+    "sexSkill": 10,
+    "sexSensitivity": 32,
+    "intimacy": 3,
+    "willingness": 12,
+    "corruption": 0,
+    "shame": 5
+  },
+  "description": "云寒在雷泽附近遭遇雷暴，被夔牛所救"
+}

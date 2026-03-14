@@ -1,0 +1,22 @@
+{
+  "name": "火海情深",
+  "startStage": "相遇",
+  "customStartScene": "云寒探索南明火山时遭遇火暴，被朱雀朱焰所救。\n\n「不要命了吗？」朱焰将他带出火海。\n\n「...谢谢。」云寒喘着气。\n\n「愚蠢的人类。」朱焰转身，「火山不是你能来的地方。」\n\n云寒看着她离去的方向，心中暗暗记下。",
+  "initialStats": {
+    "health": 100,
+    "charm": 84,
+    "intelligence": 82,
+    "strength": 42,
+    "agility": 60,
+    "stamina": 50,
+    "arousal": 12,
+    "experience": 15,
+    "sexSkill": 10,
+    "sexSensitivity": 38,
+    "intimacy": 3,
+    "willingness": 15,
+    "corruption": 0,
+    "shame": 8
+  },
+  "description": "云寒探索南明火山时被朱雀朱焰所救"
+}

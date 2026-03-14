@@ -5,7 +5,7 @@ const mobileNavItems = [
     { page: 'story', icon: '📖', label: '故事' },
     { page: 'simple-story', icon: '⚡', label: '小故事' },
     { page: 'chat', icon: '💬', label: '聊天' },
-    { page: 'story-config', icon: '📝', label: 'AI设置' },
+
     { page: 'prompt-manager', icon: '📋', label: '提示词' },
     { page: 'storage', icon: '📦', label: '存储库' },
     { page: 'settings', icon: '⚙️', label: '设置' },
@@ -35,7 +35,7 @@ const Router = {
             case 'story': Pages.renderStory(main); break;
             case 'simple-story': Pages.renderSimpleStory(main); break;
             case 'chat': await Pages.renderChat(main); break;
-            case 'story-config': Pages.renderStoryConfig(main); break;
+
             case 'prompt-manager': Pages.renderPromptManager(main); break;
             case 'storage': Storage.renderStorage(main); break;
             case 'settings': Pages.renderSettings(main); break;
@@ -90,7 +90,7 @@ const Router = {
     },
     
     showStorySettings() {
-        this.showPage('story-config');
+        this.showPage('prompt-manager');
     },
     
     showCharSelector() {

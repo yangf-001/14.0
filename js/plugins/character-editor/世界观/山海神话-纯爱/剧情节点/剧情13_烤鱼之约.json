@@ -1,0 +1,22 @@
+{
+  "name": "烤鱼之约",
+  "startStage": "相遇",
+  "customStartScene": "云寒在山中烤鱼，香味吸引了饕餮。\n\n「好香！」饕餮突然出现，「给我吃一口！」\n\n「...」云寒无奈，只能分给她。\n\n「好吃！」饕餮眼睛亮了起来，「还有吗？」\n\n云寒哭笑不得，遇到了一个贪吃鬼。",
+  "initialStats": {
+    "health": 100,
+    "charm": 80,
+    "intelligence": 75,
+    "strength": 45,
+    "agility": 60,
+    "stamina": 55,
+    "arousal": 15,
+    "experience": 15,
+    "sexSkill": 10,
+    "sexSensitivity": 35,
+    "intimacy": 5,
+    "willingness": 15,
+    "corruption": 0,
+    "shame": 8
+  },
+  "description": "云寒在山中烤鱼，香味吸引了饕餮"
+}

@@ -1,0 +1,22 @@
+{
+  "name": "祥瑞降临",
+  "startStage": "相遇",
+  "customStartScene": "云寒在山中遇难，麒麟儿路过。\n\n「此人遇难，祥瑞当救。」麒麟儿出手相助。\n\n云寒醒来，发现自己已被救下。\n\n「你是...」云寒虚弱道。\n\n「好好养伤。」麒麟儿转身离去，「祥瑞所至，厄运退散。」",
+  "initialStats": {
+    "health": 100,
+    "charm": 92,
+    "intelligence": 86,
+    "strength": 40,
+    "agility": 55,
+    "stamina": 50,
+    "arousal": 10,
+    "experience": 15,
+    "sexSkill": 10,
+    "sexSensitivity": 30,
+    "intimacy": 4,
+    "willingness": 12,
+    "corruption": 0,
+    "shame": 5
+  },
+  "description": "云寒在山中遇难，麒麟儿出手相救"
+}

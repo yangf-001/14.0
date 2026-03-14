@@ -1,0 +1,22 @@
+{
+  "name": "火山冲突",
+  "startStage": "相遇",
+  "customStartScene": "云寒在火山附近遇见祸斗。\n\n「何人敢闯本姑娘的地盘？」祸斗出现。\n\n「在下只是路过...」云寒解释道。\n\n「算了，速速离去。」祸斗转身，「火焰无眼。」\n\n云寒离开火山区域，暗暗记下这个地方。",
+  "initialStats": {
+    "health": 100,
+    "charm": 82,
+    "intelligence": 80,
+    "strength": 50,
+    "agility": 60,
+    "stamina": 55,
+    "arousal": 12,
+    "experience": 15,
+    "sexSkill": 10,
+    "sexSensitivity": 32,
+    "intimacy": 2,
+    "willingness": 10,
+    "corruption": 0,
+    "shame": 5
+  },
+  "description": "云寒在火山附近遇见祸斗，被其警告离开"
+}

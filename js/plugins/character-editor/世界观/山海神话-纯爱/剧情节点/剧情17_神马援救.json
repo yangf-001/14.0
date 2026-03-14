@@ -1,0 +1,22 @@
+{
+  "name": "神马援救",
+  "startStage": "相遇",
+  "customStartScene": "云寒在草原上遇难，乘黄路过。\n\n「此人遇难，当救。」乘黄出手相助。\n\n云寒被救下，感激不已。\n\n「谢谢姑娘...」云寒起身道谢。\n\n「不必客气。」乘黄转身离去，「乘我者可活两千岁。」",
+  "initialStats": {
+    "health": 100,
+    "charm": 90,
+    "intelligence": 84,
+    "strength": 42,
+    "agility": 65,
+    "stamina": 52,
+    "arousal": 10,
+    "experience": 15,
+    "sexSkill": 10,
+    "sexSensitivity": 28,
+    "intimacy": 3,
+    "willingness": 10,
+    "corruption": 0,
+    "shame": 5
+  },
+  "description": "云寒在草原上遇难，乘黄出手相救"
+}

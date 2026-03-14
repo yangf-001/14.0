@@ -1,0 +1,22 @@
+{
+  "name": "林间跳跃",
+  "startStage": "相遇",
+  "customStartScene": "云寒在森林中遇见正在跳跃的朱猄。\n\n「蹦蹦跳跳真可爱！」朱猄围着云寒跳来跳去。\n\n「...」云寒看着这个活泼的小家伙。\n\n「人类，陪我们玩！」朱猄拉着他跑。\n\n云寒哭笑不得，被拉着在林间穿梭。",
+  "initialStats": {
+    "health": 100,
+    "charm": 82,
+    "intelligence": 72,
+    "strength": 35,
+    "agility": 65,
+    "stamina": 50,
+    "arousal": 15,
+    "experience": 15,
+    "sexSkill": 10,
+    "sexSensitivity": 38,
+    "intimacy": 3,
+    "willingness": 15,
+    "corruption": 0,
+    "shame": 8
+  },
+  "description": "云寒在森林中遇见正在跳跃的朱猄"
+}

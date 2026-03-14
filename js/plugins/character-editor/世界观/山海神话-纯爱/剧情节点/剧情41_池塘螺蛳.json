@@ -1,0 +1,22 @@
+{
+  "name": "池塘螺蛳",
+  "startStage": "相遇",
+  "customStartScene": "云寒在池塘边发现小小的螺蛳精。\n\n「好...好小...」云寒惊叹道。\n\n「慢...慢慢来...」螺蛳精害羞道。\n\n云寒蹲下身，仔细观察这个小家伙。\n\n「我叫云寒，你呢？」",
+  "initialStats": {
+    "health": 100,
+    "charm": 75,
+    "intelligence": 70,
+    "strength": 20,
+    "agility": 30,
+    "stamina": 30,
+    "arousal": 15,
+    "experience": 15,
+    "sexSkill": 10,
+    "sexSensitivity": 40,
+    "intimacy": 2,
+    "willingness": 15,
+    "corruption": 0,
+    "shame": 10
+  },
+  "description": "云寒在池塘边发现小小的螺蛳精"
+}

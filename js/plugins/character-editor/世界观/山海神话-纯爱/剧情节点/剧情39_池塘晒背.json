@@ -1,0 +1,22 @@
+{
+  "name": "池塘晒背",
+  "startStage": "相遇",
+  "customStartScene": "云寒在池塘边遇见正在晒背的鼍雅。\n\n「晒...晒太阳真舒服...」鼍雅懒洋洋道。\n\n「...」云寒看着这个害羞的小家伙。\n\n「你...你好...」鼍雅缩了缩脖子。\n\n云寒点头，鼍雅又埋头晒太阳了。",
+  "initialStats": {
+    "health": 100,
+    "charm": 80,
+    "intelligence": 78,
+    "strength": 32,
+    "agility": 45,
+    "stamina": 50,
+    "arousal": 10,
+    "experience": 15,
+    "sexSkill": 10,
+    "sexSensitivity": 30,
+    "intimacy": 2,
+    "willingness": 10,
+    "corruption": 0,
+    "shame": 8
+  },
+  "description": "云寒在池塘边遇见正在晒背的鼍雅"
+}

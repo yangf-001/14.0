@@ -1,0 +1,22 @@
+{
+  "name": "极西时间",
+  "startStage": "相遇",
+  "customStartScene": "云寒误入极西之地，被烛龙的时间法则困住。\n\n「人类，擅闯极西之地，该当何罪？」烛龙淡淡道。\n\n「在下只是迷路了...」云寒运转血脉之力抵抗。\n\n「有趣。」烛龙收起时间法则，「去吧，下次别再来。」\n\n云寒躬身离开，感觉时间法则玄妙无比。",
+  "initialStats": {
+    "health": 100,
+    "charm": 80,
+    "intelligence": 85,
+    "strength": 50,
+    "agility": 55,
+    "stamina": 55,
+    "arousal": 5,
+    "experience": 15,
+    "sexSkill": 10,
+    "sexSensitivity": 25,
+    "intimacy": 2,
+    "willingness": 8,
+    "corruption": 0,
+    "shame": 5
+  },
+  "description": "云寒误入极西之地，被烛龙的时间法则困住"
+}

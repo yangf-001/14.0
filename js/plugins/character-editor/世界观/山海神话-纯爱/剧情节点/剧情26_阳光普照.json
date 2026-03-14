@@ -1,0 +1,22 @@
+{
+  "name": "阳光普照",
+  "startStage": "相遇",
+  "customStartScene": "云寒在山谷中遇难，帝俊的阳光将其救下。\n\n「太阳升起，希望永存。」帝俊出现在云寒面前。\n\n「...是您救了我？」云寒虚弱道。\n\n「好好休息。」帝俊转身离去，「黑暗终将过去。」",
+  "initialStats": {
+    "health": 100,
+    "charm": 90,
+    "intelligence": 88,
+    "strength": 40,
+    "agility": 55,
+    "stamina": 50,
+    "arousal": 10,
+    "experience": 15,
+    "sexSkill": 10,
+    "sexSensitivity": 28,
+    "intimacy": 3,
+    "willingness": 10,
+    "corruption": 0,
+    "shame": 5
+  },
+  "description": "云寒在山谷中遇难，被帝俊的阳光所救"
+}

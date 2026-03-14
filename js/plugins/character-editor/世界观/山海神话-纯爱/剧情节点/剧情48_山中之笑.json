@@ -1,0 +1,22 @@
+{
+  "name": "山中之笑",
+  "startStage": "相遇",
+  "customStartScene": "云寒在山中听见诡异的笑声。\n\n「桀桀桀...」山魈出现在云寒面前。\n\n「...」云寒警惕道。\n\n「别怕，我只是无聊。」山魈笑道。\n\n云寒看着这个诡异的家伙。",
+  "initialStats": {
+    "health": 100,
+    "charm": 78,
+    "intelligence": 80,
+    "strength": 48,
+    "agility": 60,
+    "stamina": 55,
+    "arousal": 12,
+    "experience": 15,
+    "sexSkill": 10,
+    "sexSensitivity": 32,
+    "intimacy": 2,
+    "willingness": 10,
+    "corruption": 0,
+    "shame": 5
+  },
+  "description": "云寒在山中听见诡异的笑声，遇见山魈"
+}

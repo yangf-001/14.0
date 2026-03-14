@@ -1,0 +1,22 @@
+{
+  "name": "草地蚂蚁",
+  "startStage": "相遇",
+  "customStartScene": "云寒在草地中发现蚂蚁精。\n\n「团结就是力量。」蚂蚁精指挥着蚁群。\n\n「...你好小。」云寒蹲下道。\n\n「但我可以搬起比身体大很多的东西。」蚂蚁精骄傲道。\n\n云寒对这个小小的蚁后肃然起敬。",
+  "initialStats": {
+    "health": 100,
+    "charm": 70,
+    "intelligence": 78,
+    "strength": 25,
+    "agility": 40,
+    "stamina": 45,
+    "arousal": 12,
+    "experience": 15,
+    "sexSkill": 10,
+    "sexSensitivity": 35,
+    "intimacy": 2,
+    "willingness": 12,
+    "corruption": 0,
+    "shame": 8
+  },
+  "description": "云寒在草地中发现小小的蚂蚁精"
+}

@@ -1,0 +1,22 @@
+{
+  "name": "河畔负重",
+  "startStage": "相遇",
+  "customStartScene": "云寒在河畔遇见正在背负石碑的赑屃。\n\n「好大的力气...」云寒惊叹道。\n\n「任重道远，吾自背负。」赑屃淡淡道。\n\n「需要帮忙吗？」云寒问道。\n\n赑屃摇头，继续前行。",
+  "initialStats": {
+    "health": 100,
+    "charm": 80,
+    "intelligence": 82,
+    "strength": 55,
+    "agility": 45,
+    "stamina": 60,
+    "arousal": 8,
+    "experience": 15,
+    "sexSkill": 10,
+    "sexSensitivity": 25,
+    "intimacy": 2,
+    "willingness": 8,
+    "corruption": 0,
+    "shame": 5
+  },
+  "description": "云寒在河畔遇见正在背负石碑的赑屃"
+}

@@ -33,7 +33,6 @@ PluginSystem.register('inventory', {
                                 }
                             });
                         }
-                        console.log('Inventory items loaded from:', path);
                         return Promise.resolve();
                     }
                 }

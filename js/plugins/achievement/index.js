@@ -50,7 +50,6 @@ PluginSystem.register('achievement', {
                                 this.addToLibrary(ach);
                             }
                         });
-                        console.log('Achievements loaded from:', path);
                         return Promise.resolve();
                     }
                 }

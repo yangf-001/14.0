@@ -1,7 +1,7 @@
 # 商品库预设模板
 # 格式：名称|类型|描述|效果|价格
 # 类型：misc(杂物) food(食物) potion(药水) weapon(武器) tool(工具) adult(成人物品)
-# 效果：health(生命) stamina(体力) charm(魅力) intelligence(智力) strength(力量) agility(敏捷) intimacy(亲密度) arousal(兴奋值) experience(经验值) willingness(意愿度) sexSensitivity(敏感度)
+# 效果：health(生命) stamina(体力) charm(魅力) intelligence(智力) strength(力量) agility(敏捷) intimacy(亲密) arousal(性欲) experience(经验) willingness(意愿) sexSensitivity(敏感)
 
 [药水-恢复]
 治疗药水|potion|恢复生命值的疗伤药|{"health": 30}|50

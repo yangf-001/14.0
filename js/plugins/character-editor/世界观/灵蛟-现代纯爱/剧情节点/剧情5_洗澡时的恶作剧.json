@@ -1,0 +1,22 @@
+{
+  "name": "洗澡时的恶作剧",
+  "startStage": "日常",
+  "customStartScene": "陈轩在洗澡，灵蛟突然变小从门缝钻了进来。\n\n「主人~洗澡也不带我~」灵蛟变成小蛇盘在浴缸边缘。\n\n「你...你怎么进来了！」陈轩惊慌道。\n\n「人家想和主人一起洗嘛~」灵蛟眨眨眼，「而且人家的原形最喜欢水了~」\n\n陈轩看着浴缸里的小青蛇，面色微红。",
+  "initialStats": {
+    "health": 100,
+    "charm": 88,
+    "intelligence": 78,
+    "strength": 45,
+    "agility": 55,
+    "stamina": 55,
+    "arousal": 30,
+    "experience": 15,
+    "sexSkill": 10,
+    "sexSensitivity": 40,
+    "intimacy": 30,
+    "willingness": 35,
+    "corruption": 0,
+    "shame": 20
+  },
+  "description": "灵蛟在陈轩洗澡时闯入"
+}

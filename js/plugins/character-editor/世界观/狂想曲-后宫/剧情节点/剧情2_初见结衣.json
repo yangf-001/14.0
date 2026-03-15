@@ -1,0 +1,22 @@
+{
+  "name": "初见结衣",
+  "startStage": "相遇",
+  "customStartScene": "李阳在屋里遇到了结衣。\n\n「表弟...你好...」结衣怯生生地打招呼。\n\n「是结衣啊，都长这么高了。」李阳笑道。\n\n「嗯...」结衣低下头，脸微红。\n\n「一起去吃饭吧。」李阳温和道。\n\n结衣点点头，跟在表弟身后。",
+  "initialStats": {
+    "health": 100,
+    "charm": 82,
+    "intelligence": 82,
+    "strength": 45,
+    "agility": 55,
+    "stamina": 55,
+    "arousal": 10,
+    "experience": 15,
+    "sexSkill": 10,
+    "sexSensitivity": 30,
+    "intimacy": 3,
+    "willingness": 10,
+    "corruption": 0,
+    "shame": 8
+  },
+  "description": "李阳初见表妹结衣"
+}

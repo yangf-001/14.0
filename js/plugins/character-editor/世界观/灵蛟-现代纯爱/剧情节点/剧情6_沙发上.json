@@ -1,0 +1,22 @@
+{
+  "name": "沙发上",
+  "startStage": "亲密",
+  "customStartScene": "晚上，陈轩坐在沙发上看电视，灵蛟化成人形靠在他身上。\n\n「主人~」灵蛟抱着陈轩的手臂，「今天好无聊哦~」\n\n「那你想干什么？」陈轩问道。\n\n「想...」灵蛟突然变小，钻进了陈轩的衣服里，「想这样~」\n\n陈轩感受到蛇身在后背上游走，呼吸变得粗重。",
+  "initialStats": {
+    "health": 100,
+    "charm": 90,
+    "intelligence": 78,
+    "strength": 45,
+    "agility": 55,
+    "stamina": 55,
+    "arousal": 35,
+    "experience": 15,
+    "sexSkill": 10,
+    "sexSensitivity": 50,
+    "intimacy": 35,
+    "willingness": 40,
+    "corruption": 0,
+    "shame": 20
+  },
+  "description": "灵蛟在沙发上骚扰陈轩"
+}

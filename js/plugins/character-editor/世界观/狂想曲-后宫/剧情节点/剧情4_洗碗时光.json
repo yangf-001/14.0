@@ -1,0 +1,22 @@
+{
+  "name": "洗碗时光",
+  "startStage": "日常",
+  "customStartScene": "饭后，李阳帮美雪洗碗。\n\n「阳真乖，还知道帮姑姑洗碗。」美雪笑道。\n\n「应该的嘛。」李阳洗着碗。\n\n「有你在家里，热闹多了。」美雪感慨道，「你姑姑我一个人照顾两个孩子，也不容易啊。」\n\n「姑姑辛苦了。」李阳说道。",
+  "initialStats": {
+    "health": 100,
+    "charm": 80,
+    "intelligence": 80,
+    "strength": 45,
+    "agility": 55,
+    "stamina": 55,
+    "arousal": 12,
+    "experience": 15,
+    "sexSkill": 10,
+    "sexSensitivity": 28,
+    "intimacy": 10,
+    "willingness": 12,
+    "corruption": 0,
+    "shame": 5
+  },
+  "description": "李阳帮美雪洗碗，两人聊天"
+}

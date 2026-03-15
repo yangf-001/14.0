@@ -255,7 +255,7 @@ const Storage = {
                             <div style="flex: 1;">
                                 <div style="font-weight: 500;">${story.title || '未命名故事'}</div>
                                 <div style="font-size: 0.8rem; color: var(--text-dim); margin-top: 4px;">
-                                    ${Array.isArray(story.characters) ? story.characters.map(c => c.name).join('、') : story.characters || '未知角色'} · 第${story.round}轮 · ${story.scenes.length}幕
+                                    ${Array.isArray(story.characters) ? story.characters.map(c => c.name).join('、') : story.characters || '未知角色'} · 第${story.round}轮 · ${story.scenes?.length || 0}幕
                                 </div>
                             </div>
                             <div style="display: flex; gap: 6px;">

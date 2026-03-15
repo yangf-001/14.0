@@ -1,0 +1,22 @@
+{
+  "name": "夜晚",
+  "startStage": "亲密",
+  "customStartScene": "深夜，李阳独自在房间。\n\n突然敲门声响起。\n\n「谁？」李阳问道。\n\n「是我...」门外是结衣的声音。\n\n「结衣？这么晚了什么事？」李阳打开门。\n\n「我...我害怕打雷...」结衣楚楚可怜道。",
+  "initialStats": {
+    "health": 100,
+    "charm": 84,
+    "intelligence": 82,
+    "strength": 45,
+    "agility": 55,
+    "stamina": 55,
+    "arousal": 20,
+    "experience": 15,
+    "sexSkill": 10,
+    "sexSensitivity": 35,
+    "intimacy": 15,
+    "willingness": 20,
+    "corruption": 0,
+    "shame": 10
+  },
+  "description": "结衣晚上害怕来找李阳"
+}

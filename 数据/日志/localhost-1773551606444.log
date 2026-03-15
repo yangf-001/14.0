@@ -1,0 +1,84 @@
+plugin.js:15 Plugin registered: inventory
+plugin.js:15 Plugin registered: shop
+plugin.js:15 Plugin registered: prompt-manager
+plugin.js:15 Plugin registered: chat-plugin
+plugin.js:15 Plugin registered: time-plugin
+plugin.js:15 Plugin registered: achievement
+plugin.js:15 Plugin registered: adult-tags
+plugin.js:15 Plugin registered: simple-story
+plugin.js:15 Plugin registered: character-editor
+index.js:187 [角色编辑器] 从缓存加载了预设库
+app.js:30 加载模块 1/8: js/modules/app.js
+app.js:30 加载模块 2/8: js/modules/modal.js
+app.js:30 加载模块 3/8: js/modules/forms.js
+app.js:30 加载模块 4/8: js/modules/intimate.js
+app.js:30 加载模块 5/8: js/modules/archive.js
+app.js:30 加载模块 6/8: js/modules/character.js
+app.js:30 加载模块 7/8: js/modules/story-controller.js
+app.js:30 加载模块 8/8: js/modules/router.js
+app.js:54 所有模块加载完成
+index.js:6 Inventory plugin loaded
+index.js:6 Shop plugin loaded
+index.js:238 [提示词管理] 插件已加载
+index.js:7 Chat plugin loaded
+index.js:1265 Time plugin loaded
+index.js:6 Achievement plugin loaded
+index.js:6 Adult-tags plugin loaded
+index.js:45 [成人选项] 已加载内置选项模板: 2 个等级
+index.js:83 Simple-story plugin loaded
+index.js:96 [小故事] 从缓存加载了素材库
+index.js:118 [小故事] 使用缓存的素材库
+index.js:7 Character editor plugin loaded
+plugin.js:64 All plugins initialized
+index.js:215 [TimePlugin] 关系库加载成功: 201 种关系，路径: /Desktop/aichat/%E5%BC%80%E5%8F%91/%E5%BC%80%E5%8F%915.0%EF%BC%88%E6%95%85%E4%BA%8B%E7%94%9F%E6%88%90%E5%99%A8%EF%BC%89/14.0/js/plugins/time-plugin/user-content/relationships.txt
+index.js:53 Achievements loaded from: /Desktop/aichat/%E5%BC%80%E5%8F%91/%E5%BC%80%E5%8F%915.0%EF%BC%88%E6%95%85%E4%BA%8B%E7%94%9F%E6%88%90%E5%99%A8%EF%BC%89/14.0/js/plugins/achievement/user-content/achievements.txt
+index.js:161 Adult tags loaded from: /Desktop/aichat/%E5%BC%80%E5%8F%91/%E5%BC%80%E5%8F%915.0%EF%BC%88%E6%95%85%E4%BA%8B%E7%94%9F%E6%88%90%E5%99%A8%EF%BC%89/14.0/js/plugins/adult-tags/user-content/1.txt count: 50
+index.js:161 Adult tags loaded from: /Desktop/aichat/%E5%BC%80%E5%8F%91/%E5%BC%80%E5%8F%915.0%EF%BC%88%E6%95%85%E4%BA%8B%E7%94%9F%E6%88%90%E5%99%A8%EF%BC%89/14.0/js/plugins/adult-tags/user-content/2.txt count: 50
+index.js:161 Adult tags loaded from: /Desktop/aichat/%E5%BC%80%E5%8F%91/%E5%BC%80%E5%8F%915.0%EF%BC%88%E6%95%85%E4%BA%8B%E7%94%9F%E6%88%90%E5%99%A8%EF%BC%89/14.0/js/plugins/adult-tags/user-content/3.txt count: 50
+index.js:161 Adult tags loaded from: /Desktop/aichat/%E5%BC%80%E5%8F%91/%E5%BC%80%E5%8F%915.0%EF%BC%88%E6%95%85%E4%BA%8B%E7%94%9F%E6%88%90%E5%99%A8%EF%BC%89/14.0/js/plugins/adult-tags/user-content/4.txt count: 50
+index.js:161 Adult tags loaded from: /Desktop/aichat/%E5%BC%80%E5%8F%91/%E5%BC%80%E5%8F%915.0%EF%BC%88%E6%95%85%E4%BA%8B%E7%94%9F%E6%88%90%E5%99%A8%EF%BC%89/14.0/js/plugins/adult-tags/user-content/5.txt count: 50
+index.js:161 Adult tags loaded from: /Desktop/aichat/%E5%BC%80%E5%8F%91/%E5%BC%80%E5%8F%915.0%EF%BC%88%E6%95%85%E4%BA%8B%E7%94%9F%E6%88%90%E5%99%A8%EF%BC%89/14.0/js/plugins/adult-tags/user-content/6.txt count: 50
+index.js:161 Adult tags loaded from: /Desktop/aichat/%E5%BC%80%E5%8F%91/%E5%BC%80%E5%8F%915.0%EF%BC%88%E6%95%85%E4%BA%8B%E7%94%9F%E6%88%90%E5%99%A8%EF%BC%89/14.0/js/plugins/adult-tags/user-content/7.txt count: 50
+index.js:161 Adult tags loaded from: /Desktop/aichat/%E5%BC%80%E5%8F%91/%E5%BC%80%E5%8F%915.0%EF%BC%88%E6%95%85%E4%BA%8B%E7%94%9F%E6%88%90%E5%99%A8%EF%BC%89/14.0/js/plugins/adult-tags/user-content/8.txt count: 50
+index.js:161 Adult tags loaded from: /Desktop/aichat/%E5%BC%80%E5%8F%91/%E5%BC%80%E5%8F%915.0%EF%BC%88%E6%95%85%E4%BA%8B%E7%94%9F%E6%88%90%E5%99%A8%EF%BC%89/14.0/js/plugins/adult-tags/user-content/9.txt count: 50
+index.js:161 Adult tags loaded from: /Desktop/aichat/%E5%BC%80%E5%8F%91/%E5%BC%80%E5%8F%915.0%EF%BC%88%E6%95%85%E4%BA%8B%E7%94%9F%E6%88%90%E5%99%A8%EF%BC%89/14.0/js/plugins/adult-tags/user-content/10.txt count: 50
+index.js:161 Adult tags loaded from: /Desktop/aichat/%E5%BC%80%E5%8F%91/%E5%BC%80%E5%8F%915.0%EF%BC%88%E6%95%85%E4%BA%8B%E7%94%9F%E6%88%90%E5%99%A8%EF%BC%89/14.0/js/plugins/adult-tags/user-content/11.txt count: 50
+index.js:161 Adult tags loaded from: /Desktop/aichat/%E5%BC%80%E5%8F%91/%E5%BC%80%E5%8F%915.0%EF%BC%88%E6%95%85%E4%BA%8B%E7%94%9F%E6%88%90%E5%99%A8%EF%BC%89/14.0/js/plugins/adult-tags/user-content/12.txt count: 50
+index.js:161 Adult tags loaded from: /Desktop/aichat/%E5%BC%80%E5%8F%91/%E5%BC%80%E5%8F%915.0%EF%BC%88%E6%95%85%E4%BA%8B%E7%94%9F%E6%88%90%E5%99%A8%EF%BC%89/14.0/js/plugins/adult-tags/user-content/13.txt count: 50
+index.js:161 Adult tags loaded from: /Desktop/aichat/%E5%BC%80%E5%8F%91/%E5%BC%80%E5%8F%915.0%EF%BC%88%E6%95%85%E4%BA%8B%E7%94%9F%E6%88%90%E5%99%A8%EF%BC%89/14.0/js/plugins/adult-tags/user-content/14.txt count: 50
+index.js:161 Adult tags loaded from: /Desktop/aichat/%E5%BC%80%E5%8F%91/%E5%BC%80%E5%8F%915.0%EF%BC%88%E6%95%85%E4%BA%8B%E7%94%9F%E6%88%90%E5%99%A8%EF%BC%89/14.0/js/plugins/adult-tags/user-content/15.txt count: 50
+index.js:161 Adult tags loaded from: /Desktop/aichat/%E5%BC%80%E5%8F%91/%E5%BC%80%E5%8F%915.0%EF%BC%88%E6%95%85%E4%BA%8B%E7%94%9F%E6%88%90%E5%99%A8%EF%BC%89/14.0/js/plugins/adult-tags/user-content/16.txt count: 50
+index.js:161 Adult tags loaded from: /Desktop/aichat/%E5%BC%80%E5%8F%91/%E5%BC%80%E5%8F%915.0%EF%BC%88%E6%95%85%E4%BA%8B%E7%94%9F%E6%88%90%E5%99%A8%EF%BC%89/14.0/js/plugins/adult-tags/user-content/17.txt count: 50
+index.js:161 Adult tags loaded from: /Desktop/aichat/%E5%BC%80%E5%8F%91/%E5%BC%80%E5%8F%915.0%EF%BC%88%E6%95%85%E4%BA%8B%E7%94%9F%E6%88%90%E5%99%A8%EF%BC%89/14.0/js/plugins/adult-tags/user-content/18.txt count: 50
+index.js:161 Adult tags loaded from: /Desktop/aichat/%E5%BC%80%E5%8F%91/%E5%BC%80%E5%8F%915.0%EF%BC%88%E6%95%85%E4%BA%8B%E7%94%9F%E6%88%90%E5%99%A8%EF%BC%89/14.0/js/plugins/adult-tags/user-content/19.txt count: 50
+index.js:161 Adult tags loaded from: /Desktop/aichat/%E5%BC%80%E5%8F%91/%E5%BC%80%E5%8F%915.0%EF%BC%88%E6%95%85%E4%BA%8B%E7%94%9F%E6%88%90%E5%99%A8%EF%BC%89/14.0/js/plugins/adult-tags/user-content/20.txt count: 50
+index.js:161 Adult tags loaded from: /Desktop/aichat/%E5%BC%80%E5%8F%91/%E5%BC%80%E5%8F%915.0%EF%BC%88%E6%95%85%E4%BA%8B%E7%94%9F%E6%88%90%E5%99%A8%EF%BC%89/14.0/js/plugins/adult-tags/user-content/21.txt count: 50
+index.js:161 Adult tags loaded from: /Desktop/aichat/%E5%BC%80%E5%8F%91/%E5%BC%80%E5%8F%915.0%EF%BC%88%E6%95%85%E4%BA%8B%E7%94%9F%E6%88%90%E5%99%A8%EF%BC%89/14.0/js/plugins/adult-tags/user-content/22.txt count: 50
+app.js:63 应用初始化完成
+index.js:161 Adult tags loaded from: /Desktop/aichat/%E5%BC%80%E5%8F%91/%E5%BC%80%E5%8F%915.0%EF%BC%88%E6%95%85%E4%BA%8B%E7%94%9F%E6%88%90%E5%99%A8%EF%BC%89/14.0/js/plugins/adult-tags/user-content/23.txt count: 50
+index.js:161 Adult tags loaded from: /Desktop/aichat/%E5%BC%80%E5%8F%91/%E5%BC%80%E5%8F%915.0%EF%BC%88%E6%95%85%E4%BA%8B%E7%94%9F%E6%88%90%E5%99%A8%EF%BC%89/14.0/js/plugins/adult-tags/user-content/24.txt count: 50
+index.js:161 Adult tags loaded from: /Desktop/aichat/%E5%BC%80%E5%8F%91/%E5%BC%80%E5%8F%915.0%EF%BC%88%E6%95%85%E4%BA%8B%E7%94%9F%E6%88%90%E5%99%A8%EF%BC%89/14.0/js/plugins/adult-tags/user-content/25.txt count: 50
+index.js:161 Adult tags loaded from: /Desktop/aichat/%E5%BC%80%E5%8F%91/%E5%BC%80%E5%8F%915.0%EF%BC%88%E6%95%85%E4%BA%8B%E7%94%9F%E6%88%90%E5%99%A8%EF%BC%89/14.0/js/plugins/adult-tags/user-content/26.txt count: 50
+index.js:161 Adult tags loaded from: /Desktop/aichat/%E5%BC%80%E5%8F%91/%E5%BC%80%E5%8F%915.0%EF%BC%88%E6%95%85%E4%BA%8B%E7%94%9F%E6%88%90%E5%99%A8%EF%BC%89/14.0/js/plugins/adult-tags/user-content/27.txt count: 50
+index.js:161 Adult tags loaded from: /Desktop/aichat/%E5%BC%80%E5%8F%91/%E5%BC%80%E5%8F%915.0%EF%BC%88%E6%95%85%E4%BA%8B%E7%94%9F%E6%88%90%E5%99%A8%EF%BC%89/14.0/js/plugins/adult-tags/user-content/28.txt count: 50
+index.js:161 Adult tags loaded from: /Desktop/aichat/%E5%BC%80%E5%8F%91/%E5%BC%80%E5%8F%915.0%EF%BC%88%E6%95%85%E4%BA%8B%E7%94%9F%E6%88%90%E5%99%A8%EF%BC%89/14.0/js/plugins/adult-tags/user-content/29.txt count: 50
+index.js:161 Adult tags loaded from: /Desktop/aichat/%E5%BC%80%E5%8F%91/%E5%BC%80%E5%8F%915.0%EF%BC%88%E6%95%85%E4%BA%8B%E7%94%9F%E6%88%90%E5%99%A8%EF%BC%89/14.0/js/plugins/adult-tags/user-content/30.txt count: 50
+index.js:161 Adult tags loaded from: /Desktop/aichat/%E5%BC%80%E5%8F%91/%E5%BC%80%E5%8F%915.0%EF%BC%88%E6%95%85%E4%BA%8B%E7%94%9F%E6%88%90%E5%99%A8%EF%BC%89/14.0/js/plugins/adult-tags/user-content/31.txt count: 50
+index.js:161 Adult tags loaded from: /Desktop/aichat/%E5%BC%80%E5%8F%91/%E5%BC%80%E5%8F%915.0%EF%BC%88%E6%95%85%E4%BA%8B%E7%94%9F%E6%88%90%E5%99%A8%EF%BC%89/14.0/js/plugins/adult-tags/user-content/32.txt count: 50
+index.js:178 Total adult tags loaded: 1600 from 32 files
+index.js:118 [小故事] 使用缓存的素材库
+index.js:118 [小故事] 使用缓存的素材库
+index.js:331 [小故事] tags: (4) [{…}, {…}, {…}, {…}]0: {category: '玩法', title: '“疼痛忍受”：用疼痛刺激代替快感（拍打/捏/掐），必须忍耐到一定时间才能获得快感奖励。疼痛程度逐渐升级。', description: ''}1: {category: '节日', title: '整蛊：愚人节整蛊爱人，小恶作剧。惊喜又惊吓，趣味互动。适合整蛊。', description: ''}2: {category: '异族娘', title: '嚎叫：狼娘会像狼一样嚎叫，呼唤同伴。夜晚嚎叫声音很响，能传很远。', description: ''}3: {category: '挑战', title: '冷水挑战：在冷水浴或冷水中做爱，温度变化带来刺激。挑战身体对温度变化的反应。', description: ''}length: 4[[Prototype]]: Array(0)
+ai.js:170 ========== [AI] 输入 ==========
+ai.js:172 系统: 你是一个故事生成AI。请用故事的方式呈现内容。只输出故事正文内容，不要包含任何选项、后续发展、剧情走向、选择提示等信息。...
+ai.js:174 用户: 你是一位极度色情、细节淫靡的成人小说作者，专注于感官轰炸、肉体反应、心理堕落与高潮描写的极致表达。
+
+【严格限制】
+1. 禁止出现任何路人、陌生人、新出现角色。所有性行为只能发生在已建立关系的角色之间。
+2. 语言必须极其下流直接：使用大量生殖器直呼其名（鸡巴、屄、骚穴、肉棒、阴蒂、乳头、菊穴等）、拟声词（啪啪、咕啾、噗滋、滋啵）、体液描写（淫水、精液、爱液、口水、汗液、乳汁）。
+
+请根据以下设定...
+ai.js:175 ===============================
+ai.js:204 ========== [AI] 输出 ==========
+ai.js:205 林逸的肉棒狠狠撞进菲娅湿透的骚穴深处，发出“噗滋”一声淫靡水响。菲娅仰起脖颈发出尖锐的嚎叫，手指死死抠进林逸汗湿的背肌里。“疼...太深了...”她啜泣着扭动腰肢，却把阴蒂更用力地磨蹭着林逸的耻骨。炽羽从后方将两根手指粗暴地插进菲娅的菊穴，指尖沾满润滑的唾液在紧缩的褶皱里搅出“咕啾”水声。澜心跪在菲娅脸前，将肿胀的乳头塞进她张开的嘴里，“舔湿点，骚货。”凌风按住菲娅乱蹬的大腿，看着那根粗大鸡巴在她被撑开的粉红穴肉里快速抽插，每次拔出都带出黏稠的淫水，插回时把阴唇撞得外翻。安雅用指甲掐着菲娅挺立的乳头旋转，瑶光则俯身舔舐她小腹上渗出的汗珠。夜璃举着摄像机贴近两人交合处，镜头里清晰映出鸡巴冠沟刮带出泡沫状爱液的淫秽画面。菲娅的子宫口在连续撞击下开始痉挛，穴肉像活物般绞紧入侵的肉棒，淫水顺着大腿根滴落在床单上积成一滩水渍。
+ai.js:206 ==============================

@@ -1,0 +1,22 @@
+{
+  "name": "床上",
+  "startStage": "亲密",
+  "customStartScene": "深夜，灵蛟爬上陈轩的床。\n\n「主人~一起睡嘛~」灵蛟化成人形躺在陈轩身边。\n\n「...好吧。」陈轩无奈道。\n\n半夜，陈轩感觉有什么冰凉的东西缠住了自己。\n\n「主人~」灵蛟吐着蛇信，「人家的身体好冷哦~帮人家暖暖~」\n\n陈轩翻身抱住了她。",
+  "initialStats": {
+    "health": 100,
+    "charm": 92,
+    "intelligence": 78,
+    "strength": 45,
+    "agility": 55,
+    "stamina": 55,
+    "arousal": 45,
+    "experience": 15,
+    "sexSkill": 10,
+    "sexSensitivity": 55,
+    "intimacy": 45,
+    "willingness": 50,
+    "corruption": 0,
+    "shame": 25
+  },
+  "description": "灵蛟爬上陈轩的床"
+}

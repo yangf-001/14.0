@@ -125,7 +125,7 @@ ViewCallbacks.chat._renderMobileChatList = function(sessions, currentSession) {
         <div style="display: flex; flex-direction: column; height: calc(100vh - 120px); background: #f8f9fa;">
             <div style="padding: 16px; background: #fff; border-bottom: 1px solid #e9ecef; display: flex; justify-content: space-between; align-items: center;">
                 <h3 style="margin: 0; color: #333; font-size: 1.1rem;">💬 聊天</h3>
-                <button class="btn" onclick="ViewCallbacks.chat.startNewChat()" style="background: #6c5ce7; color: white; border: none; padding: 8px 16px; border-radius: 20px; font-size: 0.85rem;">
+                <button class="btn" onclick="ViewCallbacks.chat.startNewChat()" ontouchstart="ViewCallbacks.chat.startNewChat()" style="background: #6c5ce7; color: white; border: none; padding: 8px 16px; border-radius: 20px; font-size: 0.85rem; -webkit-tap-highlight-color: transparent;">
                     ➕ 新建
                 </button>
             </div>
@@ -149,7 +149,7 @@ ViewCallbacks.chat._renderMobileChatList = function(sessions, currentSession) {
                     const time = lastMsg ? new Date(lastMsg.timestamp).toLocaleDateString() : '';
                     
                     return `
-                        <div onclick="ViewCallbacks.chat.selectSession('${session.id}')" style="background: #fff; padding: 14px; border-radius: 10px; margin-bottom: 10px; box-shadow: 0 1px 3px rgba(0,0,0,0.08); cursor: pointer;">
+                        <div onclick="ViewCallbacks.chat.selectSession('${session.id}')" ontouchstart="ViewCallbacks.chat.selectSession('${session.id}')" style="background: #fff; padding: 14px; border-radius: 10px; margin-bottom: 10px; box-shadow: 0 1px 3px rgba(0,0,0,0.08); cursor: pointer; -webkit-tap-highlight-color: transparent;">
                             <div style="font-weight: 600; color: #333; font-size: 0.95rem; margin-bottom: 4px;">${session.title}</div>
                             <div style="font-size: 0.75rem; color: #666;">
                                 ${playerChar ? `🎮${playerChar.name}` : ''} ${aiNames ? ` + ${aiNames}` : ''}
@@ -212,7 +212,7 @@ ViewCallbacks.chat._renderWelcome = function(characters) {
                 <div style="font-size: 0.8rem; color: #999; margin-bottom: 6px;">🎭 玩家角色（你扮演）</div>
                 <div style="display: flex; flex-wrap: wrap; gap: 6px; justify-content: center;">
                     ${characters.map(c => `
-                        <div class="player-char-btn ${playerCharId === c.id ? 'selected' : ''}" data-char-id="${c.id}" style="padding: 6px 12px; background: ${playerCharId === c.id ? '#ffeaa7' : '#f8f9fa'}; border: 2px solid ${playerCharId === c.id ? '#fdcb6e' : '#e9ecef'}; border-radius: 16px; cursor: pointer; font-size: 0.8rem; transition: all 0.2s;" onclick="ViewCallbacks.chat.setPlayerChar('${c.id}')">
+                        <div class="player-char-btn ${playerCharId === c.id ? 'selected' : ''}" data-char-id="${c.id}" style="padding: 6px 12px; background: ${playerCharId === c.id ? '#ffeaa7' : '#f8f9fa'}; border: 2px solid ${playerCharId === c.id ? '#fdcb6e' : '#e9ecef'}; border-radius: 16px; cursor: pointer; font-size: 0.8rem; transition: all 0.2s; -webkit-tap-highlight-color: transparent;" onclick="ViewCallbacks.chat.setPlayerChar('${c.id}')" ontouchstart="ViewCallbacks.chat.setPlayerChar('${c.id}')">
                             🎮 ${c.name}
                         </div>
                     `).join('')}
@@ -223,7 +223,7 @@ ViewCallbacks.chat._renderWelcome = function(characters) {
                 <div style="font-size: 0.8rem; color: #999; margin-bottom: 6px;">🤖 AI角色（可多选）</div>
                 <div style="display: flex; flex-wrap: wrap; gap: 6px; justify-content: center;">
                     ${characters.map(c => `
-                        <div class="ai-char-btn ${selectedChars.includes(c.id) ? 'selected' : ''}" data-char-id="${c.id}" style="padding: 6px 12px; background: ${selectedChars.includes(c.id) ? '#f0edff' : '#f8f9fa'}; border: 2px solid ${selectedChars.includes(c.id) ? '#6c5ce7' : '#e9ecef'}; border-radius: 16px; cursor: pointer; font-size: 0.8rem; transition: all 0.2s;" onclick="ViewCallbacks.chat.toggleCharSelection('${c.id}')">
+                        <div class="ai-char-btn ${selectedChars.includes(c.id) ? 'selected' : ''}" data-char-id="${c.id}" style="padding: 6px 12px; background: ${selectedChars.includes(c.id) ? '#f0edff' : '#f8f9fa'}; border: 2px solid ${selectedChars.includes(c.id) ? '#6c5ce7' : '#e9ecef'}; border-radius: 16px; cursor: pointer; font-size: 0.8rem; transition: all 0.2s; -webkit-tap-highlight-color: transparent;" onclick="ViewCallbacks.chat.toggleCharSelection('${c.id}')" ontouchstart="ViewCallbacks.chat.toggleCharSelection('${c.id}')">
                             🤖 ${c.name}
                         </div>
                     `).join('')}
@@ -235,7 +235,7 @@ ViewCallbacks.chat._renderWelcome = function(characters) {
                 ${playerCharId ? ` · 玩家: ${characters.find(c => c.id === playerCharId)?.name || ''}` : ''}
             </div>
             
-            <button id="startChatBtn" class="btn" onclick="ViewCallbacks.chat.startChatWithSelectedChars()" style="background: #6c5ce7; color: white; border: none; padding: 10px 24px; font-size: 0.9rem; ${selectedChars.length > 0 ? '' : 'opacity: 0.5; pointer-events: none;'}">
+            <button id="startChatBtn" class="btn" onclick="ViewCallbacks.chat.startChatWithSelectedChars()" ontouchstart="ViewCallbacks.chat.startChatWithSelectedChars()" style="background: #6c5ce7; color: white; border: none; padding: 10px 24px; font-size: 0.9rem; ${selectedChars.length > 0 ? '' : 'opacity: 0.5; pointer-events: none;'} -webkit-tap-highlight-color: transparent;">
                 开始对话 ${selectedChars.length > 0 ? `(${selectedChars.length}个AI)` : ''}
             </button>
         </div>
@@ -358,7 +358,7 @@ ViewCallbacks.chat._renderChatArea = function(session, characters) {
         <div style="display: flex; flex-direction: column; height: 100%; background: #fff;">
             <div style="padding: 8px 12px; border-bottom: 1px solid #e9ecef; display: flex; justify-content: space-between; align-items: center; background: #fff;">
                 <div style="display: flex; align-items: center; gap: 8px;">
-                    ${isMobile ? `<button onclick="ViewCallbacks.chat.backToList()" style="background: none; border: none; font-size: 1.2rem; cursor: pointer; padding: 4px;">←</button>` : ''}
+                    ${isMobile ? `<button onclick="ViewCallbacks.chat.backToList()" ontouchstart="ViewCallbacks.chat.backToList()" style="background: none; border: none; font-size: 1.2rem; cursor: pointer; padding: 4px; -webkit-tap-highlight-color: transparent;">←</button>` : ''}
                     <div>
                         <div style="font-weight: 600; color: #333; font-size: 0.9rem;">${session.title}</div>
                         <div style="font-size: 0.65rem; color: #999;">
@@ -388,7 +388,7 @@ ViewCallbacks.chat._renderChatArea = function(session, characters) {
             <div style="padding: 12px; border-top: 1px solid #e9ecef; background: #fff;">
                 <div style="display: flex; gap: 8px;">
                     <input type="text" id="chatInput" placeholder="输入消息..." style="flex: 1; padding: 10px 14px; border-radius: 20px; border: 1px solid #e9ecef; background: #f8f9fa; color: #333; outline: none; font-size: 0.9rem;" onkeypress="if(event.key==='Enter')ViewCallbacks.chat.sendMessage()">
-                    <button class="btn" onclick="ViewCallbacks.chat.sendMessage()" style="background: #07c160; color: white; border: none; border-radius: 20px; padding: 10px 20px; font-size: 0.9rem;">发送</button>
+                    <button class="btn" onclick="ViewCallbacks.chat.sendMessage()" ontouchstart="ViewCallbacks.chat.sendMessage()" style="background: #07c160; color: white; border: none; border-radius: 20px; padding: 10px 20px; font-size: 0.9rem; -webkit-tap-highlight-color: transparent;">发送</button>
                 </div>
             </div>
         </div>
@@ -426,7 +426,7 @@ ViewCallbacks.chat._renderMessage = function(message, aiCharacters, playerCharId
                 </div>
                 <div style="display: flex; align-items: center; gap: 4px; margin-bottom: 4px;">
                     <span>🔥</span>
-                    <span>兴奋值:</span>
+                    <span>性欲:</span>
                     <div style="flex: 1; height: 10px; background: rgba(255,255,255,0.2); border-radius: 5px; overflow: hidden;">
                         <div style="height: 100%; width: ${arousalPercent}%; background: ${arousalColor}; border-radius: 5px;"></div>
                     </div>
@@ -607,8 +607,9 @@ ViewCallbacks.chat.sendMessage = async function() {
         characterName: '你'
     });
 
+    const lastUserMsg = currentSession.messages?.[currentSession.messages.length - 1];
     const userMessageHtml = ViewCallbacks.chat._renderMessage(
-        currentSession.messages[currentSession.messages.length - 1],
+        lastUserMsg,
         [],
         currentSession.playerCharId
     );
@@ -645,7 +646,8 @@ ViewCallbacks.chat.sendMessage = async function() {
                 chatMessages.insertAdjacentHTML('beforeend', assistantMessageHtml);
             }
         } else {
-            const latestMsg = result.session.messages[result.session.messages.length - 1];
+            const latestMsg = result.session.messages?.[result.session.messages.length - 1];
+            if (!latestMsg) return;
             const assistantMsg = {
                 role: 'assistant',
                 content: latestMsg.content,

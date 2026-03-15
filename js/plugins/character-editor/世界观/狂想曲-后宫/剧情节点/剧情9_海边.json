@@ -1,0 +1,22 @@
+{
+  "name": "海边",
+  "startStage": "日常",
+  "customStartScene": "一家人去海边玩。\n\n「哇！大海！」莉音兴奋道。\n\n「表弟！快来！」结衣招呼道。\n\n美雪看着孩子们，温柔地笑着。",
+  "initialStats": {
+    "health": 100,
+    "charm": 82,
+    "intelligence": 80,
+    "strength": 45,
+    "agility": 55,
+    "stamina": 55,
+    "arousal": 15,
+    "experience": 15,
+    "sexSkill": 10,
+    "sexSensitivity": 30,
+    "intimacy": 15,
+    "willingness": 15,
+    "corruption": 0,
+    "shame": 10
+  },
+  "description": "一家人去海边玩"
+}

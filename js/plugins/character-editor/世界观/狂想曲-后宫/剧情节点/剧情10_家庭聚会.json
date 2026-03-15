@@ -1,0 +1,22 @@
+{
+  "name": "家庭聚会",
+  "startStage": "日常",
+  "customStartScene": "家里举办小型聚会。\n\n「来，大家干杯！」美雪举杯道。\n\n「干杯！」大家一起响应。\n\n「表弟，多吃点。」莉音给李阳夹菜。\n\n结衣默默看着，幸福的笑着。",
+  "initialStats": {
+    "health": 100,
+    "charm": 80,
+    "intelligence": 80,
+    "strength": 45,
+    "agility": 55,
+    "stamina": 55,
+    "arousal": 10,
+    "experience": 15,
+    "sexSkill": 10,
+    "sexSensitivity": 25,
+    "intimacy": 18,
+    "willingness": 12,
+    "corruption": 0,
+    "shame": 5
+  },
+  "description": "家里举办小型聚会"
+}

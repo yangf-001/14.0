@@ -93,7 +93,6 @@ PluginSystem.register('simple-story', {
                 const now = Date.now();
                 if (data.timestamp && (now - data.timestamp < 7 * 24 * 60 * 60 * 1000)) {
                     this._loadedTags = data.tags || {};
-                    console.log('[小故事] 从缓存加载了素材库');
                 }
             }
         } catch (e) {
@@ -115,7 +114,6 @@ PluginSystem.register('simple-story', {
     async _loadAllCategoryData() {
         // 先尝试从缓存加载
         if (this._hasCachedData()) {
-            console.log('[小故事] 使用缓存的素材库');
             return;
         }
         
@@ -125,7 +123,6 @@ PluginSystem.register('simple-story', {
         
         // 如果网络加载后数据为空，使用离线数据
         if (!this._hasCachedData()) {
-            console.log('[小故事] 网络加载失败，使用离线素材库');
             this._loadOfflineData();
         }
         
@@ -142,146 +139,7 @@ PluginSystem.register('simple-story', {
     },
     
     _loadOfflineData() {
-        const offlineTags = {
-            '姿势': [
-                { title: '基础体位', description: '经典的传教士体位，面对面交流情感' },
-                { title: '后入式', description: '从后方进入的体位' },
-                { title: '女上位', description: '女性主导的骑乘体位' },
-                { title: '69式', description: '相互取悦的体位' },
-                { title: '站立式', description: '站立姿势的亲密接触' },
-                { title: '侧卧式', description: '侧身躺着的亲密姿势' },
-                { title: '椅子式', description: '坐在椅子上的姿势' },
-                { title: '桌面式', description: '在桌面上的姿势' },
-                { title: '浴室式', description: '在浴室中的姿势' },
-                { title: '沙发式', description: '在沙发上的姿势' },
-                { title: '床铺式', description: '在床上标准姿势' },
-                { title: '户外式', description: '在户外公共场所的姿势' },
-                { title: '楼梯式', description: '在楼梯上的姿势' },
-                { title: '厨房式', description: '在厨房中的姿势' },
-                { title: '按摩式', description: '带有按摩的亲密姿势' }
-            ],
-            '表情': [
-                { title: '含羞', description: '脸红害羞的表情' },
-                { title: '期待', description: '充满期待的眼神' },
-                { title: '享受', description: '沉浸在愉悦中的表情' },
-                { title: '痛苦', description: '痛苦中带有快感的表情' },
-                { title: '惊讶', description: '惊讶的表情' },
-                { title: '拒绝', description: '想要拒绝的表情' },
-                { title: '舒服', description: '感到舒服的表情' },
-                { title: '陶醉', description: '陶醉其中的表情' },
-                { title: '迷恋', description: '迷恋的表情' },
-                { title: '慵懒', description: '慵懒满足的表情' },
-                { title: '紧张', description: '紧张的表情' },
-                { title: '挑逗', description: '挑逗的表情' },
-                { title: '浪叫', description: '忘我的叫声' },
-                { title: '高潮', description: '高潮时的表情' },
-                { title: '失神', description: '失神的表情' }
-            ],
-            '服装': [
-                { title: '情趣内衣', description: '性感的情趣内衣' },
-                { title: '女仆装', description: '可爱的女仆装' },
-                { title: 'JK制服', description: 'jk制服' },
-                { title: '丝袜', description: '黑丝或肉丝' },
-                { title: '浴衣', description: '日式浴衣' },
-                { title: '睡裙', description: '性感睡裙' },
-                { title: '泳装', description: '泳装' },
-                { title: '紧身衣', description: '紧身乳胶衣' },
-                { title: '角色扮演', description: '各种角色扮演服装' },
-                { title: '情趣套装', description: '情趣内衣套装' },
-                { title: '女王装', description: '女王风格服装' },
-                { title: '圣诞装', description: '圣诞主题服装' },
-                { title: '空姐装', description: '空姐制服' },
-                { title: '护士装', description: '护士制服' },
-                { title: '情趣旗袍', description: '性感旗袍' }
-            ],
-            '玩法': [
-                { title: '前戏', description: '充分的前戏调情' },
-                { title: '口交', description: '口交技巧' },
-                { title: '指交', description: '手指技巧' },
-                { title: '乳交', description: '乳交技巧' },
-                { title: '足交', description: '足交技巧' },
-                { title: '按摩', description: '按摩助兴' },
-                { title: '角色扮演', description: '角色扮演play' },
-                { title: 'SM', description: 'sm调教' },
-                { title: '羞耻Play', description: '羞耻Play' },
-                { title: '放置', description: '放置Play' },
-                { title: '捆绑', description: '捆绑技巧' },
-                { title: '乳夹', description: '使用乳夹' },
-                { title: '跳蛋', description: '跳蛋Play' },
-                { title: '按摩棒', description: '按摩棒Play' },
-                { title: '颜射', description: '颜射' }
-            ],
-            '道具': [
-                { title: '按摩棒', description: '电动按摩棒' },
-                { title: '跳蛋', description: '跳蛋' },
-                { title: '乳夹', description: '乳夹' },
-                { title: '飞机杯', description: '飞机杯' },
-                { title: '润滑液', description: '润滑液' },
-                { title: '肛塞', description: '肛塞' },
-                { title: '乳胶衣', description: '乳胶衣' },
-                { title: '眼罩', description: '眼罩' },
-                { title: '手铐', description: '手铐' },
-                { title: '绳子', description: '绳子' },
-                { title: '蜡烛', description: '蜡烛' },
-                { title: '羽毛', description: '羽毛' },
-                { title: '皮带', description: '皮带' },
-                { title: '项圈', description: '项圈' },
-                { title: '乳胶手套', description: '乳胶手套' }
-            ],
-            '节日': [
-                { title: '情人节', description: '情人节特别情节' },
-                { title: '七夕', description: '七夕情人节' },
-                { title: '圣诞', description: '圣诞节' },
-                { title: '元旦', description: '元旦新年' },
-                { title: '春节', description: '春节' },
-                { title: '生日', description: '生日惊喜' },
-                { title: '纪念日', description: '恋爱纪念日' },
-                { title: '万圣节', description: '万圣节' },
-                { title: '520', description: '网络情人节' },
-                { title: '白色情人节', description: '白色情人节' },
-                { title: '中秋节', description: '中秋节' },
-                { title: '平安夜', description: '平安夜' },
-                { title: '愚人节', description: '愚人节' },
-                { title: '国庆节', description: '国庆节' },
-                { title: '劳动节', description: '劳动节' }
-            ],
-            '挑战': [
-                { title: '30秒挑战', description: '30秒内完成任务' },
-                { title: '1分钟挑战', description: '1分钟内完成任务' },
-                { title: '5分钟挑战', description: '5分钟内完成任务' },
-                { title: '高潮挑战', description: '多次高潮挑战' },
-                { title: '连续高潮', description: '连续高潮挑战' },
-                { title: '延时挑战', description: '延时挑战' },
-                { title: '不射挑战', description: '不射精挑战' },
-                { title: '姿势挑战', description: '多种姿势挑战' },
-                { title: '言语挑战', description: '言语挑逗挑战' },
-                { title: '公共场所', description: '公共场所挑战' },
-                { title: '水下挑战', description: '水下挑战' },
-                { title: '蒙眼挑战', description: '蒙眼挑战' },
-                { title: '禁言挑战', description: '禁言挑战' },
-                { title: '站立挑战', description: '站立挑战' },
-                { title: '负重挑战', description: '负重挑战' }
-            ],
-            '异族娘': [
-                { title: '狐妖娘', description: '狐狸精少女' },
-                { title: '猫娘', description: '猫耳少女' },
-                { title: '兔娘', description: '兔耳少女' },
-                { title: '龙娘', description: '龙女' },
-                { title: '人鱼娘', description: '人鱼少女' },
-                { title: '精灵娘', description: '精灵少女' },
-                { title: '天使娘', description: '天使少女' },
-                { title: '恶魔娘', description: '恶魔少女' },
-                { title: '女仆娘', description: '女仆少女' },
-                { title: '狼娘', description: '狼耳少女' },
-                { title: '蛇娘', description: '蛇女' },
-                { title: '蝴蝶娘', description: '蝴蝶少女' },
-                { title: '蜘蛛娘', description: '蜘蛛少女' },
-                { title: '蜥蜴娘', description: '蜥蜴少女' },
-                { title: '豹娘', description: '豹耳少女' }
-            ]
-        };
-        
-        this._loadedTags = offlineTags;
+        this._loadedTags = {};
     },
     
     async _loadCategoryTags(category) {
@@ -467,8 +325,6 @@ PluginSystem.register('simple-story', {
         const chars = this._characters;
         const charNames = chars.map(c => c.name).join('、');
         
-        console.log('[小故事] tags:', tags);
-        
         const tagsText = tags && tags.length > 0 ? tags.map(t => t.title).join(', ') : '随机词条';
         
         this._renderInitialUI(tagsText);
@@ -481,23 +337,25 @@ PluginSystem.register('simple-story', {
             throw new Error('提示词管理插件未加载');
         }
         
-        const prompt = promptManager.getTemplateWithPreset('simpleStory', 'default', {
+        const variables = {
             '角色列表': charNames,
-            '词条': tags.map(t => t.title).join('、')
-        });
+            '角色JSON': JSON.stringify(chars, null, 2),
+            '角色详情': chars.map(c => {
+                const profile = c.profile || {};
+                return `${c.name}：性格${profile.personality || '暂无'}，外表${profile.appearance || '暂无'}，背景${profile.backstory || '暂无'}`;
+            }).join('\n'),
+            '场景': '私密场所',
+            '词条': tags.map(t => t.title.split('：')[0]).slice(0, 3).join('、'),
+            '标签详情': tags.map(t => t.title).join('\n'),
+            '标签分类': tags.map(t => t.category || '未知').join('、')
+        };
+        
+        const prompt = promptManager.getTemplateWithPreset('simpleStory', 'default', variables);
 
         try {
             this._showLoading();
             
-            const plugin = null;
-            let systemPrompt = '';
-            
-            if (plugin && plugin.getWorldSystemPrompt) {
-                systemPrompt = plugin.getWorldSystemPrompt(world.id) || '';
-            }
-            
             const result = await ai.call(prompt, {
-                system: systemPrompt,
                 temperature: 0.8
             });
             
@@ -522,6 +380,11 @@ PluginSystem.register('simple-story', {
     async _continueStory(choice) {
         const world = Data.getCurrentWorld();
         const chars = this._characters;
+        if (!chars || chars.length === 0) {
+            alert('故事会话已失效，请重新开始故事');
+            this.endStory();
+            return;
+        }
         const charNames = chars.map(c => c.name).join('、');
         
         const historyText = this._storyScenes.map(s => s.content).join('\n\n---\n\n');
@@ -536,23 +399,22 @@ PluginSystem.register('simple-story', {
             throw new Error('提示词管理插件未加载');
         }
         
-        const prompt = promptManager.getTemplateWithPreset('storyChoice', 'default', {
+        const prompt = promptManager.getTemplateWithPreset('simpleStory', 'continue', {
+            '角色列表': charNames,
+            '角色JSON': JSON.stringify(chars, null, 2),
+            '角色详情': chars.map(c => {
+                const profile = c.profile || {};
+                return `${c.name}：性格${profile.personality || '暂无'}，外表${profile.appearance || '暂无'}，背景${profile.backstory || '暂无'}`;
+            }).join('\n'),
             '用户选择': choice,
-            '上下文': `之前的故事：\n${historyText}\n\n上一段故事的结尾：\n${lastContent}`
+            '之前的故事': historyText,
+            '上一段结尾': lastContent
         });
 
         try {
             this._showLoading('正在生成故事...');
             
-            const plugin = null;
-            let systemPrompt = '';
-            
-            if (plugin && plugin.getWorldSystemPrompt) {
-                systemPrompt = plugin.getWorldSystemPrompt(world.id) || '';
-            }
-            
             const result = await ai.call(prompt, {
-                system: systemPrompt,
                 temperature: 0.8
             });
             
@@ -581,22 +443,40 @@ PluginSystem.register('simple-story', {
         const world = Data.getCurrentWorld();
         const chars = this._characters;
         
+        if (!chars || chars.length === 0) {
+            main.innerHTML = `
+                <div style="text-align: center; padding: 40px;">
+                    <h2>故事会话已失效</h2>
+                    <p>请重新开始故事</p>
+                    <button class="btn" onclick="showPage('simple-story')">返回首页</button>
+                </div>
+            `;
+            return;
+        }
+        
         let scenesHtml = this._storyScenes.map((s, index) => {
             let content = s.content;
             let optionsHtml = '';
             
-            const optionsMatch = content.match(/【选项】([\s\S]*)/);
+            const optionsMatch = content.match(/选项[1-2]（([^）]+)）[：:]\s*(.+)/g);
             if (optionsMatch) {
-                content = content.replace(/【选项】[\s\S]*/, '').trim();
-                const optionsText = optionsMatch[1];
-                const options = optionsText.split('\n').filter(o => o.trim());
+                const options = [];
+                for (const match of optionsMatch) {
+                    const regex = /选项([1-2])（([^）]+)）[：:]\s*(.+)/;
+                    const m = match.match(regex);
+                    if (m) {
+                        options.push({ type: m[2].trim(), text: m[3].trim() });
+                    }
+                }
                 
-                if (index === this._storyScenes.length - 1) {
+                content = content.replace(/选项[1-2]（[^）]+）[：:][\s\S]*?(?=选项|$)/g, '').trim();
+                content = content.replace(/【故事】/, '').trim();
+                
+                if (index === this._storyScenes.length - 1 && options.length > 0) {
                     optionsHtml = `
                         <div style="margin-top: 16px; display: flex; flex-direction: column; gap: 8px;">
                             ${options.map((opt, i) => {
-                                const optText = opt.replace(/^\d+[\.、]\s*/, '').trim();
-                                return `<button class="btn" onclick="SimpleStoryPlugin.makeChoice('${optText.replace(/'/g, "\\'")}')" style="text-align: left;">${opt}</button>`;
+                                return `<button class="btn" onclick="SimpleStoryPlugin.makeChoice('${opt.text.replace(/'/g, "\\'")}')" style="text-align: left;">选项${i+1}（${opt.type}）：${opt.text}</button>`;
                             }).join('')}
                             <button class="btn btn-secondary" onclick="SimpleStoryPlugin.showCustomInput()" style="text-align: left;">✏️ 自定义</button>
                             <div id="simpleStoryCustomInput" style="display: none; margin-top: 8px;">
@@ -606,10 +486,7 @@ PluginSystem.register('simple-story', {
                         </div>
                     `;
                 }
-                
-                content = content.replace(/【故事】/, '').trim();
             } else if (index === this._storyScenes.length - 1) {
-                // 如果没有选项，添加一个继续按钮
                 optionsHtml = `
                     <div style="margin-top: 16px; display: flex; flex-direction: column; gap: 8px;">
                         <button class="btn" onclick="SimpleStoryPlugin.makeChoice('继续故事')" style="text-align: left;">继续故事</button>
@@ -764,10 +641,13 @@ PluginSystem.register('simple-story', {
     endStory() {
         if (!confirm('确定要结束当前小故事吗？')) return;
         
+        this._characters = null;
+        this._worldId = null;
         this._currentStoryTags = null;
         this._isRunning = false;
         this._storyScenes = [];
         this._currentRound = 0;
+        this._usedTagIds = [];
         
         showPage('simple-story');
     },

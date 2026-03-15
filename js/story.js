@@ -3,7 +3,7 @@ const Story = {
     history: [],
     
     _getPlugin() {
-        return null;
+        return this;
     },
     
     async _ensurePluginsInitialized() {
@@ -16,7 +16,7 @@ const Story = {
         const world = Data.getCurrentWorld();
         if (!world) throw new Error('请先选择一个世界');
         
-        const characters = Data.getCharacters(world.id);
+        const characters = Data.getCharacters(world.id) || [];
         if (characters.length === 0) throw new Error('请先添加角色');
         
         const existingStory = Story.load(world.id);
@@ -38,17 +38,19 @@ const Story = {
     },
 
     _selectCharacters(characters, config) {
-        const mainChars = characters.filter(c => c.role === '主角' || c.role === '女主');
-        const selectedChars = config.characters?.length 
-            ? characters.filter(c => config.characters.includes(c.id))
-            : mainChars.length > 0 ? mainChars : characters.slice(0, 3);
+        // 确保 characters 是一个数组
+        const chars = Array.isArray(characters) ? characters : [];
+        const mainChars = chars.filter(c => c && c.role && (c.role === '主角' || c.role === '女主'));
+        const selectedChars = Array.isArray(config?.characters) && config.characters.length > 0
+            ? chars.filter(c => c && config.characters.includes(c.id))
+            : mainChars.length > 0 ? mainChars : chars.slice(0, 3);
         
         let playerCharInfo = null;
-        if (config.playerChar) {
+        if (config?.playerChar) {
             if (config.playerChar.startsWith('custom:')) {
                 playerCharInfo = { name: config.playerChar.substring(7), isCustom: true };
             } else {
-                const char = characters.find(c => c.id === config.playerChar);
+                const char = chars.find(c => c && c.id === config.playerChar);
                 if (char) {
                     playerCharInfo = { id: char.id, name: char.name, profile: char.profile || {}, adultProfile: char.adultProfile || {} };
                 }
@@ -114,10 +116,11 @@ const Story = {
         
         const promptManager = window.PromptManagerPlugin;
         if (promptManager) {
-            const presetId = this._getTemplatePresetId('storyContinue', world.id, playerChar?.id);
-            return promptManager.getTemplateWithPreset('storyContinue', presetId, {
+            const presetId = this._getTemplatePresetId('story', world.id, playerChar?.id);
+            return promptManager.getTemplateWithPreset('story', presetId, {
                 '角色列表': charNames,
                 '世界名': world.name,
+                '世界设定': world.description || world.name || '',
                 '历史剧情': historyContext
             }, stage);
         }
@@ -133,12 +136,13 @@ const Story = {
         const promptManager = window.PromptManagerPlugin;
         if (promptManager && world) {
             const stage = this._getTemplateStage(world.id, playerChar?.id);
-            const presetId = this._getTemplatePresetId('storyStart', world.id, playerChar?.id);
-            let prompt = promptManager.getTemplateWithPreset('storyStart', presetId, {
+            const presetId = this._getTemplatePresetId('story', world.id, playerChar?.id);
+            let prompt = promptManager.getTemplateWithPreset('story', presetId, {
                 '角色列表': charNames,
                 '场景': config.scene || '',
                 '角色JSON': JSON.stringify(selectedChars),
-                '风格设置': Settings.buildPromptContext(settings)
+                '世界设定': world.description || world.name || '',
+                '角色详情': JSON.stringify(selectedChars)
             }, stage);
             
             if (currentStoryNodeData && currentStoryNodeData.customStartScene) {
@@ -173,7 +177,7 @@ const Story = {
     },
 
     async _updateCharacterStats(worldId, storyContent) {
-        const allChars = Data.getCharacters(worldId);
+        const allChars = Data.getCharacters(worldId) || [];
         const oldStats = {};
         for (const char of allChars) {
             const dbChar = Data.getCharacter(worldId, char.id);
@@ -181,6 +185,11 @@ const Story = {
         }
         
         await window.CharacterStatsPlugin?.updateCharacterStats(storyContent, allChars, worldId);
+        
+        const adultPlugin = window.AdultTagsPlugin;
+        if (adultPlugin) {
+            adultPlugin.parseAllStatChanges(storyContent, allChars);
+        }
         
         const statChanges = {};
         for (const char of allChars) {
@@ -267,7 +276,7 @@ const Story = {
         const statChanges = await this._updateCharacterStats(world.id, cleanContent);
         this.current.scenes[0].statChanges = statChanges;
         
-        const allChars = Data.getCharacters(world.id);
+        const allChars = Data.getCharacters(world.id) || [];
         await plugin.getStoryGenerator().extractItemsFromStory(cleanContent, allChars, world.id);
         
         await plugin.getStoryGenerator().updateCharacterRelationships(cleanContent, allChars, world.id);
@@ -301,7 +310,7 @@ const Story = {
             window.TimePlugin.initAllCharactersAge(world.id);
         }
         
-        this._resetExcitementOnNewStory(world.id);
+        this._resetArousalOnNewStory(world.id);
         
         const settings = Settings.get(world.id);
         
@@ -323,7 +332,8 @@ const Story = {
         
         const adultTriggeredStart = this._checkAndApplyAdultTagsToStart(world.id, prompt);
         
-        if (adultTriggeredStart) {
+        if (adultTriggeredStart && adultTriggeredStart.triggered) {
+            prompt += '\n\n' + adultTriggeredStart.template;
             const adultPlugin = window.AdultTagsPlugin;
             const needConfirm = adultPlugin && adultPlugin.shouldConfirm();
             
@@ -344,7 +354,10 @@ const Story = {
         this._showLoading('正在生成故事开头...');
         
         try {
-            let content = await ai.generateStory(prompt, settings);
+            let content = await ai.call(prompt, {
+                temperature: 0.8,
+                length: '中篇'
+            });
             
             PluginSystem.triggerPluginEvent('afterStoryGenerate', {
                 content: content,
@@ -376,9 +389,9 @@ const Story = {
         }
         
         const settings = Settings.get(world.id);
-        let characters = Data.getCharacters(world.id);
+        let characters = Data.getCharacters(world.id) || [];
         
-        if (options.characters && options.characters.length > 0) {
+        if (options.characters && Array.isArray(options.characters) && options.characters.length > 0) {
             const selectedChars = characters.filter(c => options.characters.includes(c.id));
             this.current.characters = selectedChars.map(c => ({
                 id: c.id,
@@ -399,7 +412,6 @@ const Story = {
         );
         
         let prompt = '';
-        let systemPrompt = '';
         const plugin = this._getPlugin();
         
         if (choice) {
@@ -418,25 +430,47 @@ const Story = {
             const promptManager = window.PromptManagerPlugin;
             if (promptManager) {
                 const stage = this._getTemplateStage(world.id, playerChar?.id);
-                const presetId = this._getTemplatePresetId('storyChoice', world.id, playerChar?.id);
+                const presetId = this._getTemplatePresetId('story', world.id, playerChar?.id);
                 
-                let extraPrompt = '';
+                let intimatePrompt = '';
                 if (isIntimate) {
-                    extraPrompt = '\n\n【亲密互动要求】\n请描述亲密互动过程，自然融入剧情。用词直白露骨，直接描写性器官接触、插入、抽动、高潮等细节；描写要流畅如小说，避免罗列；只描述亲密互动过程，自然融入剧情。';
-                } else if (isItemUse) {
-                    extraPrompt = '\n\n【物品使用要求】\n请根据物品效果生成相应的剧情，物品效果：' + JSON.stringify(options.item.effects || {});
+                    intimatePrompt = '请描述亲密互动过程，自然融入剧情。用词直白露骨，直接描写性器官接触、插入、抽动、高潮等细节；描写要流畅如小说，避免罗列；只描述亲密互动过程，自然融入剧情。';
                 }
                 
-                let basePrompt = promptManager.getTemplateWithPreset('storyChoice', presetId, {
+                let itemPrompt = '';
+                if (isItemUse) {
+                    itemPrompt = '请根据物品效果生成相应的剧情，物品效果：' + JSON.stringify(options.item.effects || {});
+                }
+                
+                let adultPrompt = '';
+                const adultTriggered = this._checkAndApplyAdultTags(world.id, '');
+                if (adultTriggered && adultTriggered.triggered) {
+                    adultPrompt = adultTriggered.template;
+                    const adultPlugin = window.AdultTagsPlugin;
+                    const needConfirm = adultPlugin && adultPlugin.shouldConfirm();
+                    
+                    if (needConfirm) {
+                        const selectedTags = await this._showAdultConfirmDialog();
+                        if (selectedTags === null) {
+                            console.log('[成人标签] 用户取消添加成人内容');
+                            adultPrompt = '';
+                        } else if (selectedTags && selectedTags.length > 0) {
+                            console.log('[成人标签] 用户选择的玩法:', selectedTags);
+                            adultPrompt = adultPlugin.buildPromptWithSelectedTags(selectedTags);
+                        }
+                    }
+                }
+                
+                prompt = promptManager.getTemplateWithPreset('story', presetId, {
                     '用户选择': userChoiceText,
                     '上下文': context,
-                    '角色列表': charNames
+                    '角色列表': charNames,
+                    '亲密互动': intimatePrompt,
+                    '物品使用': itemPrompt,
+                    '成人标签': adultPrompt
                 }, stage);
-                
-                prompt = basePrompt + extraPrompt;
-                
-                systemPrompt = plugin.getWorldSystemPrompt(world.id);
-            }
+
+             }
         } else {
             const context = plugin.getStoryGenerator().buildContext(this.current, characters, settings);
             const charNames = characters.map(c => c.name).join('、');
@@ -445,13 +479,13 @@ const Story = {
             const promptManager = window.PromptManagerPlugin;
             if (promptManager) {
                 const stage = this._getTemplateStage(world.id, playerChar?.id);
-                const presetId = this._getTemplatePresetId('storyFree', world.id, playerChar?.id);
-                prompt = promptManager.getTemplateWithPreset('storyFree', presetId, {
+                const presetId = this._getTemplatePresetId('story', world.id, playerChar?.id);
+                prompt = promptManager.getTemplateWithPreset('story', presetId, {
                     '上下文': context,
                     '角色列表': charNames
                 }, stage);
                 
-                systemPrompt = plugin.getWorldSystemPrompt(world.id);
+
             }
         }
         
@@ -467,41 +501,11 @@ const Story = {
             simpleStoryMode: simpleStoryMode
         });
         
-        const adultTriggered = this._checkAndApplyAdultTags(world.id, prompt, systemPrompt);
-        
-        if (adultTriggered) {
-            const adultPlugin = window.AdultTagsPlugin;
-            const needConfirm = adultPlugin && adultPlugin.shouldConfirm();
-            
-            if (needConfirm) {
-                const selectedTags = await this._showAdultConfirmDialog();
-                if (selectedTags === null) {
-                    console.log('[成人标签] 用户取消添加成人内容');
-                    prompt = prompt.replace(/【成人内容要求】[\s\S]*$/gm, '');
-                } else if (selectedTags.length > 0) {
-                    console.log('[成人标签] 用户选择的玩法:', selectedTags);
-                    const promptTag = adultPlugin.buildPromptWithSelectedTags(selectedTags);
-                    prompt = prompt.replace(/【成人内容要求】[\s\S]*$/gm, '');
-                    prompt += '\n\n' + promptTag;
-                }
-            }
-        }
-        
         this._showLoading(isItemUse ? '正在生成物品使用剧情...' : '正在生成故事...');
         
         try {
             let temperature = 0.7;
-            if (isItemUse) {
-                const aiSetting = plugin.getAISetting('itemStory', world.id);
-                temperature = aiSetting?.temperature || 0.7;
-            } else if (isIntimate) {
-                const aiSetting = plugin.getAISetting('intimateContinue', world.id);
-                temperature = aiSetting?.temperature || 0.7;
-            } else {
-                const aiSetting = plugin.getAISetting('storyContinue', world.id);
-                temperature = aiSetting?.temperature || 0.7;
-            }
-            let content = await ai.call(prompt, { system: systemPrompt, temperature: temperature, length: settings.output?.length || '中篇' });
+            let content = await ai.call(prompt, { temperature: temperature, length: '中篇' });
             
             // 触发故事生成后事件
             PluginSystem.triggerPluginEvent('afterStoryGenerate', {
@@ -535,17 +539,25 @@ const Story = {
             this.current.scenes.push(newScene);
             
             const choices = await plugin.getStoryGenerator().generateChoices(content, this.current.characters, settings);
-            this.current.scenes[this.current.scenes.length - 1].choices = choices;
+            const lastScene = this.current.scenes[this.current.scenes.length - 1];
+            if (lastScene) {
+                lastScene.choices = choices;
+            }
             
             this.current.round = this.current.scenes.length;
             
-            const allChars = Data.getCharacters(world.id);
+            const allChars = Data.getCharacters(world.id) || [];
             const oldStats = {};
             for (const char of allChars) {
                 oldStats[char.id] = { ...(char.stats || {}) };
             }
             
             await window.CharacterStatsPlugin?.updateCharacterStats(cleanContent, allChars, world.id);
+            
+            const adultPlugin = window.AdultTagsPlugin;
+            if (adultPlugin) {
+                adultPlugin.parseAllStatChanges(cleanContent, allChars);
+            }
             
             const statChanges = {};
             for (const char of allChars) {
@@ -595,37 +607,39 @@ const Story = {
         const adultPlugin = window.AdultTagsPlugin;
         if (!adultPlugin || !adultPlugin.isEnabled()) return;
         
-        const characters = Data.getCharacters(worldId);
+        const characters = Data.getCharacters(worldId) || [];
         if (!characters || characters.length === 0) return;
         
         const playerChar = characters.find(c => c.isPlayer) || characters[0];
         if (!playerChar || !playerChar.stats) return;
         
         const arousal = playerChar.stats.arousal || 0;
-        const currentExcitement = adultPlugin.getExcitement(worldId);
-        console.log(`[兴奋值] 当前兴奋值: ${arousal}（由AI根据故事内容分析更新），插件兴奋值: ${currentExcitement}`);
+        const currentArousal = adultPlugin.getArousal(worldId);
+        console.log(`[性欲] 当前性欲: ${arousal}（由AI根据故事内容分析更新），插件性欲: ${currentArousal}`);
+        
+        const allChars = Data.getCharacters(worldId) || [];
+        adultPlugin.parseAllStatChanges(storyContent, allChars);
     },
 
-    _resetExcitementOnNewStory(worldId) {
+    _resetArousalOnNewStory(worldId) {
         const adultPlugin = window.AdultTagsPlugin;
         if (!adultPlugin) return;
         
-        adultPlugin.resetExcitement(worldId);
-        adultPlugin.clearCooldown(worldId);
-        
-        const characters = Data.getCharacters(worldId);
+        const characters = Data.getCharacters(worldId) || [];
         if (characters && characters.length > 0) {
-            const playerChar = characters.find(c => c.isPlayer) || characters[0];
-            if (playerChar && playerChar.stats) {
-                playerChar.stats.arousal = 0;
-                playerChar.stats.sexArousal = 0;
-                playerChar.stats.sexExcitement = 0;
-                Data.updateCharacter(worldId, playerChar.id, playerChar);
-                console.log(`[兴奋值] 新故事开始，角色 ${playerChar.name} 的 arousal/sexArousal/sexExcitement 已重置为0`);
+            for (const char of characters) {
+                if (char.stats) {
+                    char.stats.arousal = 0;
+                    char.stats.sexArousal = 0;
+                    char.stats.sexExcitement = 0;
+                    Data.updateCharacter(worldId, char.id, char);
+                }
             }
+            console.log(`[性欲] 新故事开始，所有角色的性欲已重置为0`);
         }
         
-        console.log(`[兴奋值] 新故事开始，兴奋值重置为0，冷却列表已清空`);
+        adultPlugin.clearCooldown(worldId);
+        console.log(`[性欲] 新故事开始，冷却列表已清空`);
     },
 
     async useItemInStory(item, targetCharId, userCharId = null) {
@@ -646,9 +660,9 @@ const Story = {
         if (!world || !currentStory) throw new Error('没有进行中的故事');
         
         const settings = Settings.get(world.id);
-        const characters = Data.getCharacters(world.id);
+        const characters = Data.getCharacters(world.id) || [];
         
-        if (options.characters && options.characters.length > 0) {
+        if (options.characters && Array.isArray(options.characters) && options.characters.length > 0) {
             currentStory.characters = characters.filter(c => options.characters.includes(c.id)).map(c => ({
                 id: c.id,
                 name: c.name,
@@ -669,6 +683,10 @@ const Story = {
         const promptManager = window.PromptManagerPlugin;
         let prompt;
         
+        if (!promptManager) {
+            throw new Error('提示词管理插件未加载');
+        }
+        
         if (promptManager) {
             const playerChar = currentStory.characters.find(c => c.isPlayer) || currentStory.characters[0];
             const stage = this._getTemplateStage(world.id, playerChar?.id);
@@ -683,28 +701,49 @@ const Story = {
             }, stage);
         }
         
-        const systemPrompt = this._getPlugin()?.getWorldSystemPrompt(world.id) || '';
-        
         const result = await ai.call(prompt, { 
-            system: systemPrompt,
             temperature: aiSetting?.temperature || 0.8,
-            length: settings.output?.length || '中篇'
+            length: '中篇'
         });
         
-        // 解析新的选项格式："选项一"："xx"，"选项二"："xx"...
         let choices = [];
-        const optionRegex = /"(选项[一二三四])"\s*：\s*"([^"]+)"/g;
-        let match;
-        while ((match = optionRegex.exec(result)) !== null) {
-            choices.push(match[2].trim());
-        }
         
-        // 兼容旧格式
+        // 解析格式：选项1（类型）：内容 或 选项1（日常）：林逸走到书桌前坐下...
+        const regex = /选项[1-4]（([^）]+)）[：:]\s*(.+)/g;
+        let match;
+        while ((match = regex.exec(result)) !== null) {
+            const text = match[2].trim();
+            // 去掉开头的选项编号
+            const cleanText = text.replace(/^[选项\d（日常色色淫荡）\s:：]+/, '').trim();
+            choices.push({ type: match[1].trim(), text: cleanText });
+        }
+
+        // 备用解析：1. 内容
+        if (choices.length === 0) {
+            const regex4 = /^[1-4][.、]\s*(.+)$/gm;
+            while ((match = regex4.exec(result)) !== null) {
+                choices.push({ type: '', text: match[1].trim() });
+            }
+        }
+
+        // 备用解析：按行分割
         if (choices.length === 0) {
             choices = result.split('\n')
-                .map(line => line.replace(/^\d+[.、]\s*/, '').trim())
-                .filter(line => line.length > 0 && line.length < 100);
+                .map(line => line.trim())
+                .filter(line => line.length > 0 && line.length < 100)
+                .map(text => ({ type: '', text }));
         }
+        
+        // 过滤掉无效选项
+        choices = choices.filter(choice => {
+            const text = typeof choice === 'object' ? choice.text : choice;
+            if (!text || text.trim() === '') return false;
+            if (text.length < 3) return false;
+            if (text.includes('生成') && text.includes('选项')) return false;
+            if (text.includes('请') && text.includes('输出')) return false;
+            if (text.length > 150) return false;
+            return true;
+        });
         
         return choices.slice(0, 5);
     },
@@ -905,7 +944,7 @@ const Story = {
         return (async function() {
             await _this._ensurePluginsInitialized();
             try {
-                const characters = Data.getCharacters(world.id);
+                const characters = Data.getCharacters(world.id) || [];
                 const settings = Settings.get(world.id);
                 
                 let historyContext = '';
@@ -953,16 +992,23 @@ const Story = {
                 if (promptManager) {
                     const playerChar = selectedChars.find(c => c.isPlayer) || selectedChars[0];
                     const stage = this._getTemplateStage(world.id, playerChar?.id);
-                    prompt = promptManager.getTemplateWithPreset('storyContinue', 'default', {
+                    const presetId = this._getTemplatePresetId('storyContinue', world.id, playerChar?.id);
+                    prompt = promptManager.getTemplateWithPreset('story', presetId, {
                         '角色列表': charNames,
                         '世界名': world.name,
-                        '历史剧情': historyContext
+                        '世界设定': world.description || world.name || '',
+                        '历史剧情': historyContext,
+                        '之前的故事剧情': historyContext,
+                        '当前故事最新剧情': ''
                     }, stage);
                 } else {
                     throw new Error('提示词管理插件未加载');
                 }
                 
-                const content = await ai.generateStory(prompt, settings);
+                const content = await ai.call(prompt, {
+                    temperature: 0.8,
+                    length: '中篇'
+                });
                 const plugin = _this._getPlugin();
                 const cleanContent = plugin ? plugin.getStoryGenerator().cleanStoryContent(content) : content;
                 
@@ -1012,14 +1058,7 @@ const Story = {
         const world = Data.getCurrentWorld();
         const worldId = world?.id;
         
-        let systemPrompt = '';
-        const plugin = this._getPlugin();
-        if (plugin) {
-            const pluginPrompt = plugin.getWorldSystemPrompt(worldId);
-            if (pluginPrompt) {
-                systemPrompt = pluginPrompt + '\n\n';
-            }
-        }
+
         
         let historySection = '';
         
@@ -1090,14 +1129,17 @@ const Story = {
         if (promptManager) {
             const playerChar = this.current.characters.find(c => c.isPlayer) || this.current.characters[0];
             const stage = this._getTemplateStage(worldId, playerChar?.id);
-            const template = promptManager.getTemplateWithPreset('storyContinue', 'default', {
+            const presetId = this._getTemplatePresetId('storyContinue', worldId, playerChar?.id);
+                    const template = promptManager.getTemplateWithPreset('story', presetId, {
                 '角色描述': charDesc,
+                '角色列表': charDesc,
                 '世界名': world?.name || '自定义世界',
-                '风格设置': ctx,
+                '世界设定': world?.description || world?.name || '',
                 '之前的故事剧情': finalHistorySection,
-                '当前故事最新剧情': ''
+                '当前故事最新剧情': '',
+                '历史剧情': finalHistorySection
             }, stage);
-            return systemPrompt + template;
+            return template;
         }
         
         throw new Error('提示词管理插件未加载');
@@ -1177,41 +1219,281 @@ const Story = {
     _getTemplatePresetId(category, worldId, charId = null) {
         return 'default';
     },
+    
+
+    
+    getStoryGenerator() {
+        return {
+            cleanStoryContent: function(content) {
+                return content.replace(/【故事】/g, '').trim();
+            },
+            
+            generateChoices: async function(content, characters, settings) {
+                const promptManager = window.PromptManagerPlugin;
+                if (!promptManager) {
+                    console.warn('[选项生成] 提示词管理插件未加载');
+                    return [{ type: '', text: '继续故事' }, { type: '', text: '探索更多' }, { type: '', text: '休息一下' }, { type: '', text: '其他' }];
+                }
+                
+                const charNames = characters.map(c => c.name).join('、');
+                
+                // 获取上下文信息
+                const plugin = PluginSystem.get('story');
+                let contextNote = '';
+                if (plugin) {
+                    try {
+                        const generator = plugin.getStoryGenerator();
+                        const context = generator.buildContext(settings, characters, settings);
+                        if (context) contextNote = context;
+                    } catch (e) {
+                        console.warn('[选项生成] 获取上下文失败:', e);
+                    }
+                }
+                
+                const variables = {
+                    '内容摘要': content,
+                    '故事内容': content,
+                    '内容': content,
+                    '角色列表': charNames,
+                    '角色': charNames,
+                    '上下文': contextNote,
+                    '上下文备注': contextNote
+                };
+                
+                const prompt = promptManager.getTemplateWithPreset('generateChoices', 'default', variables);
+                
+                if (!prompt || !prompt.trim()) {
+                    console.warn('[选项生成] 提示词为空');
+                    return [{ type: '', text: '继续故事' }, { type: '', text: '探索更多' }, { type: '', text: '休息一下' }, { type: '', text: '其他' }];
+                }
+                
+                const result = await ai.call(prompt, { temperature: 0.8, maxTokens: 200 });
+                
+                if (!result) {
+                    console.warn('[选项生成] AI返回为空');
+                    return [{ type: '', text: '继续故事' }, { type: '', text: '探索更多' }, { type: '', text: '休息一下' }, { type: '', text: '其他' }];
+                }
+                
+                if (typeof result !== 'string') {
+                    console.warn('[选项生成] AI返回格式错误:', typeof result);
+                    return [{ type: '', text: '继续故事' }, { type: '', text: '探索更多' }, { type: '', text: '休息一下' }, { type: '', text: '其他' }];
+                }
+                
+                const lines = result.split('\n');
+                if (!lines || lines.length === 0) {
+                    console.warn('[选项生成] AI返回内容为空');
+                    return [{ type: '', text: '继续故事' }, { type: '', text: '探索更多' }, { type: '', text: '休息一下' }, { type: '', text: '其他' }];
+                }
+                
+                return lines
+                    .map(line => line ? line.replace(/^\d+[.、]\s*/, '').trim() : '')
+                    .filter(line => line && line.length > 0 && line.length < 100)
+                    .slice(0, 5)
+                    .map(text => ({ type: '', text }));
+            },
+            
+            buildContext: function(story, characters, settings) {
+                const recentScenes = story.scenes.slice(-3);
+                return recentScenes.map((scene, index) => {
+                    let text = scene.content;
+                    if (scene.choice) {
+                        text += `\n[用户选择了：${scene.choice}]`;
+                    }
+                    return text;
+                }).join('\n\n---\n\n');
+            },
+            
+            extractItemsFromStory: async function(content, characters, worldId) {
+                const promptManager = window.PromptManagerPlugin;
+                if (!promptManager) {
+                    console.warn('[物品提取] 提示词管理插件未加载');
+                    return;
+                }
+
+                const variables = {
+                    '内容': content,
+                    '故事内容': content
+                };
+
+                const prompt = promptManager.getTemplateWithPreset('extractItems', 'default', variables);
+                
+                if (!prompt || !prompt.trim()) {
+                    console.warn('[物品提取] 提示词为空');
+                    return;
+                }
+
+                try {
+                    const result = await ai.call(prompt, { temperature: 0.3, maxTokens: 100 });
+                    console.log('[物品提取] AI分析结果:', result);
+                    
+                    // 解析结果并添加物品
+                    this._applyExtractedItems(result, worldId);
+                } catch (e) {
+                    console.error('[物品提取] 失败:', e);
+                }
+            },
+            
+            _applyExtractedItems: function(result, worldId) {
+                const inventoryPlugin = PluginSystem.get('inventory');
+                if (!inventoryPlugin) {
+                    console.warn('[物品提取] 物品插件未加载');
+                    return;
+                }
+                
+                const library = inventoryPlugin.getItemLibrary();
+                const libraryNames = library.map(i => i.name.toLowerCase());
+                
+                const items = result.split(/[,，、\n]/)
+                    .map(s => s.trim())
+                    .filter(s => s.length > 0 && s.length < 20);
+                
+                let addedCount = 0;
+                for (const itemName of items) {
+                    const matchIndex = library.findIndex(i => i.name.toLowerCase() === itemName.toLowerCase());
+                    if (matchIndex >= 0) {
+                        const libraryItem = library[matchIndex];
+                        try {
+                            const item = {
+                                name: libraryItem.name,
+                                type: libraryItem.type,
+                                description: libraryItem.description || '故事中提取的物品',
+                                effects: libraryItem.effects || {}
+                            };
+                            inventoryPlugin.addItem(worldId, null, item);
+                            console.log('[物品提取] 添加物品:', libraryItem.name);
+                            addedCount++;
+                        } catch (e) {
+                            console.warn('[物品提取] 添加失败:', itemName, e);
+                        }
+                    } else {
+                        console.log('[物品提取] 跳过非素材库物品:', itemName);
+                    }
+                }
+                console.log('[物品提取] 完成，共添加', addedCount, '个物品');
+            },
+            
+            updateCharacterRelationships: function(content, characters, worldId) {
+                // 简单实现，实际项目中可能需要更复杂的逻辑
+                console.log('[故事生成器] 更新角色关系');
+            }
+        };
+    },
+    
+    getArchives(worldId) {
+        try {
+            return JSON.parse(localStorage.getItem(`story_archives_${worldId}`) || '[]');
+        } catch { return []; }
+    },
+    
+    getLevel2Archives(worldId) {
+        try {
+            return JSON.parse(localStorage.getItem(`story_level2_${worldId}`) || '[]');
+        } catch { return []; }
+    },
+    
+    getLevel3Archives(worldId) {
+        try {
+            return JSON.parse(localStorage.getItem(`story_level3_${worldId}`) || '[]');
+        } catch { return []; }
+    },
+    
+    extractTimeChange(content) {
+        // 简单实现，实际项目中可能需要更复杂的逻辑
+        return 0;
+    },
+    
+    async generateSceneSummary(content, choice) {
+        const promptManager = window.PromptManagerPlugin;
+        const prompt = promptManager.getTemplateWithPreset('sceneSummary', 'default', {
+            '内容摘要': content,
+            '故事内容': content,
+            '内容': content
+        });
+        return await ai.call(prompt, { temperature: 0.7, maxTokens: 100 });
+    },
+    
+    async generateStoryTitle(story) {
+        const content = story.scenes.map(s => s.content).join('\n\n');
+        const promptManager = window.PromptManagerPlugin;
+        const prompt = promptManager.getTemplateWithPreset('storyTitle', 'default', {
+            '故事内容': content,
+            '内容': content
+        });
+        return await ai.call(prompt, { temperature: 0.8, maxTokens: 50 });
+    },
+    
+    async generateFullStorySummary(worldId, story) {
+        const content = story.scenes.map(s => s.content).join('\n\n');
+        const promptManager = window.PromptManagerPlugin;
+        const prompt = promptManager.getTemplateWithPreset('storySummary', 'level1', {
+            '故事内容': content,
+            '内容': content
+        });
+        return await ai.call(prompt, { temperature: 0.7, maxTokens: 200 });
+    },
+    
+    async generateCorePlot(worldId, story) {
+        const content = story.scenes.map(s => s.content).join('\n\n');
+        const promptManager = window.PromptManagerPlugin;
+        const prompt = promptManager.getTemplateWithPreset('storySummary', 'level2', {
+            '故事内容': content,
+            '内容': content
+        });
+        return await ai.call(prompt, { temperature: 0.7, maxTokens: 100 });
+    },
+    
+    updateArchiveInPlace(worldId, story) {
+        // 简单实现，实际项目中可能需要更复杂的逻辑
+        console.log('[故事配置] 更新存档');
+    },
+    
+    checkArchiveForSummaries(archives, worldId) {
+        // 简单实现，实际项目中可能需要更复杂的逻辑
+        console.log('[故事配置] 检查存档摘要');
+    },
+    
+
+    
+    getDataSources(worldId) {
+        return {
+            historyScenes: 3,
+            charDescriptionLength: 'medium',
+            storyContentLength: 800
+        };
+    },
 
     _checkAndApplyAdultTagsToStart(worldId, prompt) {
         const adultPlugin = window.AdultTagsPlugin;
-        if (!adultPlugin || !adultPlugin.isEnabled()) return false;
+        if (!adultPlugin || !adultPlugin.isEnabled()) return { triggered: false, template: '' };
 
         const shouldTrigger = adultPlugin.shouldTrigger('');
         if (!shouldTrigger) {
             console.log('[成人标签] 开头故事未触发关键词，跳过成人内容');
-            return false;
+            return { triggered: false, template: '' };
         }
 
         const adultData = adultPlugin.buildAdultPromptTemplate(worldId, '');
-        if (!adultData || !adultData.template) return false;
+        if (!adultData || !adultData.supplement) return { triggered: false, template: '' };
 
-        prompt += '\n\n' + adultData.template;
-        return true;
+        return { triggered: true, template: adultData.supplement };
     },
 
-    _checkAndApplyAdultTags(worldId, prompt, systemPrompt) {
+    _checkAndApplyAdultTags(worldId, prompt) {
         const adultPlugin = window.AdultTagsPlugin;
-        if (!adultPlugin || !adultPlugin.isEnabled()) return false;
+        if (!adultPlugin || !adultPlugin.isEnabled()) return { triggered: false, template: '' };
 
         const lastContent = this.current?.scenes?.[this.current.scenes.length - 1]?.content || '';
         
         const shouldTrigger = adultPlugin.shouldTrigger(lastContent);
         if (!shouldTrigger) {
             console.log('[成人标签] 场景未匹配关键词，跳过成人内容');
-            return false;
+            return { triggered: false, template: '' };
         }
 
         const adultData = adultPlugin.buildAdultPromptTemplate(worldId, lastContent);
-        if (!adultData || !adultData.template) return false;
+        if (!adultData || !adultData.supplement) return { triggered: false, template: '' };
 
-        prompt += '\n\n' + adultData.template;
-        return true;
+        return { triggered: true, template: adultData.supplement };
     },
 
     async _showAdultConfirmDialog() {
@@ -1299,9 +1581,9 @@ const Story = {
 
         const adultData = adultPlugin.buildAdultPromptTemplate(worldId, lastContent);
 
-        if (!adultData || !adultData.template) return;
+        if (!adultData || !adultData.supplement) return;
 
-        prompt += '\n\n' + adultPlugin.buildAdultPromptTemplate(worldId, lastContent).template;
+        prompt += '\n\n' + adultData.supplement;
     },
 
     _showLoading(text) {

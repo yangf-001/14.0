@@ -240,7 +240,7 @@ PluginSystem.register('chat-plugin', {
                         statusInfo = '\n【状态】';
                         if (m.relation) statusInfo += '\n- 关系: ' + m.relation;
                         if (m.affection !== undefined) statusInfo += '\n- 好感度: ' + m.affection;
-                        if (m.arousal !== undefined) statusInfo += '\n- 兴奋值: ' + m.arousal;
+                        if (m.arousal !== undefined) statusInfo += '\n- 性欲: ' + m.arousal;
                         if (m.lewdStatus) statusInfo += '\n- 色色状态: ' + m.lewdStatus;
                         if (m.innerThought) statusInfo += '\n- 内心: ' + m.innerThought;
                     }
@@ -364,7 +364,7 @@ PluginSystem.register('chat-plugin', {
             const timeLocationMatch = content.match(/【时间地点】([^\n【]+)/);
             const relationMatch = content.match(/- 关系:\s*([^\n-]+)/);
             const affectionMatch = content.match(/- 好感度:\s*(\d+)/);
-            const arousalMatch = content.match(/- 兴奋值:\s*(\d+)/);
+            const arousalMatch = content.match(/- 性欲:\s*(\d+)/);
             const lewdStatusMatch = content.match(/- 色色状态:\s*([^\n-]+)/);
             const innerMatch = content.match(/- 内心:\s*([^\n-]+)/);
             
@@ -373,7 +373,7 @@ PluginSystem.register('chat-plugin', {
                 .replace(/【状态】[^\n]*/g, '')
                 .replace(/- 关系:[^\n]*/g, '')
                 .replace(/- 好感度:[^\n]*/g, '')
-                .replace(/- 兴奋值:[^\n]*/g, '')
+                .replace(/- 性欲:[^\n]*/g, '')
                 .replace(/- 色色状态:[^\n]*/g, '')
                 .replace(/- 内心:[^\n]*/g, '')
                 .trim();
@@ -412,7 +412,7 @@ PluginSystem.register('chat-plugin', {
             const timeLocationMatch = remainingContent.match(/【时间地点】([^\n【]+)/);
             const relationMatch = remainingContent.match(/- 关系:\s*([^\n-]+)/);
             const affectionMatch = remainingContent.match(/- 好感度:\s*(\d+)/);
-            const arousalMatch = remainingContent.match(/- 兴奋值:\s*(\d+)/);
+            const arousalMatch = remainingContent.match(/- 性欲:\s*(\d+)/);
             const lewdStatusMatch = remainingContent.match(/- 色色状态:\s*([^\n-]+)/);
             const innerMatch = remainingContent.match(/- 内心:\s*([^\n-]+)/);
             
@@ -421,7 +421,7 @@ PluginSystem.register('chat-plugin', {
                 .replace(/【状态】[^\n]*/g, '')
                 .replace(/- 关系:[^\n]*/g, '')
                 .replace(/- 好感度:[^\n]*/g, '')
-                .replace(/- 兴奋值:[^\n]*/g, '')
+                .replace(/- 性欲:[^\n]*/g, '')
                 .replace(/- 色色状态:[^\n]*/g, '')
                 .replace(/- 内心:[^\n]*/g, '')
                 .trim();
@@ -442,7 +442,7 @@ PluginSystem.register('chat-plugin', {
             const timeLocationMatch = content.match(/【时间地点】([^\n【]+)/);
             const relationMatch = content.match(/- 关系:\s*([^\n-]+)/);
             const affectionMatch = content.match(/- 好感度:\s*(\d+)/);
-            const arousalMatch = content.match(/- 兴奋值:\s*(\d+)/);
+            const arousalMatch = content.match(/- 性欲:\s*(\d+)/);
             const lewdStatusMatch = content.match(/- 色色状态:\s*([^\n-]+)/);
             const innerMatch = content.match(/- 内心:\s*([^\n-]+)/);
             
@@ -451,7 +451,7 @@ PluginSystem.register('chat-plugin', {
                 .replace(/【状态】[^\n]*/g, '')
                 .replace(/- 关系:[^\n]*/g, '')
                 .replace(/- 好感度:[^\n]*/g, '')
-                .replace(/- 兴奋值:[^\n]*/g, '')
+                .replace(/- 性欲:[^\n]*/g, '')
                 .replace(/- 色色状态:[^\n]*/g, '')
                 .replace(/- 内心:[^\n]*/g, '')
                 .trim();
@@ -675,7 +675,7 @@ PluginSystem.register('chat-plugin', {
             <div class="chat-session-item" data-id="${s.id}" style="padding: 12px; background: white; border: 1px solid #e9ecef; border-radius: 8px; margin-bottom: 8px; cursor: pointer; transition: all 0.2s;" onmouseover="this.style.borderColor='#6c5ce7'; this.style.background='#f0edff'" onmouseout="this.style.borderColor='#e9ecef'; this.style.background='white'">
                 <div style="font-weight: 500; color: #333;">${s.title}</div>
                 <div style="font-size: 0.75rem; color: #999; margin-top: 4px;">
-                    ${s.messages.length}条消息 · ${new Date(s.updatedAt).toLocaleDateString()}
+                    ${s.messages?.length || 0}条消息 · ${new Date(s.updatedAt).toLocaleDateString()}
                 </div>
             </div>
         `).join('');

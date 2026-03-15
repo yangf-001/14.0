@@ -97,7 +97,7 @@
                     return;
                 }
                 
-                const chars = Data.getCharacters(world.id);
+                const chars = Data.getCharacters(world.id) || [];
                 
                 if (chars.length === 0) {
                     main.innerHTML = `<h2>物品管理</h2><p class="desc">当前世界：${world.name}</p><div class="empty">暂无角色，请先添加角色</div>`;
@@ -162,6 +162,10 @@
             
             add(characterId) {
                 const world = Data.getCurrentWorld();
+                if (!world) {
+                    alert('请先选择一个世界');
+                    return;
+                }
                 const name = document.getElementById('itemName').value;
                 if (!name) return;
                 
@@ -272,6 +276,10 @@
             
             addFromLibrary(characterId, itemId) {
                 const world = Data.getCurrentWorld();
+                if (!world) {
+                    alert('请先选择一个世界');
+                    return;
+                }
                 const plugin = PluginSystem.get('inventory');
                 const library = plugin?.getItemLibrary() || [];
                 const item = library.find(i => i.id === itemId);

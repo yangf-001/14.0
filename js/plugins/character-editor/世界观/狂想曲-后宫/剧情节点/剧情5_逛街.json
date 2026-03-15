@@ -1,0 +1,22 @@
+{
+  "name": "逛街",
+  "startStage": "日常",
+  "customStartScene": "李阳陪莉音上街买东西。\n\n「表弟，这件怎么样？」莉音拿着一件衣服比划。\n\n「表姐穿什么都好看。」李阳说道。\n\n「嘴真甜！」莉音开心道，「那这件，还有这件，我都要试穿给你看！」\n\n李阳无奈地摇头，但脸上带着笑容。",
+  "initialStats": {
+    "health": 100,
+    "charm": 82,
+    "intelligence": 80,
+    "strength": 45,
+    "agility": 55,
+    "stamina": 55,
+    "arousal": 15,
+    "experience": 15,
+    "sexSkill": 10,
+    "sexSensitivity": 30,
+    "intimacy": 12,
+    "willingness": 15,
+    "corruption": 0,
+    "shame": 8
+  },
+  "description": "李阳陪莉音逛街"
+}

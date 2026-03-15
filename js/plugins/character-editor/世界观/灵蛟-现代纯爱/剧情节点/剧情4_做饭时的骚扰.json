@@ -1,0 +1,22 @@
+{
+  "name": "做饭时的骚扰",
+  "startStage": "日常",
+  "customStartScene": "陈轩在厨房做饭，灵蛟化成小蛇盘在他的肩膀上。\n\n「主人~人家也要吃~」灵蛟吐出蛇信。\n\n「别闹，帮我把盐拿来。」陈轩无奈道。\n\n「人家不要嘛~」灵蛟缠绕着陈轩的脖子，「主人喂我~」\n\n陈轩无奈，只能夹着菜喂她。",
+  "initialStats": {
+    "health": 100,
+    "charm": 85,
+    "intelligence": 78,
+    "strength": 45,
+    "agility": 55,
+    "stamina": 55,
+    "arousal": 15,
+    "experience": 15,
+    "sexSkill": 10,
+    "sexSensitivity": 35,
+    "intimacy": 25,
+    "willingness": 20,
+    "corruption": 0,
+    "shame": 10
+  },
+  "description": "灵蛟在陈轩做饭时骚扰他"
+}

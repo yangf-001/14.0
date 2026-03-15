@@ -27,7 +27,6 @@
         for (const script of scripts) {
             await loadScript(script);
             loadedCount++;
-            console.log(`加载模块 ${loadedCount}/${scripts.length}: ${script}`);
         }
     }
     

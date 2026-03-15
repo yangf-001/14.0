@@ -22,11 +22,14 @@ const StoryController = {
                 charRatio: parseInt(charRatio)
             });
             window._userSelectedStoryNode = null;
-            const main = document.getElementById('mainContent');
-            if (main) {
-                Pages.renderStory(main);
-            }
-            this.updateStoryRightPanel();
+            // 延迟刷新UI，确保数据完全保存
+            setTimeout(() => {
+                const main = document.getElementById('mainContent');
+                if (main) {
+                    Pages.renderStory(main);
+                }
+                this.updateStoryRightPanel();
+            }, 100);
         } catch (err) {
             alert('错误：' + err.message);
         }
@@ -35,11 +38,14 @@ const StoryController = {
     async makeChoice(choice) {
         try {
             await Story.continue(choice);
-            const main = document.getElementById('mainContent');
-            if (main) {
-                Pages.renderStory(main);
-            }
-            this.updateStoryRightPanel();
+            // 延迟刷新UI，确保数据完全保存
+            setTimeout(() => {
+                const main = document.getElementById('mainContent');
+                if (main) {
+                    Pages.renderStory(main);
+                }
+                this.updateStoryRightPanel();
+            }, 100);
         } catch (err) {
             alert('错误：' + err.message);
         }
@@ -131,7 +137,9 @@ const StoryController = {
             
             App.namespace.modal.close();
             alert(`故事已结束！\n标题：${archive.title}\n故事数：${storyCount}个\n总幕数：${sceneCount}`);
-            App.namespace.router.showPage('story');
+            setTimeout(() => {
+                App.namespace.router.showPage('story');
+            }, 100);
         } catch (err) {
             alert('错误：' + err.message);
         }
@@ -140,8 +148,11 @@ const StoryController = {
     async continueStoryWithIntimate(prompt) {
         try {
             await Story.continue(prompt);
-            App.namespace.router.showPage('story');
-            this.updateStoryRightPanel();
+            // 延迟刷新UI，确保数据完全保存
+            setTimeout(() => {
+                App.namespace.router.showPage('story');
+                this.updateStoryRightPanel();
+            }, 100);
         } catch (err) {
             alert('错误：' + err.message);
         }

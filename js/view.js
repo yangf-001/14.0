@@ -280,29 +280,23 @@ View.register('character.background', function(worldId, characterId) {
 View.register('character.stats', function(worldId, characterId) {
     const char = Data.getCharacter(worldId, characterId);
     const DEFAULT_STATS = {
-        health: 100, energy: 100, charm: 50, intelligence: 50,
-        strength: 50, agility: 50, stamina: 50,
-        sexArousal: 0, sexExperience: 0, sexSkill: 0, sexLibido: 50, sexSensitivity: 50, sexExcitement: 0,
-        affection: 50, trust: 50, intimacy: 0, corruption: 0, shame: 50
+        arousal: 0, intimacy: 0, experience: 0, 
+        willingness: 0, corruption: 0
     };
     const stats = { ...DEFAULT_STATS, ...char?.stats };
     
     const statGroups = {
-        '基础属性': ['health', 'energy', 'charm', 'intelligence', 'strength', 'agility', 'stamina'],
-        '色色属性': ['sexArousal', 'sexExperience', 'sexSkill', 'sexLibido', 'sexSensitivity'],
-        '状态属性': ['affection', 'trust', 'intimacy', 'corruption', 'shame']
+        '属性': ['arousal', 'intimacy', 'experience', 'willingness', 'corruption']
     };
     
     const statLabels = {
-        health: '生命', energy: '体力', charm: '魅力', intelligence: '智力', strength: '力量',
-        agility: '敏捷', stamina: '耐力',
-        sexArousal: '欲望', sexExcitement: '兴奋', sexExperience: '经验', sexSkill: '技巧', sexLibido: '性欲', sexSensitivity: '敏感',
-        affection: '好感', trust: '信任', intimacy: '亲密', corruption: '堕落', shame: '羞耻'
+        arousal: '性欲', intimacy: '亲密', experience: '经验', 
+        willingness: '意愿', corruption: '堕落'
     };
     
     let html = '<div>';
     Object.entries(statGroups).forEach(([groupName, statsList]) => {
-        const isAdult = groupName === '色色属性';
+        const isAdult = groupName === '属性';
         html += `<h4 class="stat-group-title ${isAdult ? 'adult' : ''}">${groupName}</h4>`;
         html += '<div class="stat-grid">';
         statsList.forEach(stat => {
@@ -408,9 +402,12 @@ ViewCallbacks.character = {
     updateStat(charId, stat, value) {
         const world = Data.getCurrentWorld();
         if (world) {
-            char.stats = char.stats || {};
-            char.stats[stat] = Math.max(0, Math.min(200, value));
-            Data.updateCharacter(world.id, charId, { stats: char.stats });
+            const char = Data.getCharacter(world.id, charId);
+            if (char) {
+                char.stats = char.stats || {};
+                char.stats[stat] = Math.max(0, Math.min(200, value));
+                Data.updateCharacter(world.id, charId, { stats: char.stats });
+            }
         }
     },
     
@@ -557,29 +554,23 @@ View.register('characterRead.background', function(worldId, characterId) {
 View.register('characterRead.stats', function(worldId, characterId) {
     const char = Data.getCharacter(worldId, characterId);
     const DEFAULT_STATS = {
-        health: 100, energy: 100, charm: 50, intelligence: 50,
-        strength: 50, agility: 50, stamina: 50,
-        sexArousal: 0, sexExperience: 0, sexSkill: 0, sexLibido: 50, sexSensitivity: 50, sexExcitement: 0,
-        affection: 50, trust: 50, intimacy: 0, corruption: 0, shame: 50
+        arousal: 0, intimacy: 0, experience: 0, 
+        willingness: 0, corruption: 0
     };
     const stats = { ...DEFAULT_STATS, ...char?.stats };
     
     const statGroups = {
-        '基础属性': ['health', 'energy', 'charm', 'intelligence', 'strength', 'agility', 'stamina'],
-        '色色属性': ['sexArousal', 'sexExcitement', 'sexExperience', 'sexSkill', 'sexLibido', 'sexSensitivity'],
-        '状态属性': ['affection', 'trust', 'intimacy', 'corruption', 'shame']
+        '属性': ['arousal', 'intimacy', 'experience', 'willingness', 'corruption']
     };
     
     const statLabels = {
-        health: '生命', energy: '体力', charm: '魅力', intelligence: '智力', strength: '力量',
-        agility: '敏捷', stamina: '耐力',
-        sexArousal: '欲望', sexExcitement: '兴奋', sexExperience: '经验', sexSkill: '技巧', sexLibido: '性欲', sexSensitivity: '敏感',
-        affection: '好感', trust: '信任', intimacy: '亲密', corruption: '堕落', shame: '羞耻'
+        arousal: '性欲', intimacy: '亲密', experience: '经验', 
+        willingness: '意愿', corruption: '堕落'
     };
     
     let html = '<div>';
     Object.entries(statGroups).forEach(([groupName, statsList]) => {
-        const isAdult = groupName === '色色属性';
+        const isAdult = groupName === '属性';
         html += `<h4 class="stat-group-title ${isAdult ? 'adult' : ''}">${groupName}</h4>`;
         html += '<div class="stat-grid">';
         statsList.forEach(stat => {

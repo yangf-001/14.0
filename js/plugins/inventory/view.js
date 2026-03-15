@@ -196,6 +196,10 @@ ViewCallbacks.inventory = {
     
     add(characterId) {
         const world = Data.getCurrentWorld();
+        if (!world) {
+            alert('请先选择一个世界');
+            return;
+        }
         const name = document.getElementById('itemName').value;
         if (!name) return;
         
@@ -310,6 +314,10 @@ ViewCallbacks.inventory = {
     
     addFromLibrary(characterId, itemId) {
         const world = Data.getCurrentWorld();
+        if (!world) {
+            alert('请先选择一个世界');
+            return;
+        }
         const plugin = PluginSystem.get('inventory');
         const library = plugin?.getItemLibrary() || [];
         const item = library.find(i => i.id === itemId);
@@ -341,6 +349,10 @@ ViewCallbacks.inventory = {
     
     addFromCharPanel(characterId) {
         const world = Data.getCurrentWorld();
+        if (!world) {
+            alert('请先选择一个世界');
+            return;
+        }
         const name = document.getElementById('itemName')?.value;
         if (!name) return;
         
@@ -371,6 +383,10 @@ ViewCallbacks.inventory = {
     
     addFromLibraryFromCharPanel(characterId, itemId) {
         const world = Data.getCurrentWorld();
+        if (!world) {
+            alert('请先选择一个世界');
+            return;
+        }
         const plugin = PluginSystem.get('inventory');
         const library = plugin?.getItemLibrary() || [];
         const item = library.find(i => i.id === itemId);
@@ -382,7 +398,6 @@ ViewCallbacks.inventory = {
     },
     
     showUseItemTargetPicker(worldId, itemOwnerCharId, itemId) {
-        const world = Data.getCurrentWorld();
         const allChars = Data.getCharacters(worldId) || [];
         const plugin = PluginSystem.get('inventory');
         const items = plugin?.getItems(worldId, itemOwnerCharId) || [];

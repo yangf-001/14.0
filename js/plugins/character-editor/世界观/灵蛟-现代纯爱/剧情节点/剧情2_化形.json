@@ -1,0 +1,22 @@
+{
+  "name": "化形",
+  "startStage": "相处",
+  "customStartScene": "第二天早上，陈轩醒来，发现床上多了一个陌生女子。\n\n「你是谁？！」陈轩惊醒。\n\n「主人~」女子甜甜一笑，「我是昨晚的小蛇呀~」\n\n陈轩目瞪口呆：「蛇？化形？」\n\n「人家修炼了500年嘛~」灵蛟缠上陈轩的手臂，「主人别害怕~」\n\n陈轩看着缠绕在手臂上的青蛇女子，陷入了震惊。",
+  "initialStats": {
+    "health": 100,
+    "charm": 88,
+    "intelligence": 80,
+    "strength": 45,
+    "agility": 55,
+    "stamina": 55,
+    "arousal": 15,
+    "experience": 15,
+    "sexSkill": 10,
+    "sexSensitivity": 35,
+    "intimacy": 10,
+    "willingness": 20,
+    "corruption": 0,
+    "shame": 8
+  },
+  "description": "灵蛟化形成人，第一次以人形出现在陈轩面前"
+}

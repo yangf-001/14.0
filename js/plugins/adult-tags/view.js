@@ -3,7 +3,7 @@ const AdultTagsViewRenderer = {
         const renders = {
             'adultTags.main': this.renderMain.bind(this),
             'adultTags.library': this.renderLibrary.bind(this),
-            'adultTags.excitement': this.renderExcitement.bind(this),
+            'adultTags.arousal': this.renderArousal.bind(this),
             'adultTags.scale': this.renderScale.bind(this),
             'adultTags.tagAdd': this.renderTagAdd.bind(this),
             'adultTags.import': this.renderImport.bind(this)
@@ -20,26 +20,26 @@ const AdultTagsViewRenderer = {
         if (!plugin) return '<div class="empty">插件未加载</div>';
         
         const isMobile = window.innerWidth <= 900;
-        const characters = Data.getCharacters(worldId);
+        const characters = Data.getCharacters(worldId) || [];
         const settings = plugin.getSettings();
         const cooldown = plugin.getCooldownList(worldId);
         const tags = plugin.getTagLibrary();
 
-        const charExcitementHtml = characters.map(char => {
-            const excitement = plugin.getExcitement(worldId, char.id);
-            const stage = plugin.getStage(excitement, worldId);
+        const charArousalHtml = characters.map(char => {
+            const arousal = plugin.getArousal(worldId, char.id);
+            const stage = plugin.getStage(arousal, worldId);
             const stageName = plugin.getStageName(stage);
             const isPlayer = char.isPlayer ? '⭐' : '';
             return `
-                <div class="char-excitement-item">
+                <div class="char-arousal-item">
                     <span class="char-name">${isPlayer}${char.name}</span>
-                    <div class="excitement-bar-container" style="flex:1;margin:0 10px;">
-                        <div class="excitement-bar" style="width: ${excitement}%"></div>
+                    <div class="arousal-bar-container" style="flex:1;margin:0 10px;">
+                        <div class="arousal-bar" style="width: ${arousal}%"></div>
                     </div>
-                    <span class="excitement-value">${excitement}/100 (${stageName})</span>
-                    <button class="btn btn-sm" onclick="AdultTagsView.increaseExcitement('${char.id}', 10)">+10</button>
-                    <button class="btn btn-sm" onclick="AdultTagsView.increaseExcitement('${char.id}', -10)">-10</button>
-                    <button class="btn btn-sm" onclick="AdultTagsView.resetExcitement('${char.id}')">重置</button>
+                    <span class="arousal-value">${arousal}/100 (${stageName})</span>
+                    <button class="btn btn-sm" onclick="AdultTagsView.increaseArousal('${char.id}', 10)">+10</button>
+                    <button class="btn btn-sm" onclick="AdultTagsView.increaseArousal('${char.id}', -10)">-10</button>
+                    <button class="btn btn-sm" onclick="AdultTagsView.resetArousal('${char.id}')">重置</button>
                 </div>
             `;
         }).join('');
@@ -51,10 +51,10 @@ const AdultTagsViewRenderer = {
 
         return `
             <div class="adult-tags-panel">
-                <div class="excitement-section">
-                    <h3>🎭 兴奋值（各角色）</h3>
-                    <div class="char-excitement-list">
-                        ${charExcitementHtml}
+                <div class="arousal-section">
+                    <h3>🎭 性欲（各角色）</h3>
+                    <div class="char-arousal-list">
+                        ${charArousalHtml}
                     </div>
                 </div>
 
@@ -96,8 +96,8 @@ const AdultTagsViewRenderer = {
                             触发时弹出确认对话框（让用户选择是否添加成人内容）
                         </label>
                         <label>
-                            兴奋值增量（每次继续故事后）：
-                            <input type="number" id="excitementIncrease" value="${settings.excitementIncrease}" min="5" max="50" onchange="AdultTagsView.saveSettings()">
+                            性欲增量（每次继续故事后）：
+                            <input type="number" id="arousalIncrease" value="${settings.arousalIncrease || 15}" min="5" max="50" onchange="AdultTagsView.saveSettings()">
                         </label>
                         <label>
                             冷却数量：
@@ -110,18 +110,18 @@ const AdultTagsViewRenderer = {
         `;
     },
 
-    renderExcitement(worldId) {
+    renderArousal(worldId) {
         const plugin = window.AdultTagsPlugin;
         if (!plugin) return '';
         
-        const excitement = plugin.getExcitement(worldId);
-        const stage = plugin.getStage(excitement);
+        const arousal = plugin.getArousal(worldId);
+        const stage = plugin.getStage(arousal);
         const stageName = plugin.getStageName(stage);
         
         return `
-            <div class="excitement-mini">
-                <div class="excitement-bar-mini" style="width: ${excitement}%"></div>
-                <span class="excitement-text">${excitement}/100 (${stageName})</span>
+            <div class="arousal-mini">
+                <div class="arousal-bar-mini" style="width: ${arousal}%"></div>
+                <span class="arousal-text">${arousal}/100 (${stageName})</span>
             </div>
         `;
     },
@@ -201,26 +201,26 @@ const AdultTagsViewRenderer = {
         }
         
         const tagsByStage = {
-            1: tags.filter(t => t.阶段 === 1),
-            2: tags.filter(t => t.阶段 === 2),
-            3: tags.filter(t => t.阶段 === 3)
+            1: tags ? tags.filter(t => t.阶段 === 1) : [],
+            2: tags ? tags.filter(t => t.阶段 === 2) : [],
+            3: tags ? tags.filter(t => t.阶段 === 3) : []
         };
         
         return `
             <div class="tag-library">
-                <h3>阶段1 - 暗示（${tagsByStage[1].length}个）</h3>
+                <h3>阶段1 - 暗示（${tagsByStage[1] ? tagsByStage[1].length : 0}个）</h3>
                 <div class="tag-list">
-                    ${tagsByStage[1].map(t => `<span class="tag" title="权重:${t.权重}">${t.内容}</span>`).join('')}
+                    ${tagsByStage[1] ? tagsByStage[1].map(t => `<span class="tag" title="权重:${t.权重}">${t.内容}</span>`).join('') : ''}
                 </div>
                 
-                <h3>阶段2 - 试探（${tagsByStage[2].length}个）</h3>
+                <h3>阶段2 - 试探（${tagsByStage[2] ? tagsByStage[2].length : 0}个）</h3>
                 <div class="tag-list">
-                    ${tagsByStage[2].map(t => `<span class="tag" title="权重:${t.权重}">${t.内容}</span>`).join('')}
+                    ${tagsByStage[2] ? tagsByStage[2].map(t => `<span class="tag" title="权重:${t.权重}">${t.内容}</span>`).join('') : ''}
                 </div>
                 
-                <h3>阶段3 - 完全放开（${tagsByStage[3].length}个）</h3>
+                <h3>阶段3 - 完全放开（${tagsByStage[3] ? tagsByStage[3].length : 0}个）</h3>
                 <div class="tag-list">
-                    ${tagsByStage[3].map(t => `<span class="tag" title="权重:${t.权重}">${t.内容}</span>`).join('')}
+                    ${tagsByStage[3] ? tagsByStage[3].map(t => `<span class="tag" title="权重:${t.权重}">${t.内容}</span>`).join('') : ''}
                 </div>
             </div>
         `;
@@ -266,24 +266,38 @@ const AdultTagsView = {
         }
     },
 
-    increaseExcitement(charId, amount) {
+    increaseArousal(charId, amount) {
         const world = Data.getCurrentWorld();
         if (!world) return;
         
         const plugin = window.AdultTagsPlugin;
         if (plugin) {
-            plugin.increaseExcitement(world.id, charId, amount);
+            plugin.increaseArousal(world.id, charId, amount);
             this.refresh();
         }
     },
 
-    resetExcitement(charId = null) {
+    resetArousal(charId = null) {
         const world = Data.getCurrentWorld();
         if (!world) return;
         
         const plugin = window.AdultTagsPlugin;
         if (plugin) {
-            plugin.resetExcitement(world.id, charId);
+            const chars = Data.getCharacters(world.id) || [];
+            if (charId) {
+                const char = chars.find(c => String(c.id) === String(charId));
+                if (char && char.stats) {
+                    char.stats.arousal = 0;
+                    Data.updateCharacter(world.id, char.id, char);
+                }
+            } else {
+                for (const char of chars) {
+                    if (char.stats) {
+                        char.stats.arousal = 0;
+                        Data.updateCharacter(world.id, char.id, char);
+                    }
+                }
+            }
             this.refresh();
         }
     },
@@ -351,14 +365,14 @@ const AdultTagsView = {
     },
 
     saveSettings() {
-        const excitementIncrease = parseInt(document.getElementById('excitementIncrease')?.value) || 15;
+        const arousalIncrease = parseInt(document.getElementById('arousalIncrease')?.value) || 15;
         const cooldownCount = parseInt(document.getElementById('cooldownCount')?.value) || 3;
         const userConfirm = document.getElementById('userConfirm')?.checked ?? true;
         
         const plugin = window.AdultTagsPlugin;
         if (plugin) {
             const settings = plugin.getSettings();
-            settings.excitementIncrease = excitementIncrease;
+            settings.arousalIncrease = arousalIncrease;
             settings.cooldownCount = cooldownCount;
             settings.userConfirm = userConfirm;
             plugin.saveSettings(settings);
@@ -435,10 +449,6 @@ View.register('adultTags.main', function(worldId) {
 
 View.register('adultTags.library', function(worldId) {
     return AdultTagsViewRenderer.render('adultTags.library', worldId);
-});
-
-View.register('adultTags.excitement', function(worldId) {
-    return AdultTagsViewRenderer.render('adultTags.excitement', worldId);
 });
 
 View.register('adultTags.scale', function(worldId) {

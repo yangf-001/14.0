@@ -301,19 +301,12 @@ const PromptManagerView = {
         let outputFormat = '';
         let keywords = [];
         
-        // 处理新的 JSON 格式
+        // 处理复杂格式
         if (typeof template === 'object' && template !== null) {
             description = template.描述 || '';
             restriction = template.限制 || '';
             outputFormat = template.输出格式 || '';
             keywords = Array.isArray(template.词条) ? template.词条 : (template.词条 ? [template.词条] : []);
-        } else if (typeof template === 'string') {
-            // 兼容旧的字符串格式
-            const parts = template.split(/\n\s*===\s*\n/);
-            description = parts[0] || '';
-            restriction = parts[1] || '';
-            outputFormat = parts[2] || '';
-            keywords = parts.slice(3) || [];
         }
         
         const descEl = document.getElementById('templateDescription');

@@ -1,0 +1,22 @@
+{
+  "name": "返乡",
+  "startStage": "相遇",
+  "customStartScene": "夏天，李阳回到乡下姑姑家。\n\n「我回来了！」李阳推开门。\n\n「哎呀，阳回来啦！」美雪从厨房走出来，「快来坐，一路累了吧？」\n\n「姑姑好！」李阳笑道。\n\n「表弟！」莉音从楼上冲下来，「终于回来了！」",
+  "initialStats": {
+    "health": 100,
+    "charm": 80,
+    "intelligence": 80,
+    "strength": 45,
+    "agility": 55,
+    "stamina": 55,
+    "arousal": 10,
+    "experience": 15,
+    "sexSkill": 10,
+    "sexSensitivity": 30,
+    "intimacy": 5,
+    "willingness": 10,
+    "corruption": 0,
+    "shame": 5
+  },
+  "description": "李阳回到乡下姑姑家"
+}

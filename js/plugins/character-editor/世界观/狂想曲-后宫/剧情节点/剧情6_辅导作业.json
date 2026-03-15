@@ -1,0 +1,22 @@
+{
+  "name": "辅导作业",
+  "startStage": "日常",
+  "customStartScene": "李阳辅导结衣做作业。\n\n「这题应该这样解。」李阳指着题目。\n\n「嗯...我懂了。」结衣点点头。\n\n「表弟好厉害。」结衣崇拜道。\n\n「好好学，你也能会的。」李阳温和道。",
+  "initialStats": {
+    "health": 100,
+    "charm": 80,
+    "intelligence": 85,
+    "strength": 45,
+    "agility": 55,
+    "stamina": 55,
+    "arousal": 12,
+    "experience": 15,
+    "sexSkill": 10,
+    "sexSensitivity": 28,
+    "intimacy": 10,
+    "willingness": 12,
+    "corruption": 0,
+    "shame": 5
+  },
+  "description": "李阳辅导结衣做作业"
+}

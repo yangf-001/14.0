@@ -1,0 +1,22 @@
+{
+  "name": "雨夜奇遇",
+  "startStage": "相遇",
+  "customStartScene": "雨夜，陈轩下班回家，在路边发现了一条受伤的小青蛇。\n\n「奇怪，这条蛇怎么在这里？」陈轩蹲下身，「还受伤了？」\n\n小青蛇抬起头，金色的眼睛看着陈轩，仿佛在哀求。\n\n「好吧，跟我回家吧。」陈轩脱下外套包住小蛇，「带你回去治伤。」\n\n小青蛇钻进陈轩的怀里IT'S，温暖让它舒服地扭动起来。",
+  "initialStats": {
+    "health": 100,
+    "charm": 80,
+    "intelligence": 82,
+    "strength": 45,
+    "agility": 55,
+    "stamina": 55,
+    "arousal": 10,
+    "experience": 15,
+    "sexSkill": 10,
+    "sexSensitivity": 30,
+    "intimacy": 5,
+    "willingness": 15,
+    "corruption": 0,
+    "shame": 5
+  },
+  "description": "雨夜，陈轩收留了受伤的小青蛇"
+}

@@ -1,6 +1,6 @@
 PluginSystem.register('adult-tags', {
-    description: '成人标签/玩法系统 - 管理兴奋值、尺度控制和成人标签库',
-    features: ['兴奋值管理', '尺度控制', '标签库', '冷却机制', '玩法选择', '选项分级'],
+    description: '成人标签/玩法系统 - 管理性欲、尺度和标签库',
+    features: ['性欲管理', '尺度控制', '标签库', '冷却机制', '玩法选择', '选项分级'],
 
     init() {
         console.log('Adult-tags plugin loaded');
@@ -32,17 +32,7 @@ PluginSystem.register('adult-tags', {
     _initChoiceTemplates() {
         const promptManager = window.PromptManagerPlugin;
         
-        this._choiceTemplates = {
-            '1': {
-                explicitness: '低',
-                template: promptManager ? promptManager.getTemplate('generateChoices', 'daily') : ''
-            },
-            '2': {
-                explicitness: '高',
-                template: promptManager ? promptManager.getTemplate('generateChoices', 'erotic') : ''
-            }
-        };
-        console.log('[成人选项] 已加载内置选项模板:', Object.keys(this._choiceTemplates).length, '个等级');
+        this._choiceTemplates = {};
     },
 
     getChoiceTemplate(excitement = null, worldId = null, charId = null) {
@@ -74,10 +64,10 @@ PluginSystem.register('adult-tags', {
         prompt = prompt.replace('[故事内容]', content);
         prompt = prompt.replace('[角色列表]', charNames);
         prompt = prompt.replace('[角色]', charNames);
-        prompt = prompt.replace('[兴奋值]', stats.arousal);
-        prompt = prompt.replace('[亲密度]', stats.intimacy);
-        prompt = prompt.replace('[经验值]', stats.experience);
-        prompt = prompt.replace('[意愿度]', stats.willingness);
+        prompt = prompt.replace('[性欲]', stats.arousal);
+        prompt = prompt.replace('[亲密]', stats.intimacy);
+        prompt = prompt.replace('[经验]', stats.experience);
+        prompt = prompt.replace('[意愿]', stats.willingness);
         prompt = prompt.replace('[阶段]', stage);
         prompt = prompt.replace('[尺度]', scale);
         
@@ -158,7 +148,6 @@ PluginSystem.register('adult-tags', {
                             if (tags.length > 0) {
                                 allTags.push(...tags);
                                 loadedPaths.push(path);
-                                console.log('Adult tags loaded from:', path, 'count:', tags.length);
                             }
                         } catch (parseErr) {
                             console.warn('Failed to parse JSON from', path, parseErr);
@@ -175,7 +164,6 @@ PluginSystem.register('adult-tags', {
                 this._tags = allTags;
                 // 保存到localStorage，以便下次快速加载
                 this._saveTagsToStorage();
-                console.log('Total adult tags loaded:', allTags.length, 'from', loadedPaths.length, 'files');
                 return;
             }
 
@@ -183,7 +171,6 @@ PluginSystem.register('adult-tags', {
             if (stored) {
                 try {
                     this._tags = JSON.parse(stored);
-                    console.log('Adult tags loaded from storage, count:', this._tags.length);
                     return;
                 } catch (e) {
                     console.warn('Failed to parse stored tags', e);
@@ -258,96 +245,9 @@ PluginSystem.register('adult-tags', {
         localStorage.setItem('adult_tags_library', JSON.stringify(this._tags));
     },
 
-    getExcitement(worldId, charId = null) {
-        try {
-            const characters = Data.getCharacters(worldId);
-            if (!characters || characters.length === 0) return 0;
-            
-            let targetChar;
-            if (charId) {
-                targetChar = characters.find(c => String(c.id) === String(charId));
-            } else {
-                targetChar = characters.find(c => c.isPlayer) || characters[0];
-            }
-            
-            if (!targetChar || !targetChar.stats) return 0;
-            
-            return targetChar.stats.arousal || targetChar.stats.sexArousal || targetChar.stats.sexExcitement || 0;
-        } catch (e) {
-            console.warn('[兴奋值] 读取失败', e);
-            return 0;
-        }
-    },
-
-    setExcitement(worldId, charId, value) {
-        if (typeof charId === 'number' || typeof charId === 'string') {
-            return this._setExcitementForChar(worldId, charId, value);
-        } else {
-            value = charId;
-            return this._setExcitementForPlayer(worldId, value);
-        }
-    },
-
-    _setExcitementForChar(worldId, charId, value) {
-        try {
-            const characters = Data.getCharacters(worldId);
-            if (!characters || characters.length === 0) return 0;
-            
-            const targetChar = characters.find(c => String(c.id) === String(charId));
-            if (!targetChar || !targetChar.stats) return 0;
-            
-            const clampedValue = Math.max(0, Math.min(100, value));
-            targetChar.stats.arousal = clampedValue;
-            targetChar.stats.sexExcitement = clampedValue;
-            targetChar.stats.sexArousal = clampedValue;
-            
-            Data.updateCharacter(worldId, targetChar.id, targetChar);
-            console.log(`[兴奋值] 角色 ${targetChar.name} 兴奋值设为 ${clampedValue}`);
-            return clampedValue;
-        } catch (e) {
-            console.warn('[兴奋值] 设置失败', e);
-            return 0;
-        }
-    },
-
-    _setExcitementForPlayer(worldId, value) {
-        try {
-            const characters = Data.getCharacters(worldId);
-            if (!characters || characters.length === 0) return 0;
-            
-            const playerChar = characters.find(c => c.isPlayer) || characters[0];
-            if (!playerChar || !playerChar.stats) return 0;
-            
-            const clampedValue = Math.max(0, Math.min(100, value));
-            playerChar.stats.arousal = clampedValue;
-            playerChar.stats.sexExcitement = clampedValue;
-            playerChar.stats.sexArousal = clampedValue;
-            
-            Data.updateCharacter(worldId, playerChar.id, playerChar);
-            console.log(`[兴奋值] 主角 ${playerChar.name} 兴奋值设为 ${clampedValue}`);
-            return clampedValue;
-        } catch (e) {
-            console.warn('[兴奋值] 设置失败', e);
-            return 0;
-        }
-    },
-
-    increaseExcitement(worldId, charId = null, amount = null) {
-        const settings = this.getSettings();
-        const increase = (amount !== null && amount !== undefined) ? amount : (settings.excitementIncrease || 15);
-        
-        if (charId === null || charId === undefined) {
-            const current = this.getExcitement(worldId);
-            return this.setExcitement(worldId, current + increase);
-        } else {
-            const current = this.getExcitement(worldId, charId);
-            return this.setExcitement(worldId, charId, current + increase);
-        }
-    },
-
     getIntimacy(worldId, charId = null) {
         try {
-            const characters = Data.getCharacters(worldId);
+            const characters = Data.getCharacters(worldId) || [];
             if (!characters || characters.length === 0) return 0;
             
             let targetChar;
@@ -361,14 +261,14 @@ PluginSystem.register('adult-tags', {
             
             return targetChar.stats.intimacy || 0;
         } catch (e) {
-            console.warn('[亲密度] 读取失败', e);
+            console.warn('[亲密] 读取失败', e);
             return 0;
         }
     },
 
     setIntimacy(worldId, charId, value) {
         try {
-            const characters = Data.getCharacters(worldId);
+            const characters = Data.getCharacters(worldId) || [];
             if (!characters || characters.length === 0) return 0;
             
             let targetChar;
@@ -385,10 +285,10 @@ PluginSystem.register('adult-tags', {
             targetChar.stats.intimacy = clampedValue;
             
             Data.updateCharacter(worldId, targetChar.id, targetChar);
-            console.log(`[亲密度] 角色 ${targetChar.name} 亲密度设为 ${clampedValue}`);
+            console.log(`[亲密] 角色 ${targetChar.name} 亲密设为 ${clampedValue}`);
             return clampedValue;
         } catch (e) {
-            console.warn('[亲密度] 设置失败', e);
+            console.warn('[亲密] 设置失败', e);
             return 0;
         }
     },
@@ -405,7 +305,7 @@ PluginSystem.register('adult-tags', {
 
     getExperience(worldId, charId = null) {
         try {
-            const characters = Data.getCharacters(worldId);
+            const characters = Data.getCharacters(worldId) || [];
             if (!characters || characters.length === 0) return 0;
             
             let targetChar;
@@ -419,14 +319,14 @@ PluginSystem.register('adult-tags', {
             
             return targetChar.stats.experience || 0;
         } catch (e) {
-            console.warn('[经验值] 读取失败', e);
+            console.warn('[经验] 读取失败', e);
             return 0;
         }
     },
 
     setExperience(worldId, charId, value) {
         try {
-            const characters = Data.getCharacters(worldId);
+            const characters = Data.getCharacters(worldId) || [];
             if (!characters || characters.length === 0) return 0;
             
             let targetChar;
@@ -443,10 +343,10 @@ PluginSystem.register('adult-tags', {
             targetChar.stats.experience = clampedValue;
             
             Data.updateCharacter(worldId, targetChar.id, targetChar);
-            console.log(`[经验值] 角色 ${targetChar.name} 经验值设为 ${clampedValue}`);
+            console.log(`[经验] 角色 ${targetChar.name} 经验设为 ${clampedValue}`);
             return clampedValue;
         } catch (e) {
-            console.warn('[经验值] 设置失败', e);
+            console.warn('[经验] 设置失败', e);
             return 0;
         }
     },
@@ -461,9 +361,67 @@ PluginSystem.register('adult-tags', {
         }
     },
 
+    getArousal(worldId, charId = null) {
+        try {
+            const characters = Data.getCharacters(worldId) || [];
+            if (!characters || characters.length === 0) return 0;
+            
+            let targetChar;
+            if (charId) {
+                targetChar = characters.find(c => String(c.id) === String(charId));
+            } else {
+                targetChar = characters.find(c => c.isPlayer) || characters[0];
+            }
+            
+            if (!targetChar || !targetChar.stats) return 0;
+            
+            return targetChar.stats.arousal || 0;
+        } catch (e) {
+            console.warn('[性欲] 读取失败', e);
+            return 0;
+        }
+    },
+
+    setArousal(worldId, charId, value) {
+        try {
+            const characters = Data.getCharacters(worldId) || [];
+            if (!characters || characters.length === 0) return 0;
+            
+            let targetChar;
+            if (typeof charId === 'number' || typeof charId === 'string') {
+                targetChar = characters.find(c => String(c.id) === String(charId));
+            } else {
+                value = charId;
+                targetChar = characters.find(c => c.isPlayer) || characters[0];
+            }
+            
+            if (!targetChar || !targetChar.stats) return 0;
+            
+            const clampedValue = Math.max(0, Math.min(100, value));
+            targetChar.stats.arousal = clampedValue;
+            
+            Data.updateCharacter(worldId, targetChar.id, targetChar);
+            console.log(`[性欲] 角色 ${targetChar.name} 性欲设为 ${clampedValue}`);
+            return clampedValue;
+        } catch (e) {
+            console.warn('[性欲] 设置失败', e);
+            return 0;
+        }
+    },
+
+    increaseArousal(worldId, charId = null, amount = 10) {
+        if (charId === null || charId === undefined) {
+            const current = this.getArousal(worldId);
+            return this.setArousal(worldId, current + amount);
+        } else {
+            const current = this.getArousal(worldId, charId);
+            return this.setArousal(worldId, charId, current + amount);
+        }
+    },
+
     getWillingness(worldId, charId = null) {
         try {
-            const characters = Data.getCharacters(worldId);
+            const characters = Data.getCharacters(worldId) || [];
             if (!characters || characters.length === 0) return 0;
             
             let targetChar;
@@ -477,14 +435,35 @@ PluginSystem.register('adult-tags', {
             
             return targetChar.stats.willingness || 0;
         } catch (e) {
-            console.warn('[意愿度] 读取失败', e);
+            console.warn('[意愿] 读取失败', e);
+            return 0;
+        }
+    },
+
+    getCorruption(worldId, charId = null) {
+        try {
+            const characters = Data.getCharacters(worldId) || [];
+            if (!characters || characters.length === 0) return 0;
+            
+            let targetChar;
+            if (charId) {
+                targetChar = characters.find(c => String(c.id) === String(charId));
+            } else {
+                targetChar = characters.find(c => c.isPlayer) || characters[0];
+            }
+            
+            if (!targetChar || !targetChar.stats) return 0;
+            
+            return targetChar.stats.corruption || 0;
+        } catch (e) {
+            console.warn('[堕落值] 读取失败', e);
             return 0;
         }
     },
 
     setWillingness(worldId, charId, value) {
         try {
-            const characters = Data.getCharacters(worldId);
+            const characters = Data.getCharacters(worldId) || [];
             if (!characters || characters.length === 0) return 0;
             
             let targetChar;
@@ -501,10 +480,37 @@ PluginSystem.register('adult-tags', {
             targetChar.stats.willingness = clampedValue;
             
             Data.updateCharacter(worldId, targetChar.id, targetChar);
-            console.log(`[意愿度] 角色 ${targetChar.name} 意愿度设为 ${clampedValue}`);
+            console.log(`[意愿] 角色 ${targetChar.name} 意愿设为 ${clampedValue}`);
             return clampedValue;
         } catch (e) {
-            console.warn('[意愿度] 设置失败', e);
+            console.warn('[意愿] 设置失败', e);
+            return 0;
+        }
+    },
+
+    setCorruption(worldId, charId, value) {
+        try {
+            const characters = Data.getCharacters(worldId) || [];
+            if (!characters || characters.length === 0) return 0;
+            
+            let targetChar;
+            if (typeof charId === 'number' || typeof charId === 'string') {
+                targetChar = characters.find(c => String(c.id) === String(charId));
+            } else {
+                value = charId;
+                targetChar = characters.find(c => c.isPlayer) || characters[0];
+            }
+            
+            if (!targetChar || !targetChar.stats) return 0;
+            
+            const clampedValue = Math.max(0, Math.min(100, value));
+            targetChar.stats.corruption = clampedValue;
+            
+            Data.updateCharacter(worldId, targetChar.id, targetChar);
+            console.log(`[堕落] 角色 ${targetChar.name} 堕落值设为 ${clampedValue}`);
+            return clampedValue;
+        } catch (e) {
+            console.warn('[堕落] 设置失败', e);
             return 0;
         }
     },
@@ -521,23 +527,57 @@ PluginSystem.register('adult-tags', {
 
     getAllStats(worldId, charId = null) {
         return {
-            arousal: this.getExcitement(worldId, charId),
+            arousal: this.getArousal(worldId, charId),
             intimacy: this.getIntimacy(worldId, charId),
             experience: this.getExperience(worldId, charId),
-            willingness: this.getWillingness(worldId, charId)
+            willingness: this.getWillingness(worldId, charId),
+            corruption: this.getCorruption(worldId, charId)
         };
     },
 
-    resetExcitement(worldId, charId = null) {
-        if (charId === null || charId === undefined) {
-            return this.setExcitement(worldId, 0);
-        } else {
-            return this.setExcitement(worldId, charId, 0);
+    getExcitement(worldId, charId = null) {
+        return this.getArousal(worldId, charId) || 0;
+    },
+
+    getAverageStats(worldId) {
+        try {
+            const characters = Data.getCharacters(worldId) || [];
+            if (!characters || characters.length === 0) {
+                return { arousal: 0, intimacy: 0, experience: 0, willingness: 0, corruption: 0 };
+            }
+            
+            let totalArousal = 0, totalIntimacy = 0, totalExperience = 0, totalWillingness = 0, totalCorruption = 0;
+            let count = 0;
+            
+            for (const char of characters) {
+                if (char.stats) {
+                    totalArousal += char.stats.arousal || char.stats.sexArousal || char.stats.sexExcitement || 0;
+                    totalIntimacy += char.stats.intimacy || 0;
+                    totalExperience += char.stats.experience || 0;
+                    totalWillingness += char.stats.willingness || 0;
+                    totalCorruption += char.stats.corruption || 0;
+                    count++;
+                }
+            }
+            
+            if (count === 0) {
+                return { arousal: 0, intimacy: 0, experience: 0, willingness: 0, corruption: 0 };
+            }
+            
+            return {
+                arousal: Math.round(totalArousal / count),
+                intimacy: Math.round(totalIntimacy / count),
+                experience: Math.round(totalExperience / count),
+                willingness: Math.round(totalWillingness / count),
+                corruption: Math.round(totalCorruption / count)
+            };
+        } catch (e) {
+            console.warn('[平均属性] 计算失败', e);
+            return { arousal: 0, intimacy: 0, experience: 0, willingness: 0, corruption: 0 };
         }
     },
 
     resetAllStats(worldId, charId = null) {
-        this.setExcitement(worldId, charId, 0);
         this.setIntimacy(worldId, charId, 0);
         this.setExperience(worldId, charId, 0);
         this.setWillingness(worldId, charId, 0);
@@ -555,14 +595,15 @@ PluginSystem.register('adult-tags', {
             worldId = world?.id;
         }
         
-        const stats = this.getAllStats(worldId, charId);
-        const weights = { arousal: 0.4, intimacy: 0.3, experience: 0.2, willingness: 0.1 };
+        const stats = this.getAverageStats(worldId);
+        const weights = { arousal: 0.3, intimacy: 0.25, experience: 0.15, willingness: 0.15, corruption: 0.15 };
         
         const score = 
             stats.arousal * weights.arousal +
             stats.intimacy * weights.intimacy +
             stats.experience * weights.experience +
-            stats.willingness * weights.willingness;
+            stats.willingness * weights.willingness +
+            (stats.corruption || 0) * weights.corruption;
         
         return Math.round(score);
     },
@@ -775,21 +816,21 @@ PluginSystem.register('adult-tags', {
         if (charId && typeof charId === 'object' && Array.isArray(charId)) {
             const charIds = charId;
             for (const id of charIds) {
-                const excitement = this.getExcitement(worldId, id);
-                if (stage === 1 && excitement >= 10) {
-                    console.log(`[成人标签] 角色ID ${id} 兴奋值符合要求（${excitement}），准备触发`);
+                const arousalValue = this.getArousal(worldId, id);
+                if (stage === 1 && arousalValue >= 10) {
+                    console.log(`[成人标签] 角色ID ${id} 性欲符合要求（${arousalValue}），准备触发`);
                     return true;
                 }
                 if (stage === 2) {
-                    console.log(`[成人标签] 角色ID ${id} 兴奋值（${excitement}），色色模式可直接触发`);
+                    console.log(`[成人标签] 角色ID ${id} 性欲（${arousalValue}），色色模式可直接触发`);
                     return true;
                 }
             }
-            console.log(`[成人标签] 所有角色兴奋值不足（阶段${stage}需要：${stage === 1 ? '≥10' : '色色模式可直接触发'}）`);
+            console.log(`[成人标签] 所有角色性欲不足（阶段${stage}需要：${stage === 1 ? '≥10' : '色色模式可直接触发'}）`);
             return false;
         }
         
-        const excitement = this.getExcitement(worldId, charId);
+        const arousalValue = this.getArousal(worldId, charId);
         
         const stageRequirements = {
             1: { arousal: 10, intimacy: 0, experience: 0, willingness: 0 },
@@ -799,7 +840,7 @@ PluginSystem.register('adult-tags', {
         const req = stageRequirements[stage];
         
         if (arousal < req.arousal || intimacy < req.intimacy || experience < req.experience || willingness < req.willingness) {
-            console.log(`[成人标签] 属性不足（阶段${stage}需要：兴奋值≥${req.arousal}, 亲密度≥${req.intimacy}, 经验值≥${req.experience}, 意愿度≥${req.willingness}），当前：兴奋值${arousal}, 亲密度${intimacy}, 经验值${experience}, 意愿度${willingness}`);
+            console.log(`[成人标签] 属性不足（阶段${stage}需要：性欲≥${req.arousal}, 亲密≥${req.intimacy}, 经验≥${req.experience}, 意愿≥${req.willingness}），当前：性欲${arousal}, 亲密${intimacy}, 经验${experience}, 意愿${willingness}`);
             return false;
         }
         
@@ -915,15 +956,15 @@ PluginSystem.register('adult-tags', {
 
     buildAdultPrompt(worldId, currentScene, characters, choice = null) {
         const world = Data.getCurrentWorld();
-        const excitement = this.getExcitement(world?.id);
-        const stage = this.getStage(excitement);
+        const arousalValue = this.getArousal(world?.id);
+        const stage = this.getStage(arousalValue);
         const scale = this.getScale(world?.id);
         
         const selectedTags = this.selectRandomTags(world?.id, 2, stage, scale, currentScene);
         const cooldown = this.getCooldownList(world?.id);
         
         const prompt = {
-            excitement: excitement,
+            arousal: arousalValue,
             stage: stage,
             stageName: this.getStageName(stage),
             scale: scale,
@@ -942,72 +983,38 @@ PluginSystem.register('adult-tags', {
 
         const world = Data.getCurrentWorld();
         const stats = this.getAllStats(world?.id);
-        const excitement = stats.arousal;
+        const arousalValue = stats.arousal;
         const intimacy = stats.intimacy;
         const experience = stats.experience;
         const willingness = stats.willingness;
-        const stage = this.getStage(excitement, world?.id);
+        const stage = this.getStage(arousalValue, world?.id);
         const stageName = this.getStageName(stage);
         const scale = this.getScale(world?.id);
         
         const selectedTags = this.selectRandomTags(world?.id, 2, stage, scale, currentScene);
         const cooldown = this.getCooldownList(world?.id);
 
-        const promptManager = window.PromptManagerPlugin;
-        const stageDescription = promptManager 
-            ? promptManager.getStageDescription(stage, 'default')
-            : (stage === 1 ? '日常模式' : '色色模式');
-        let template = '';
-        
-        if (promptManager) {
-            template = promptManager.getTemplateWithPreset('storyChoice', 'default', {
-                '用户选择': choice || '继续剧情',
-                '上下文': currentScene,
-                '当前阶段': stageName,
-                '阶段': stageName,
-                '尺度描述': stageDescription,
-                '尺度': stageDescription
-            });
-            
-            const adultSupplement = `
+        const adultSupplement = `
 
 【成人内容补充】
-兴奋值：${excitement}/100
-亲密度：${intimacy}/100
-经验值：${experience}/100
-意愿度：${willingness}/100
+性欲：${arousalValue}/100
+亲密：${intimacy || 0}/100
+经验：${experience || 0}/100
+意愿：${willingness || 0}/100
+堕落：${stats.corruption || 0}/100
+
+当前阶段：${stage}（${stageName}）
+尺度级别：${scale}
 
 【必须融入的玩法】（选取1-2个，自然融入剧情）：
 ${selectedTags.length > 0 ? selectedTags.map(t => `- ${t}`).join('\n') : '（无标签可用）'}
 
 【冷却中的标签】（避免重复使用）：
 ${cooldown.length > 0 ? cooldown.join('、') : '暂无'}`;
-            
-            template += adultSupplement;
-        }
-
-        if (!template) {
-            template = `
-【成人内容要求】
-兴奋值：${excitement}/100
-当前阶段：${stage}（${stageName}）
-尺度级别：${scale}
-阶段限制：${stageDescriptions[stage]}
-
-【必须融入的玩法】（选取1-2个，自然融入剧情）：
-${selectedTags.length > 0 ? selectedTags.map(t => `- ${t}`).join('\n') : '（无标签可用）'}
-
-【冷却中的标签】（避免重复使用）：
-${cooldown.length > 0 ? cooldown.join('、') : '暂无'}
-
-上下文：
-${currentScene}
-`;
-        }
 
         return {
-            template: template,
-            excitement: excitement,
+            supplement: adultSupplement,
+            arousal: arousalValue,
             stage: stage,
             stageName: stageName,
             scale: scale,
@@ -1032,11 +1039,11 @@ ${currentScene}
 
         const world = Data.getCurrentWorld();
         const stats = this.getAllStats(world?.id);
-        const excitement = stats.arousal;
+        const arousalValue = stats.arousal;
         const intimacy = stats.intimacy;
         const experience = stats.experience;
         const willingness = stats.willingness;
-        const stage = this.getStage(excitement, world?.id);
+        const stage = this.getStage(arousalValue, world?.id);
         const stageName = this.getStageName(stage);
         const scale = this.getScale(world?.id);
         const cooldown = this.getCooldownList(world?.id);
@@ -1048,10 +1055,11 @@ ${currentScene}
 
         const template = `
 【成人内容要求】
-兴奋值：${excitement}/100
-亲密度：${intimacy}/100
-经验值：${experience}/100
-意愿度：${willingness}/100
+性欲：${arousalValue}/100
+亲密：${intimacy || 0}/100
+经验：${experience || 0}/100
+意愿：${willingness || 0}/100
+堕落：${stats.corruption || 0}/100
 当前阶段：${stage}（${stageName}）
 尺度级别：${scale}
 阶段限制：${stageDescription}
@@ -1065,7 +1073,7 @@ ${cooldown.length > 0 ? cooldown.join('、') : '暂无'}
 【重要规则】
 1. 必须将用户选择的玩法自然融入剧情
 2. 同一玩法不要连续使用超过2次
-3. 根据兴奋值和阶段决定内容的露骨程度
+3. 根据性欲和阶段决定内容的露骨程度
 4. 严格按照设定的尺度级别生成内容
 5. 描写要流畅如小说，避免罗列
 6. 【强制限制】女角色不能和陌生人、路人或其他未建立关系的角色进行亲密行为。所有互动必须由主角和已建立关系的角色完成，如果需要多人参与，请用主角的分身、神奇道具、魔法道具、玩具等来代替。用词直白露骨，直接描写性器官接触、插入、抽动、高潮等细节。
@@ -1115,61 +1123,6 @@ ${cooldown.length > 0 ? cooldown.join('、') : '暂无'}
         return mentionedChars;
     },
 
-    parseExcitementChanges(storyContent, characters) {
-        if (!storyContent || !characters || characters.length === 0) {
-            return [];
-        }
-
-        const changes = [];
-        const regex = /【(\S+)的兴奋值变化】\+(\d+)/g;
-        let match;
-
-        while ((match = regex.exec(storyContent)) !== null) {
-            const charName = match[1];
-            const changeAmount = parseInt(match[2], 10);
-            const char = characters.find(c => c.name === charName);
-            
-            if (char) {
-                changes.push({
-                    charId: char.id,
-                    charName: char.name,
-                    change: changeAmount
-                });
-                console.log(`[兴奋值解析] 角色 ${charName} 兴奋值变化: +${changeAmount}`);
-            }
-        }
-
-        if (changes.length === 0) {
-            const defaultMatch = storyContent.match(/【兴奋值变化】\+(\d+)/);
-            if (defaultMatch) {
-                const changeAmount = parseInt(defaultMatch[1], 10);
-                const playerChar = characters.find(c => c.isPlayer) || characters[0];
-                if (playerChar) {
-                    changes.push({
-                        charId: playerChar.id,
-                        charName: playerChar.name,
-                        change: changeAmount
-                    });
-                    console.log(`[兴奋值解析] 默认角色 ${playerChar.name} 兴奋值变化: +${changeAmount}`);
-                }
-            }
-        }
-
-        return changes;
-    },
-
-    applyExcitementChanges(worldId, changes) {
-        if (!worldId || !changes || changes.length === 0) {
-            return;
-        }
-
-        for (const change of changes) {
-            const current = this.getExcitement(worldId, change.charId);
-            this.setExcitement(worldId, change.charId, current + change.change);
-            console.log(`[兴奋值更新] 角色 ${change.charName} 兴奋值: ${current} -> ${current + change.change}`);
-        }
-    },
-
     parseAllStatChanges(storyContent, characters) {
         if (!storyContent || !characters || characters.length === 0) {
             return [];
@@ -1179,21 +1132,32 @@ ${cooldown.length > 0 ? cooldown.join('、') : '暂无'}
             arousal: [],
             intimacy: [],
             experience: [],
-            willingness: []
+            willingness: [],
+            corruption: []
         };
 
         const patterns = {
-            arousal: /【(\S+)的兴奋值变化】\+(\d+)/g,
-            intimacy: /【(\S+)的亲密度变化】\+(\d+)/g,
-            experience: /【(\S+)的经验值变化】\+(\d+)/g,
-            willingness: /【(\S+)的意愿度变化】\+(\d+)/g
+            arousal: /【(\S+)的性欲变化】\+(\d+)/g,
+            intimacy: /【(\S+)的亲密变化】\+(\d+)/g,
+            experience: /【(\S+)的经验变化】\+(\d+)/g,
+            willingness: /【(\S+)的意愿变化】\+(\d+)/g,
+            corruption: /【(\S+)的堕落变化】\+(\d+)/g
         };
 
         const defaultPatterns = {
-            arousal: /【兴奋值变化】\+(\d+)/,
-            intimacy: /【亲密度变化】\+(\d+)/,
-            experience: /【经验值变化】\+(\d+)/,
-            willingness: /【意愿度变化】\+(\d+)/
+            arousal: /【性欲变化】\+(\d+)/,
+            intimacy: /【亲密变化】\+(\d+)/,
+            experience: /【经验变化】\+(\d+)/,
+            willingness: /【意愿变化】\+(\d+)/,
+            corruption: /【堕落变化】\+(\d+)/
+        };
+
+        const statNames = {
+            arousal: '性欲',
+            intimacy: '亲密',
+            experience: '经验',
+            willingness: '意愿',
+            corruption: '堕落'
         };
 
         for (const [statType, regex] of Object.entries(patterns)) {
@@ -1209,10 +1173,10 @@ ${cooldown.length > 0 ? cooldown.join('、') : '暂无'}
                         charName: char.name,
                         change: changeAmount
                     });
-                    console.log(`[${statType === 'arousal' ? '兴奋值' : statType === 'intimacy' ? '亲密度' : statType === 'experience' ? '经验值' : '意愿度'}解析] 角色 ${charName} 变化: +${changeAmount}`);
+                    console.log(`[${statNames[statType]}解析] 角色 ${charName} 变化: +${changeAmount}`);
                 }
             }
-
+            
             if (changes[statType].length === 0) {
                 const defaultMatch = storyContent.match(defaultPatterns[statType]);
                 if (defaultMatch) {
@@ -1224,11 +1188,12 @@ ${cooldown.length > 0 ? cooldown.join('、') : '暂无'}
                             charName: playerChar.name,
                             change: changeAmount
                         });
+                        console.log(`[${statNames[statType]}解析] 默认角色 ${playerChar.name} 变化: +${changeAmount}`);
                     }
                 }
             }
         }
-
+        
         return changes;
     },
 
@@ -1241,28 +1206,31 @@ ${cooldown.length > 0 ? cooldown.join('、') : '暂无'}
             changes = { arousal: changes };
         }
         
-        for (const statType of ['arousal', 'intimacy', 'experience', 'willingness']) {
+        for (const statType of ['arousal', 'intimacy', 'experience', 'willingness', 'corruption']) {
             if (!changes[statType] || !Array.isArray(changes[statType])) continue;
             
             const statGetters = {
-                arousal: (wid, cid) => this.getExcitement(wid, cid),
+                arousal: (wid, cid) => this.getArousal(wid, cid),
                 intimacy: (wid, cid) => this.getIntimacy(wid, cid),
                 experience: (wid, cid) => this.getExperience(wid, cid),
-                willingness: (wid, cid) => this.getWillingness(wid, cid)
+                willingness: (wid, cid) => this.getWillingness(wid, cid),
+                corruption: (wid, cid) => this.getCorruption(wid, cid)
             };
             
             const statSetters = {
-                arousal: (wid, cid, v) => this.setExcitement(wid, cid, v),
+                arousal: (wid, cid, v) => this.setArousal(wid, cid, v),
                 intimacy: (wid, cid, v) => this.setIntimacy(wid, cid, v),
                 experience: (wid, cid, v) => this.setExperience(wid, cid, v),
-                willingness: (wid, cid, v) => this.setWillingness(wid, cid, v)
+                willingness: (wid, cid, v) => this.setWillingness(wid, cid, v),
+                corruption: (wid, cid, v) => this.setCorruption(wid, cid, v)
             };
             
             const statNames = {
-                arousal: '兴奋值',
-                intimacy: '亲密度',
-                experience: '经验值',
-                willingness: '意愿度'
+                arousal: '性欲',
+                intimacy: '亲密',
+                experience: '经验',
+                willingness: '意愿',
+                corruption: '堕落'
             };
             
             const getter = statGetters[statType];
@@ -1270,15 +1238,7 @@ ${cooldown.length > 0 ? cooldown.join('、') : '暂无'}
             const statName = statNames[statType];
             
             for (const change of changes[statType]) {
-                const current = typeof getter === 'function' 
-                    ? getter(worldId, change.charId)
-                    : statType === 'arousal'
-                    ? this.getExcitement(worldId, change.charId)
-                    : statType === 'intimacy'
-                    ? this.getIntimacy(worldId, change.charId)
-                    : statType === 'experience'
-                    ? this.getExperience(worldId, change.charId)
-                    : this.getWillingness(worldId, change.charId);
+                const current = getter ? getter(worldId, change.charId) : 0;
                 
                 setter(worldId, change.charId, current + change.change);
                 console.log(`[${statName}更新] 角色 ${change.charName}: ${current} -> ${current + change.change}`);

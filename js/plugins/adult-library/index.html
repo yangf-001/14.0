@@ -386,7 +386,7 @@
             if (result.triggered) {
                 showResult(`💕 触发成功!\n\n触发类型: ${result.type}\n\n场景元素:\n${JSON.stringify(result.scene, null, 2)}\n\n生成提示:\n${result.prompt}`);
             } else {
-                showResult('😢 触发失败\n\n当前条件不足，请尝试:\n- 提高亲密度/欲望值\n- 切换到其他触发模式\n- 调整自动触发配置');
+                showResult('😢 触发失败\n\n当前条件不足，请尝试:\n- 提高亲密/欲望\n- 切换到其他触发模式\n- 调整自动触发配置');
             }
         }
         
@@ -412,7 +412,7 @@
             if (result.triggered) {
                 showResult(`触发类型: ${result.type}\n\n场景元素:\n${JSON.stringify(result.scene, null, 2)}\n\n生成提示:\n${result.prompt}`);
             } else {
-                showResult('当前条件下未触发亲密互动\n\n可能原因:\n- 亲密度/欲望值不足\n- 概率随机未命中\n- 触发模式设置问题');
+                showResult('当前条件下未触发亲密互动\n\n可能原因:\n- 亲密/欲望不足\n- 概率随机未命中\n- 触发模式设置问题');
             }
         }
         

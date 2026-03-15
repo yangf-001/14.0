@@ -1,0 +1,22 @@
+{
+  "name": "美味早餐",
+  "startStage": "日常",
+  "customStartScene": "早上，美雪做好了早餐。\n\n「阳，快来吃饭！」美雪招呼道。\n\n「好香啊，姑姑。」李阳坐到餐桌前。\n\n「表弟，多吃点。」莉音递给李阳一个包子。\n\n「谢谢表姐。」李阳笑道。\n\n结衣默默吃着饭，偶尔偷偷看向表弟。",
+  "initialStats": {
+    "health": 100,
+    "charm": 80,
+    "intelligence": 80,
+    "strength": 45,
+    "agility": 55,
+    "stamina": 55,
+    "arousal": 10,
+    "experience": 15,
+    "sexSkill": 10,
+    "sexSensitivity": 25,
+    "intimacy": 8,
+    "willingness": 10,
+    "corruption": 0,
+    "shame": 5
+  },
+  "description": "美雪做早餐，一家人一起吃饭"
+}

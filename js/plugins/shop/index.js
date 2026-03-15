@@ -35,7 +35,6 @@ PluginSystem.register('shop', {
                                 }
                             });
                         }
-                        console.log('Shop goods loaded from:', path);
                         return Promise.resolve();
                     }
                 }

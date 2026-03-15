@@ -31,7 +31,7 @@ const TimePlugin = {
 
     getCharactersWithBirthday(worldId) {
         const timeData = this._getWorldTime(worldId);
-        const characters = Data.getCharacters(worldId);
+        const characters = Data.getCharacters(worldId) || [];
         const birthdays = timeData.characterBirthdays || {};
         
         return characters
@@ -52,7 +52,7 @@ const TimePlugin = {
         const currentDay = timeData.currentDay;
         
         const birthdays = timeData.characterBirthdays || {};
-        const characters = Data.getCharacters(worldId);
+        const characters = Data.getCharacters(worldId) || [];
         const upcoming = [];
         
         for (const char of characters) {
@@ -98,7 +98,7 @@ const TimePlugin = {
         
         const timeData = this._getWorldTime(worldId);
         const birthdays = timeData.characterBirthdays || {};
-        const characters = Data.getCharacters(worldId);
+        const characters = Data.getCharacters(worldId) || [];
         const events = [];
         
         for (const char of characters) {
@@ -106,9 +106,10 @@ const TimePlugin = {
             if (!b) continue;
             
             if (b.month === timeData.currentMonth && b.day === timeData.currentDay) {
-                const baseAge = timeData.characterAges?.[char.id]?.baseAge || char.age;
+                const charAge = char.age ?? 18;
+                const baseAge = timeData.characterAges?.[char.id]?.baseAge || charAge;
                 const yearsPassed = timeData.currentYear - (timeData.storyStartYear || timeData.currentYear);
-                const currentAge = (timeData.protagonistAge || baseAge) + (char.age - (timeData.protagonistAge || baseAge)) + yearsPassed;
+                const currentAge = (timeData.protagonistAge || baseAge) + (charAge - (timeData.protagonistAge || baseAge)) + yearsPassed;
                 
                 events.push({
                     type: 'birthday',
@@ -127,23 +128,28 @@ const TimePlugin = {
         const config = this._getConfig();
         if (!config.birthdayEnabled) return '';
         
-        const upcoming = this.getUpcomingBirthdays(worldId, config.birthdayAdvanceDays || 7);
-        if (upcoming.length === 0) return '';
-        
-        const today = upcoming.filter(b => b.isToday);
-        const soon = upcoming.filter(b => !b.isToday);
-        
-        let context = '\n【生日信息】';
-        
-        if (today.length > 0) {
-            context += '\n今天是以下角色的生日：' + today.map(b => `${b.name}(${b.birthdayString})`).join('、') + '！';
+        try {
+            const upcoming = this.getUpcomingBirthdays(worldId, config.birthdayAdvanceDays || 7) || [];
+            if (!Array.isArray(upcoming) || upcoming.length === 0) return '';
+            
+            const today = Array.isArray(upcoming) ? upcoming.filter(b => b && b.isToday) : [];
+            const soon = Array.isArray(upcoming) ? upcoming.filter(b => b && !b.isToday) : [];
+            
+            let context = '\n【生日信息】';
+            
+            if (Array.isArray(today) && today.length > 0) {
+                context += '\n今天是以下角色的生日：' + today.map(b => `${b.name}(${b.birthdayString})`).join('、') + '！';
+            }
+            
+            if (Array.isArray(soon) && soon.length > 0) {
+                context += '\n近期生日：' + soon.map(b => `${b.name}(${b.birthdayString},还有${b.daysUntil}天)`).join('、') + '。';
+            }
+            
+            return context;
+        } catch (e) {
+            console.error('[TimePlugin] getBirthdayContext 错误:', e);
+            return '';
         }
-        
-        if (soon.length > 0) {
-            context += '\n近期生日：' + soon.map(b => `${b.name}(${b.birthdayString},还有${b.daysUntil}天)`).join('、') + '。';
-        }
-        
-        return context;
     },
 
     getBirthdayAPI() {
@@ -212,7 +218,6 @@ const TimePlugin = {
                     }
                     
                     this._relationLoaded = true;
-                    console.log('[TimePlugin] 关系库加载成功:', this._relationTypes.length, '种关系，路径:', path);
                     return;
                 }
             } catch (e) {
@@ -335,10 +340,10 @@ const TimePlugin = {
         if (!char) return;
 
         if (!timeData.characterAges[charId]) {
-            timeData.characterAges[charId] = { baseAge: char.age, relationToProtagonist: 0 };
+            timeData.characterAges[charId] = { baseAge: char.age ?? 18, relationToProtagonist: 0 };
         }
         
-        timeData.characterAges[charId].baseAge = char.age;
+        timeData.characterAges[charId].baseAge = char.age ?? 18;
         timeData.characterAges[charId].relationToProtagonist = relationOffset;
         
         this._saveWorldTime(worldId, timeData);
@@ -351,9 +356,10 @@ const TimePlugin = {
             return;
         }
 
-        const relation = char.age - timeData.protagonistAge;
+        const charAge = char.age ?? 18;
+        const relation = charAge - timeData.protagonistAge;
         timeData.characterAges[charId] = {
-            baseAge: char.age,
+            baseAge: charAge,
             relationToProtagonist: relation
         };
         
@@ -366,14 +372,15 @@ const TimePlugin = {
             return;
         }
 
-        const characters = Data.getCharacters(worldId);
+        const characters = Data.getCharacters(worldId) || [];
         let hasChanges = false;
         
         characters.forEach(char => {
             if (!timeData.characterAges[char.id] || timeData.characterAges[char.id].relationToProtagonist === undefined) {
-                const relation = char.age - timeData.protagonistAge;
+                const charAge = char.age ?? 18;
+                const relation = charAge - timeData.protagonistAge;
                 timeData.characterAges[char.id] = {
-                    baseAge: char.age,
+                    baseAge: charAge,
                     relationToProtagonist: relation
                 };
                 hasChanges = true;
@@ -404,8 +411,8 @@ const TimePlugin = {
 
         this._saveWorldTime(worldId, timeData);
         
-        const birthdayEvents = this.checkBirthdayEvents(worldId);
-        if (birthdayEvents.length > 0) {
+        const birthdayEvents = this.checkBirthdayEvents(worldId) || [];
+        if (Array.isArray(birthdayEvents) && birthdayEvents.length > 0) {
             for (const event of birthdayEvents) {
                 console.log(`[生日事件] 今天是${event.charName}的生日！TA满${event.age}岁了！`);
                 PluginSystem.triggerPluginEvent('birthday', event);
@@ -451,16 +458,18 @@ const TimePlugin = {
 
     getCharacterAge(char, worldId) {
         const timeData = this._getWorldTime(worldId);
+        const charAge = char.age ?? 18;
+        
         if (!timeData.storyStartYear || timeData.protagonistAge === null) {
-            return char.age;
+            return charAge;
         }
 
         const existingRelation = timeData.characterAges[char.id];
         
         if (!existingRelation || existingRelation.relationToProtagonist === undefined) {
-            const relation = char.age - timeData.protagonistAge;
+            const relation = charAge - timeData.protagonistAge;
             timeData.characterAges[char.id] = {
-                baseAge: char.age,
+                baseAge: charAge,
                 relationToProtagonist: relation
             };
             this._saveWorldTime(worldId, timeData);
@@ -473,7 +482,7 @@ const TimePlugin = {
         const relation = existingRelation.relationToProtagonist || 0;
         const yearsPassed = timeData.currentYear - timeData.storyStartYear;
         
-        const baseAge = existingRelation.baseAge || char.age;
+        const baseAge = existingRelation.baseAge || charAge;
         const dynamicAge = timeData.protagonistAge + relation + yearsPassed;
         
         return Math.max(0, Math.min(999, dynamicAge));
@@ -491,15 +500,16 @@ const TimePlugin = {
     },
 
     getAllCharactersWithAge(worldId) {
-        const characters = Data.getCharacters(worldId);
+        const characters = Data.getCharacters(worldId) || [];
         const timeDisplay = this.getWorldTimeDisplay(worldId);
 
         return characters.map(char => {
+            const charAge = char.age ?? 18;
             const dynamicAge = this.getCharacterDynamicAge(worldId, char.id);
             return {
                 id: char.id,
                 name: char.name,
-                baseAge: char.age,
+                baseAge: charAge,
                 dynamicAge: dynamicAge,
                 role: char.role,
                 gender: char.gender
@@ -527,47 +537,64 @@ const TimePlugin = {
     },
 
     getRelationTypes() {
-        if (!this._relationLoaded || this._relationTypes.length === 0) {
-            this._loadRelationTypes();
-            // 如果_relationTypes仍然为空，返回默认关系类型数组
-            if (this._relationTypes.length === 0) {
-                return [
-                    { id: 0, name: '陌生人', emoji: '👤', description: '初次见面，互不了解' },
-                    { id: 1, name: '认识', emoji: '👋', description: '知道对方的名字和基本身份' },
-                    { id: 2, name: '熟人', emoji: '🤝', description: '有过交集，但关系较浅' },
-                    { id: 3, name: '朋友', emoji: '👫', description: '可以正常交流，有一定信任' },
-                    { id: 4, name: '暧昧', emoji: '💕', description: '对对方有好感，关系微妙' },
-                    { id: 5, name: '恋人', emoji: '💖', description: '开始交往，确认恋爱关系' },
-                    { id: 6, name: '女朋友', emoji: '💑', description: '亲密的恋爱关系' },
-                    { id: 7, name: '未婚妻', emoji: '💍', description: '订婚后的关系' },
-                    { id: 8, name: '妻子', emoji: '🏩', description: '婚姻关系' }
-                ];
+        try {
+            if (!this._relationLoaded || !Array.isArray(this._relationTypes) || this._relationTypes.length === 0) {
+                this._loadRelationTypes();
+                // 如果_relationTypes仍然为空，返回默认关系类型数组
+                if (!Array.isArray(this._relationTypes) || this._relationTypes.length === 0) {
+                    return [
+                        { id: 0, name: '陌生人', emoji: '👤', description: '初次见面，互不了解' },
+                        { id: 1, name: '认识', emoji: '👋', description: '知道对方的名字和基本身份' },
+                        { id: 2, name: '熟人', emoji: '🤝', description: '有过交集，但关系较浅' },
+                        { id: 3, name: '朋友', emoji: '👫', description: '可以正常交流，有一定信任' },
+                        { id: 4, name: '暧昧', emoji: '💕', description: '对对方有好感，关系微妙' },
+                        { id: 5, name: '恋人', emoji: '💖', description: '开始交往，确认恋爱关系' },
+                        { id: 6, name: '女朋友', emoji: '💑', description: '亲密的恋爱关系' },
+                        { id: 7, name: '未婚妻', emoji: '💍', description: '订婚后的关系' },
+                        { id: 8, name: '妻子', emoji: '🏩', description: '婚姻关系' }
+                    ];
+                }
             }
+            return this._relationTypes;
+        } catch (e) {
+            console.error('[TimePlugin] getRelationTypes 错误:', e);
+            return [
+                { id: 0, name: '陌生人', emoji: '👤', description: '初次见面，互不了解' }
+            ];
         }
-        return this._relationTypes;
     },
 
     getRelationType(id) {
-        if (!this._relationLoaded || this._relationTypes.length === 0) {
-            this._loadRelationTypes();
-            // 返回默认关系类型，避免undefined
+        try {
+            if (!this._relationLoaded || !Array.isArray(this._relationTypes) || this._relationTypes.length === 0) {
+                this._loadRelationTypes();
+                // 返回默认关系类型，避免undefined
+                return { id: 0, name: '陌生人', emoji: '👤', description: '初次见面，互不了解' };
+            }
+            return this._relationTypes.find(r => r && r.id === id) || this._relationTypes[0] || { id: 0, name: '陌生人', emoji: '👤', description: '初次见面，互不了解' };
+        } catch (e) {
+            console.error('[TimePlugin] getRelationType 错误:', e);
             return { id: 0, name: '陌生人', emoji: '👤', description: '初次见面，互不了解' };
         }
-        return this._relationTypes.find(r => r.id === id) || this._relationTypes[0] || { id: 0, name: '陌生人', emoji: '👤', description: '初次见面，互不了解' };
     },
 
     getCharacterRelationship(worldId, charId) {
-        if (!this._relationLoaded || this._relationTypes.length === 0) {
-            this._loadRelationTypes();
-            // 返回默认关系类型，避免undefined
+        try {
+            if (!this._relationLoaded || !Array.isArray(this._relationTypes) || this._relationTypes.length === 0) {
+                this._loadRelationTypes();
+            }
+            const timeData = this._getWorldTime(worldId);
+            const relation = timeData?.characterRelations?.[charId];
+            if (relation === undefined) {
+                return Array.isArray(this._relationTypes) && this._relationTypes.length > 0 
+                    ? this._relationTypes[0] 
+                    : { id: 0, name: '陌生人', emoji: '👤', description: '初次见面，互不了解' };
+            }
+            return this.getRelationType(relation);
+        } catch (e) {
+            console.error('[TimePlugin] getCharacterRelationship 错误:', e);
             return { id: 0, name: '陌生人', emoji: '👤', description: '初次见面，互不了解' };
         }
-        const timeData = this._getWorldTime(worldId);
-        const relation = timeData.characterRelations?.[charId];
-        if (relation === undefined) {
-            return this._relationTypes[0] || { id: 0, name: '陌生人', emoji: '👤', description: '初次见面，互不了解' };
-        }
-        return this.getRelationType(relation);
     },
 
     getCharacterRelationshipLevel(worldId, charId) {
@@ -576,21 +603,27 @@ const TimePlugin = {
     },
 
     setCharacterRelationship(worldId, charId, relationLevel) {
-        const timeData = this._getWorldTime(worldId);
-        if (!timeData.characterRelations) {
-            timeData.characterRelations = {};
+        try {
+            const timeData = this._getWorldTime(worldId);
+            if (!timeData.characterRelations) {
+                timeData.characterRelations = {};
+            }
+            const oldLevel = timeData.characterRelations[charId] || 0;
+            
+            const relationTypes = Array.isArray(this._relationTypes) ? this._relationTypes : [];
+            const maxId = relationTypes.length > 0 ? Math.max(...relationTypes.map(r => r && r.id !== undefined ? r.id : 0)) : 54;
+            timeData.characterRelations[charId] = Math.max(0, Math.min(maxId, relationLevel));
+            
+            this._saveWorldTime(worldId, timeData);
+            
+            if (oldLevel !== relationLevel) {
+                this._onRelationshipChanged(worldId, charId, oldLevel, relationLevel);
+            }
+            return { old: oldLevel, new: relationLevel };
+        } catch (e) {
+            console.error('[TimePlugin] setCharacterRelationship 错误:', e);
+            return { old: 0, new: relationLevel };
         }
-        const oldLevel = timeData.characterRelations[charId] || 0;
-        
-        const maxId = this._relationTypes.length > 0 ? Math.max(...this._relationTypes.map(r => r.id)) : 54;
-        timeData.characterRelations[charId] = Math.max(0, Math.min(maxId, relationLevel));
-        
-        this._saveWorldTime(worldId, timeData);
-        
-        if (oldLevel !== relationLevel) {
-            this._onRelationshipChanged(worldId, charId, oldLevel, relationLevel);
-        }
-        return { old: oldLevel, new: relationLevel };
     },
 
     updateCharacterRelationship(worldId, charId, delta) {
@@ -614,7 +647,7 @@ const TimePlugin = {
         if (!timeData.characterRelations) {
             timeData.characterRelations = {};
         }
-        const characters = Data.getCharacters(worldId);
+        const characters = Data.getCharacters(worldId) || [];
         let hasChanges = false;
         characters.forEach(char => {
             if (timeData.characterRelations[char.id] === undefined) {
@@ -629,7 +662,7 @@ const TimePlugin = {
 
     getAllRelationships(worldId) {
         const timeData = this._getWorldTime(worldId);
-        const characters = Data.getCharacters(worldId);
+        const characters = Data.getCharacters(worldId) || [];
         return characters.map(char => {
             const relationLevel = timeData.characterRelations?.[char.id] || 0;
             const relationType = this.getRelationType(relationLevel);
@@ -665,27 +698,41 @@ const TimePlugin = {
     },
 
     getRelationshipContext(worldId) {
-        this.initAllCharactersRelationship(worldId);
-        const relationships = this.getAllRelationships(worldId);
-        
-        const nonStranger = relationships.filter(r => r.level > 0);
-        if (nonStranger.length === 0) {
+        try {
+            this.initAllCharactersRelationship(worldId);
+            const relationships = this.getAllRelationships(worldId) || [];
+            
+            const nonStranger = Array.isArray(relationships) ? relationships.filter(r => r && r.level > 0) : [];
+            if (!Array.isArray(nonStranger) || nonStranger.length === 0) {
+                return '';
+            }
+            
+            const context = nonStranger.map(r => `${r.charName}与主角的关系: ${r.emoji}${r.name}`).join('；');
+            return `\n【当前人物关系】${context}`;
+        } catch (e) {
+            console.error('[TimePlugin] getRelationshipContext 错误:', e);
             return '';
         }
-        
-        const context = nonStranger.map(r => `${r.charName}与主角的关系: ${r.emoji}${r.name}`).join('；');
-        return `\n【当前人物关系】${context}`;
     },
 
     getPluginStats(worldId) {
-        const timeDisplay = this.getWorldTimeDisplay(worldId);
-        const characters = this.getAllCharactersWithAge(worldId);
+        try {
+            const timeDisplay = this.getWorldTimeDisplay(worldId);
+            const characters = this.getAllCharactersWithAge(worldId) || [];
 
-        return {
-            time: timeDisplay,
-            characters: characters,
-            totalCharacters: characters.length
-        };
+            return {
+                time: timeDisplay,
+                characters: characters,
+                totalCharacters: Array.isArray(characters) ? characters.length : 0
+            };
+        } catch (e) {
+            console.error('[TimePlugin] getPluginStats 错误:', e);
+            return {
+                time: null,
+                characters: [],
+                totalCharacters: 0
+            };
+        }
     },
 
     renderTimeInfoPanel(worldId) {
@@ -701,9 +748,9 @@ const TimePlugin = {
             const charactersWithBirthday = this.getCharactersWithBirthday(worldId);
             const upcomingBirthdays = this.getUpcomingBirthdays(worldId, config.birthdayAdvanceDays || 7);
             
-            const birthdayListHtml = charactersWithBirthday.length > 0 
-                ? charactersWithBirthday.map(b => {
-                    const upcoming = upcomingBirthdays.find(u => u.id === b.id);
+            const birthdayListHtml = Array.isArray(charactersWithBirthday) && charactersWithBirthday.length > 0 
+                ? charactersWithBirthday.filter(b => b).map(b => {
+                    const upcoming = Array.isArray(upcomingBirthdays) ? upcomingBirthdays.find(u => u && u.id === b.id) : null;
                     let info = b.birthdayString;
                     if (upcoming) {
                         if (upcoming.isToday) {
@@ -810,7 +857,12 @@ const TimePluginUI = {
         const modal = document.createElement('div');
         modal.className = 'modal active';
         
-        const characters = Data.getCharacters(world.id);
+        const characters = Data.getCharacters(world.id) || [];
+        
+        if (!Array.isArray(characters) || characters.length === 0) {
+            alert('请先创建至少一个角色！');
+            return;
+        }
         
         modal.innerHTML = `
             <div class="modal-content" style="max-width: 500px;">
@@ -872,18 +924,26 @@ const TimePluginUI = {
         const newProtagonistAge = parseInt(document.getElementById('setupProtagonistAge').value) || 18;
         const year = parseInt(document.getElementById('setupStartYear').value) || new Date().getFullYear();
 
-        const characters = Data.getCharacters(world.id);
+        const characters = Data.getCharacters(world.id) || [];
+        if (!Array.isArray(characters) || characters.length === 0) {
+            console.error('[TimePlugin] 没有角色数据');
+            return;
+        }
         
         const timeData = TimePlugin._getWorldTime(world.id);
+        if (!timeData.characterAges) {
+            timeData.characterAges = {};
+        }
         
-        const protagonist = characters.find(c => c.id === protagonistId);
+        const protagonist = characters.find(c => c && c.id === protagonistId);
         const originalProtagonistAge = protagonist?.age || 18;
         
-        characters.forEach(char => {
-            if (char.age !== undefined) {
-                const relation = char.age - originalProtagonistAge;
+        characters.filter(char => char).forEach(char => {
+            const charAge = char.age ?? 18;
+            if (charAge !== undefined) {
+                const relation = charAge - originalProtagonistAge;
                 timeData.characterAges[char.id] = {
-                    baseAge: char.age,
+                    baseAge: charAge,
                     relationToProtagonist: relation
                 };
             }
@@ -967,7 +1027,12 @@ const TimePluginUI = {
         const world = Data.getCurrentWorld();
         if (!world) return;
 
-        const characters = Data.getCharacters(world.id);
+        const characters = Data.getCharacters(world.id) || [];
+        if (!Array.isArray(characters) || characters.length === 0) {
+            alert('请先创建至少一个角色！');
+            return;
+        }
+        
         const currentTime = TimePlugin.getDisplayTime(world.id);
 
         const modal = document.createElement('div');
@@ -983,15 +1048,16 @@ const TimePluginUI = {
                     <p class="time-tip" style="color: var(--accent);">💡 角色当前年龄 = 主角年龄(${currentTime.protagonistAge}岁) + 年龄差 + 已过年数(${currentTime.yearsPassed}年)</p>
                     <div id="relationList" style="max-height: 350px; overflow-y: auto;">
                         ${characters.map(char => {
+                            const charAge = char.age ?? 18;
                             const relation = TimePlugin.getCharacterRelation(world.id, char.id);
-                            const currentCharAge = currentTime.protagonistAge ? currentTime.protagonistAge + relation + currentTime.yearsPassed : char.age;
+                            const currentCharAge = currentTime.protagonistAge ? currentTime.protagonistAge + relation + currentTime.yearsPassed : charAge;
                             return `
                                 <div class="form-group" style="display: flex; align-items: center; gap: 10px; padding: 8px; background: var(--bg); border-radius: 6px; margin-bottom: 8px;">
                                     <label style="min-width: 80px; font-weight: 500;">${char.name}</label>
-                                    <span style="font-size: 0.8rem; color: var(--text-dim);">原始${char.age}岁</span>
+                                    <span style="font-size: 0.8rem; color: var(--text-dim);">原始${charAge}岁</span>
                                     <input type="number" class="relation-input" data-char-id="${char.id}" value="${relation}" style="width: 60px;" onchange="TimePluginUI.updateAgeDisplay(this)">
                                     <span>岁差</span>
-                                    <span class="time-result" data-char-id="${char.id}" data-original-age="${char.age}" style="color: var(--accent); font-weight: 500;">
+                                    <span class="time-result" data-char-id="${char.id}" data-original-age="${charAge}" style="color: var(--accent); font-weight: 500;">
                                         → 当前${currentCharAge}岁
                                     </span>
                                 </div>
@@ -1023,7 +1089,8 @@ const TimePluginUI = {
 
         const relation = parseInt(input.value) || 0;
         const currentTime = TimePlugin.getDisplayTime(world.id);
-        const currentCharAge = currentTime.protagonistAge ? currentTime.protagonistAge + relation + currentTime.yearsPassed : char.age;
+        const charAge = char.age ?? 18;
+        const currentCharAge = currentTime.protagonistAge ? currentTime.protagonistAge + relation + currentTime.yearsPassed : charAge;
         resultSpan.textContent = `→ 当前${currentCharAge}岁`;
     },
 
@@ -1170,7 +1237,11 @@ const TimePluginUI = {
         const world = Data.getCurrentWorld();
         if (!world) return;
 
-        const characters = Data.getCharacters(world.id);
+        const characters = Data.getCharacters(world.id) || [];
+        if (!Array.isArray(characters) || characters.length === 0) {
+            alert('请先创建至少一个角色！');
+            return;
+        }
 
         const modal = document.createElement('div');
         modal.className = 'modal active';

@@ -129,6 +129,17 @@ class AI {
             throw new Error('请先配置API密钥');
         }
 
+        // 如果没有传入系统提示词，则从提示词插件获取
+        if (!options.system) {
+            const promptManager = window.PromptManagerPlugin;
+            if (promptManager) {
+                const systemTemplate = promptManager.getTemplate('system', 'default');
+                if (systemTemplate && typeof systemTemplate === 'string' && systemTemplate.trim()) {
+                    options.system = systemTemplate;
+                }
+            }
+        }
+
         const cacheKey = this._generateCacheKey(prompt, options);
         const cachedContent = this._getFromCache(cacheKey);
         if (cachedContent) {
@@ -155,6 +166,13 @@ class AI {
             temperature: options.temperature ?? 0.7,
             max_tokens: options.maxTokens ?? maxTokens
         };
+
+        console.log('========== [AI] 输入 ==========');
+        if (options.system) {
+            console.log('系统:', options.system.substring(0, 300));
+        }
+        console.log('用户:', prompt.substring(0, 500));
+        console.log('===============================');
 
         const headers = {
             'Content-Type': 'application/json',
@@ -183,6 +201,10 @@ class AI {
             const data = await response.json();
             const content = data.choices[0].message.content;
 
+            console.log('========== [AI] 输出 ==========');
+            console.log(content.substring(0, 500) + (content.length > 500 ? '...' : ''));
+            console.log('==============================');
+
             this._saveToCache(cacheKey, content);
             return content;
         } catch (err) {
@@ -210,49 +232,6 @@ class AI {
 
     async chat(messages, options = {}) {
         return this.call('', { ...options, system: messages[0]?.role === 'system' ? messages[0].content : '' });
-    }
-
-    async generateStory(prompt, settings) {
-        const systemPrompt = this.buildSystemPrompt(settings);
-        const options = {
-            system: systemPrompt,
-            length: settings.output?.length || '中篇'
-        };
-        return this.call(prompt, options);
-    }
-
-    buildSystemPrompt(settings) {
-        const world = Data.getCurrentWorld();
-        const worldId = world?.id;
-        
-        if (typeof StoryConfigPlugin !== 'undefined') {
-            const pluginPrompt = StoryConfigPlugin.getWorldSystemPrompt(worldId);
-            if (pluginPrompt) {
-                const s = settings.content || {};
-                let additionalPrompt = '';
-                
-                if (s.tone) additionalPrompt += `\n风格基调：${s.tone}`;
-                if (s.detailLevel) additionalPrompt += `\n描写详细程度：${s.detailLevel}`;
-                if (s.intimacy && s.intimacy > 0) {
-                    const levels = ['纯爱', '暧昧', '亲密', '热烈', '激情', '淫乱', '重口'];
-                    additionalPrompt += `\n亲密程度：${levels[Math.min(6, Math.floor(s.intimacy / 15))] || '纯爱'}`;
-                }
-                
-                if (s.forbidden && s.forbidden.length > 0) {
-                    additionalPrompt += `\n禁止内容：${s.forbidden.join('、')}`;
-                }
-                
-                const promptManager = window.PromptManagerPlugin;
-                const eroticStyle = promptManager ? promptManager.getStylePreset('erotic') : null;
-                if (eroticStyle && eroticStyle.customRules) {
-                    additionalPrompt += '\n\n' + eroticStyle.customRules;
-                }
-                
-                return pluginPrompt + additionalPrompt;
-            }
-        }
-        
-        throw new Error('系统提示词未配置');
     }
 
     clearCache() {

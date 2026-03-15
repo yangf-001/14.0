@@ -1,0 +1,22 @@
+{
+  "name": "逛街",
+  "startStage": "日常",
+  "customStartScene": "周末，陈轩带灵蛟出门逛街。\n\n「主人~那个是什么？」灵蛟对现代的一切都很好奇。\n\n「那是奶茶。」陈轩解释道。\n\n「好喝吗？」灵蛟眨眨眼。\n\n「...」陈轩给她买了一杯，「慢点喝。」\n\n灵蛟变小盘在陈轩的肩膀上，开心地喝着奶茶。",
+  "initialStats": {
+    "health": 100,
+    "charm": 86,
+    "intelligence": 80,
+    "strength": 45,
+    "agility": 55,
+    "stamina": 55,
+    "arousal": 15,
+    "experience": 15,
+    "sexSkill": 10,
+    "sexSensitivity": 30,
+    "intimacy": 30,
+    "willingness": 20,
+    "corruption": 0,
+    "shame": 10
+  },
+  "description": "陈轩带灵蛟出门逛街"
+}

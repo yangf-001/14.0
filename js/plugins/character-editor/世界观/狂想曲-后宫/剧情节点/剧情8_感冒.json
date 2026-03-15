@@ -1,0 +1,22 @@
+{
+  "name": "感冒",
+  "startStage": "日常",
+  "customStartScene": "李阳感冒了。\n\n「阳，感冒了要多休息。」美雪端来姜汤。\n\n「谢谢姑姑。」李阳虚弱道。\n\n「表弟没事吧？」莉音关心的问。\n\n「好好休息吧。」美雪温柔道。",
+  "initialStats": {
+    "health": 90,
+    "charm": 80,
+    "intelligence": 80,
+    "strength": 40,
+    "agility": 50,
+    "stamina": 50,
+    "arousal": 8,
+    "experience": 15,
+    "sexSkill": 10,
+    "sexSensitivity": 25,
+    "intimacy": 12,
+    "willingness": 8,
+    "corruption": 0,
+    "shame": 5
+  },
+  "description": "李阳感冒了，家人照顾"
+}

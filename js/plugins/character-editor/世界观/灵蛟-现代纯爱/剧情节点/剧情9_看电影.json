@@ -1,0 +1,22 @@
+{
+  "name": "看电影",
+  "startStage": "日常",
+  "customStartScene": "晚上，陈轩和灵蛟一起看电影。\n\n「主人~这个是什么？」灵蛟指着电视好奇道。\n\n「电影。」陈轩解释道，「坐下来看。」\n\n灵蛟变小盘在陈轩腿上，抬着头看电视。\n\n「主人~主角好厉害哦~」灵蛟感叹道。\n\n陈轩摸着腿上的小蛇，嘴角上扬。",
+  "initialStats": {
+    "health": 100,
+    "charm": 86,
+    "intelligence": 80,
+    "strength": 45,
+    "agility": 55,
+    "stamina": 55,
+    "arousal": 20,
+    "experience": 15,
+    "sexSkill": 10,
+    "sexSensitivity": 35,
+    "intimacy": 35,
+    "willingness": 25,
+    "corruption": 0,
+    "shame": 10
+  },
+  "description": "陈轩和灵蛟一起看电影"
+}

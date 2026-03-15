@@ -122,7 +122,7 @@ const Data = {
 
     getCharacters(worldId) {
         const data = this._loadWorldData(worldId);
-        return data.characters || [];
+        return (data && Array.isArray(data.characters)) ? data.characters : [];
     },
 
     getCharacter(worldId, charId) {
@@ -236,7 +236,7 @@ const Data = {
     getStory(worldId) {
         this._cache.delete(worldId);
         const data = this._loadWorldData(worldId);
-        return data.story;
+        return (data && data.story) ? data.story : null;
     },
 
     deleteStory(worldId) {

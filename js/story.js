@@ -1,6 +1,7 @@
 const Story = {
     current: null,
     history: [],
+    _isCompressing: false,
     
     _getPlugin() {
         return this;
@@ -820,6 +821,8 @@ const Story = {
             this._getPlugin()?.checkArchiveForSummaries(archives, world.id);
             
             localStorage.setItem(`story_archives_${world.id}`, JSON.stringify(archives));
+            
+            await this._compressToLevel2(world.id, archives);
         }
         
         this.current.status = 'ended';
@@ -831,6 +834,111 @@ const Story = {
         this._hideLoading();
         
         return activeArchive || archives[0];
+    },
+    
+    async _compressToLevel2(worldId, archives) {
+        if (Story._isCompressing) {
+            console.log('[压缩] 压缩正在进行中，跳过');
+            return;
+        }
+        
+        Story._isCompressing = true;
+        
+        try {
+            const level2Archives = this.getLevel2Archives(worldId);
+            
+            const allStories = [];
+            for (const archive of archives) {
+                if (archive.stories) {
+                    for (const story of archive.stories) {
+                        allStories.push({
+                            title: story.title,
+                            summary: story.content,
+                            endTime: story.endTime,
+                            characters: story.characters
+                        });
+                    }
+                }
+            }
+            
+            const MAX_SAVE = 25;
+            const COMPRESS_COUNT = 10;
+            
+            if (allStories.length > MAX_SAVE) {
+                const storiesToCompress = allStories.slice(0, COMPRESS_COUNT);
+                
+                const combinedContent = storiesToCompress.map(s => s.summary).join('\n\n---\n\n');
+                const promptManager = window.PromptManagerPlugin;
+                const prompt = promptManager.getTemplateWithPreset('level2Summary', 'default', {
+                    '一级故事摘要内容': combinedContent,
+                    '故事内容': combinedContent,
+                    '内容': combinedContent
+                });
+                const level2Summary = await ai.call(prompt, { temperature: 0.7, maxTokens: 2500 });
+                
+                level2Archives.unshift({
+                    id: Data._genId(),
+                    worldId: worldId,
+                    summary: level2Summary,
+                    storyCount: storiesToCompress.length,
+                    createdAt: Date.now()
+                });
+                
+                localStorage.setItem(`story_level2_${worldId}`, JSON.stringify(level2Archives));
+                
+                const remainingStories = allStories.slice(COMPRESS_COUNT);
+                if (remainingStories.length > 0) {
+                    for (let i = archives.length - 1; i >= 0; i--) {
+                        if (archives[i].stories && archives[i].stories.length > 0) {
+                            archives[i].stories = archives[i].stories.slice(0, -Math.min(archives[i].stories.length, COMPRESS_COUNT));
+                            if (archives[i].stories.length === 0) {
+                                archives.splice(i, 1);
+                            }
+                            COMPRESS_COUNT -= archives[i].stories.length || 0;
+                            if (COMPRESS_COUNT <= 0) break;
+                        }
+                    }
+                    localStorage.setItem(`story_archives_${worldId}`, JSON.stringify(archives));
+                }
+                
+                await this._compressToLevel3(worldId, level2Archives);
+            }
+        } finally {
+            Story._isCompressing = false;
+        }
+    },
+    
+    async _compressToLevel3(worldId, level2Archives) {
+        const level3Archives = this.getLevel3Archives(worldId);
+        
+        const MAX_SAVE = 25;
+        const COMPRESS_COUNT = 10;
+        
+        if (level2Archives.length > MAX_SAVE) {
+            const level2ToCompress = level2Archives.slice(0, COMPRESS_COUNT);
+            
+            const combinedContent = level2ToCompress.map(l2 => l2.summary).join('\n\n---\n\n');
+            const promptManager = window.PromptManagerPlugin;
+            const prompt = promptManager.getTemplateWithPreset('level3Summary', 'default', {
+                '二级故事摘要内容': combinedContent,
+                '故事内容': combinedContent,
+                '内容': combinedContent
+            });
+            const level3Summary = await ai.call(prompt, { temperature: 0.7, maxTokens: 3500 });
+            
+            level3Archives.unshift({
+                id: Data._genId(),
+                worldId: worldId,
+                summary: level3Summary,
+                level2Count: level2ToCompress.length,
+                createdAt: Date.now()
+            });
+            
+            localStorage.setItem(`story_level3_${worldId}`, JSON.stringify(level3Archives));
+            
+            const remainingLevel2 = level2Archives.slice(COMPRESS_COUNT);
+            localStorage.setItem(`story_level2_${worldId}`, JSON.stringify(remainingLevel2));
+        }
     },
 
     getArchives(worldId) {
@@ -1425,21 +1533,32 @@ const Story = {
     async generateFullStorySummary(worldId, story) {
         const content = story.scenes.map(s => s.content).join('\n\n');
         const promptManager = window.PromptManagerPlugin;
-        const prompt = promptManager.getTemplateWithPreset('storySummary', 'level1', {
+        const prompt = promptManager.getTemplateWithPreset('level1Summary', 'default', {
             '故事内容': content,
             '内容': content
         });
-        return await ai.call(prompt, { temperature: 0.7, maxTokens: 200 });
+        return await ai.call(prompt, { temperature: 0.7, maxTokens: 700 });
     },
     
     async generateCorePlot(worldId, story) {
         const content = story.scenes.map(s => s.content).join('\n\n');
         const promptManager = window.PromptManagerPlugin;
-        const prompt = promptManager.getTemplateWithPreset('storySummary', 'level2', {
+        const prompt = promptManager.getTemplateWithPreset('level2Summary', 'default', {
             '故事内容': content,
             '内容': content
         });
-        return await ai.call(prompt, { temperature: 0.7, maxTokens: 100 });
+        return await ai.call(prompt, { temperature: 0.7, maxTokens: 2500 });
+    },
+    
+    async generateLevel3Summary(worldId, level2Summaries) {
+        const content = level2Summaries.map(s => s.summary).join('\n\n---\n\n');
+        const promptManager = window.PromptManagerPlugin;
+        const prompt = promptManager.getTemplateWithPreset('level3Summary', 'default', {
+            '所有故事的摘要': content,
+            '故事内容': content,
+            '内容': content
+        });
+        return await ai.call(prompt, { temperature: 0.7, maxTokens: 3500 });
     },
     
     updateArchiveInPlace(worldId, story) {

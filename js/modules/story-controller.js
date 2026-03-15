@@ -71,32 +71,39 @@ const StoryController = {
     },
     
     makeCustomChoice() {
+        const customChoiceInput = document.getElementById('customChoiceInput');
+        const simpleStoryCustomInput = document.getElementById('simpleStoryCustomInput');
         const simpleInput = document.getElementById('customChoiceText');
         
-        if (simpleInput && simpleInput.offsetParent !== null) {
+        if (!simpleInput) {
+            return;
+        }
+        
+        const isCustomChoiceVisible = customChoiceInput && customChoiceInput.offsetParent !== null;
+        const isSimpleStoryVisible = simpleStoryCustomInput && simpleStoryCustomInput.offsetParent !== null;
+        
+        if (isSimpleStoryVisible && window.SimpleStoryPlugin && window.SimpleStoryPlugin.isRunning()) {
             const text = simpleInput.value.trim();
             if (!text) {
                 return;
             }
-            const inputDiv = document.getElementById('simpleStoryCustomInput');
-            if (inputDiv) inputDiv.style.display = 'none';
+            if (simpleStoryCustomInput) simpleStoryCustomInput.style.display = 'none';
             simpleInput.value = '';
             
-            if (window.SimpleStoryPlugin) {
-                SimpleStoryPlugin._continueStory(text);
-            }
+            SimpleStoryPlugin._continueStory(text);
             return;
         }
         
-        const customText = document.getElementById('customChoiceText')?.value.trim();
-        if (!customText) {
+        if (isCustomChoiceVisible) {
+            const text = simpleInput.value.trim();
+            if (!text) {
+                return;
+            }
+            if (customChoiceInput) customChoiceInput.style.display = 'none';
+            simpleInput.value = '';
+            this.makeChoice(text);
             return;
         }
-        const inputDiv = document.getElementById('customChoiceInput');
-        if (inputDiv) inputDiv.style.display = 'none';
-        const textInput = document.getElementById('customChoiceText');
-        if (textInput) textInput.value = '';
-        this.makeChoice(customText);
     },
     
     showEndStoryModal() {

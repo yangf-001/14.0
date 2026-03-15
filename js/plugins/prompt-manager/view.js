@@ -7,7 +7,7 @@ const PromptManagerView = {
         story: { name: '📖 故事生成', categories: ['storyStart', 'storyChoice', 'storyFree', 'storyContinue', 'simpleStory'] },
         choices: { name: '🎯 选项生成', categories: ['generateChoices'] },
         chat: { name: '💬 聊天对话', categories: ['chatStart', 'chatContinue', 'multiCharChat'] },
-        assistant: { name: '🤖 辅助功能', categories: ['diary', 'sceneSummary', 'storyTitle', 'updateStats', 'extractItems', 'storySummary'] },
+        assistant: { name: '🤖 辅助功能', categories: ['diary', 'sceneSummary', 'storyTitle', 'updateStats', 'extractItems', 'level1Summary', 'level2Summary', 'level3Summary'] },
         settings: { name: '⚙️ 设置', categories: [] }
     },
     
@@ -26,7 +26,9 @@ const PromptManagerView = {
         storyTitle: { name: '故事标题', desc: '生成标题' },
         updateStats: { name: '更新属性', desc: '分析属性变化' },
         extractItems: { name: '提取物品', desc: '提取物品' },
-        storySummary: { name: '故事摘要', desc: '故事摘要' }
+        level1Summary: { name: '一级摘要', desc: '单故事500字摘要' },
+        level2Summary: { name: '二级摘要', desc: '多故事2000字摘要' },
+        level3Summary: { name: '三级摘要', desc: '多二级故事3000字摘要' }
     },
     
     render() {

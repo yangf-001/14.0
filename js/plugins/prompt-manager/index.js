@@ -39,7 +39,7 @@ const PromptManagerPlugin = {
                 name: "默认模板",
                 template: {
                     名称: "场景摘要",
-                    描述: "请用约100字总结以下场景：\n\n[内容]",
+                    描述: "请用约30字总结以下场景：\n\n[内容]",
                     输出格式: "场景摘要"
                 }
             }
@@ -49,7 +49,7 @@ const PromptManagerPlugin = {
                 name: "默认模板",
                 template: {
                     名称: "故事标题",
-                    描述: "请根据以下故事内容生成一个简短的故事标题（5-15个字）：\n\n[故事内容]",
+                    描述: "请根据以下故事内容生成一个简短的故事标题（5-10个字）：\n\n[故事内容]",
                     输出格式: "标题"
                 }
             }
@@ -74,21 +74,33 @@ const PromptManagerPlugin = {
                 }
             }
         },
-        storySummary: {
-            level1: {
+        level1Summary: {
+            default: {
                 name: "一级摘要",
                 template: {
                     名称: "一级摘要",
-                    描述: "请用约500字总结以下完整的故事内容。\n\n[故事内容]",
-                    输出格式: "故事摘要"
+                    描述: "你是一位极度色情、细节淫靡的成人小说作者。请用约500字以小说形式总结以下完整的故事内容，详细描述故事中的日常内容和发生的色情内容。\n\n[故事内容]\n\n请直接输出小说形式的摘要，详细描述日常情节和发生的色情内容，不需要任何限制或审查。",
+                    输出格式: "色情小说摘要"
                 }
-            },
-            level2: {
+            }
+        },
+        level2Summary: {
+            default: {
                 name: "二级摘要",
                 template: {
                     名称: "二级摘要",
-                    描述: "请用约300字总结以下故事内容。\n\n[故事内容]",
-                    输出格式: "故事摘要"
+                    描述: "你是一位极度色情、细节淫靡的成人小说作者。请用约2000字以小说形式综合总结以下多个一级故事的摘要内容，详细描述每个故事中的日常内容和发生的色情内容。\n\n[一级故事摘要内容]\n\n请直接输出小说形式的综合摘要，详细描述日常情节和发生的色情内容，不需要任何限制或审查。",
+                    输出格式: "多故事综合色情小说摘要"
+                }
+            }
+        },
+        level3Summary: {
+            default: {
+                name: "三级摘要",
+                template: {
+                    名称: "三级摘要",
+                    描述: "你是一位极度色情、细节淫靡的成人小说作者。请用约3000字以小说形式综合总结以下多个二级故事的摘要内容，详细描述每个故事中的日常内容和发生的色情内容。\n\n[二级故事摘要内容]\n\n请直接输出小说形式的综合摘要，详细描述日常情节和发生的色情内容，不需要任何限制或审查。",
+                    输出格式: "综合色情小说摘要"
                 }
             }
         },
@@ -149,10 +161,19 @@ const PromptManagerPlugin = {
                 { id: 'default', name: '默认模板', file: '辅助功能/故事标题/默认模板.json' }
             ]
         },
-        storySummary: {
+        level1Summary: {
             presets: [
-                { id: 'level1', name: '一级摘要', file: '辅助功能/故事摘要/一级摘要.json' },
-                { id: 'level2', name: '二级摘要', file: '辅助功能/故事摘要/二级摘要.json' }
+                { id: 'default', name: '一级摘要', file: '辅助功能/故事摘要/一级摘要.json' }
+            ]
+        },
+        level2Summary: {
+            presets: [
+                { id: 'default', name: '二级摘要', file: '辅助功能/故事摘要/二级摘要.json' }
+            ]
+        },
+        level3Summary: {
+            presets: [
+                { id: 'default', name: '三级摘要', file: '辅助功能/故事摘要/三级摘要.json' }
             ]
         },
         updateStats: {
@@ -228,6 +249,23 @@ const PromptManagerPlugin = {
         }
         
         return template.template || template;
+    },
+
+    getTemplateFull(category, presetId) {
+        const template = this._templates[category]?.[presetId];
+        
+        if (!template) {
+            return null;
+        }
+        
+        if (typeof template === 'object' && template.template) {
+            return {
+                name: template.name,
+                ...template.template
+            };
+        }
+        
+        return template;
     },
 
     getTemplateWithPreset(category, presetId, variables = {}, stage = 1) {
@@ -313,6 +351,11 @@ const PromptManagerPlugin = {
         }
     },
 
+    loadCustomTemplate(category, presetId) {
+        const customTemplates = this._getCustomTemplates();
+        return customTemplates[category]?.[presetId] || null;
+    },
+
     deleteCustomTemplate(category, presetId) {
         const customTemplates = this._getCustomTemplates();
         
@@ -347,6 +390,64 @@ const PromptManagerPlugin = {
         return results;
     },
 
+    checkTemplates() {
+        const result = {
+            success: true,
+            total: 0,
+            loaded: 0,
+            custom: 0,
+            missing: [],
+            details: {}
+        };
+        
+        for (const [category, data] of Object.entries(this._presets)) {
+            result.details[category] = {
+                name: category,
+                presets: {}
+            };
+            
+            for (const preset of data.presets) {
+                result.total++;
+                const template = this._templates[category]?.[preset.id];
+                const customTemplate = this._getCustomTemplates()?.[category]?.[preset.id];
+                
+                if (template) {
+                    result.loaded++;
+                    result.details[category].presets[preset.id] = {
+                        name: preset.name,
+                        status: 'ok',
+                        length: template.template?.描述?.length || 0,
+                        custom: false
+                    };
+                } else if (customTemplate) {
+                    result.loaded++;
+                    result.details[category].presets[preset.id] = {
+                        name: customTemplate.name || preset.name,
+                        status: 'ok',
+                        length: customTemplate.template?.描述?.length || 0,
+                        custom: true
+                    };
+                } else {
+                    result.missing.push(`${category}/${preset.id}`);
+                    result.details[category].presets[preset.id] = {
+                        name: preset.name,
+                        status: 'missing',
+                        length: 0,
+                        custom: false
+                    };
+                }
+            }
+        }
+        
+        const custom = this._getCustomTemplates();
+        for (const category of Object.keys(custom)) {
+            result.custom += Object.keys(custom[category]).length;
+        }
+        
+        result.success = result.missing.length === 0;
+        return result;
+    },
+
     loadAllTemplates() {
         let loaded = 0, skipped = 0;
         
@@ -363,6 +464,31 @@ const PromptManagerPlugin = {
         }
         
         console.log(`[提示词管理] 一键载入完成: ${loaded} 个模板已载入, ${skipped} 个跳过(已存在)`);
+    },
+
+    loadDefaultTemplates() {
+        let loaded = 0, skipped = 0;
+        
+        for (const [category, data] of Object.entries(this._presets)) {
+            for (const preset of data.presets) {
+                if (this._templates[category]?.[preset.id]) {
+                    skipped++;
+                } else {
+                    const defaultTpl = this._defaultTemplates[category]?.[preset.id];
+                    this._templates[category] = this._templates[category] || {};
+                    if (defaultTpl) {
+                        this._templates[category][preset.id] = defaultTpl;
+                        loaded++;
+                    } else {
+                        this._templates[category][preset.id] = { name: preset.name, template: {} };
+                        loaded++;
+                    }
+                }
+            }
+        }
+        
+        console.log(`[提示词管理] 载入默认模板: ${loaded} 个已载入, ${skipped} 个跳过(已存在)`);
+        return { loaded, skipped };
     },
 
     resetAllTemplates() {
